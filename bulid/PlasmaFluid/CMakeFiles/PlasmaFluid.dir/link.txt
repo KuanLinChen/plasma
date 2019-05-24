@@ -1,0 +1,2 @@
+/usr/bin/ar qc libPlasmaFluid.a  CMakeFiles/PlasmaFluid.dir/config_structure.cpp.o CMakeFiles/PlasmaFluid.dir/domain_structure.cpp.o CMakeFiles/PlasmaFluid.dir/variable_structure.cpp.o CMakeFiles/PlasmaFluid.dir/chemistry-main.cpp.o CMakeFiles/PlasmaFluid.dir/solver_poisson.cpp.o CMakeFiles/PlasmaFluid.dir/solver_drift_diffusion.cpp.o CMakeFiles/PlasmaFluid.dir/post_structure.cpp.o
+/usr/bin/ranlib libPlasmaFluid.a
