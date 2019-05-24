@@ -128,6 +128,7 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 	int nCell = m->local_cell_number ;
 	double Source=0.0, vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0 ;
 	double Diff=0.0, Mobi=0.0, SourceSink=0.0, TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
+
 	Cell *Cell_i, *Cell_j ;
 
 	for( int i = 0 ; i < nCell ; i++ ) {
@@ -382,9 +383,6 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 
 		iFace 	 = Cell_i->face_number ;
 		iCell 	 = Cell_i->cell_number ;
-		/*--- Reset  ---*/
-		
-		Source 	 = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
 		if ( Cell_i->type == PLASMA ){

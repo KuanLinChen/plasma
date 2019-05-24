@@ -44,7 +44,8 @@ int main( int argc, char * argv[] )
 		//TODO: this part should be fix....
 		Config->MeshFile = "input.json" ;
 		plasma.load_mesh( argv[1] + Config->MeshFile ) ;
-		int numMatrixSolver = 1 + Config->TotalSpeciesNum  + 1 -1 ;
+		/* potential + numSpecies*Continuity + electron energy */
+		int numMatrixSolver = 1 + Config->TotalSpeciesNum  + 1  ;
 		plasma.set_matrix_number( numMatrixSolver ) ;
 
 	/*--- Link ultraMPP & Read Mesh file ---*/

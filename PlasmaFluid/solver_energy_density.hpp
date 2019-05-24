@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <sstream>
 #include <string.h>
-#include <metis.h>
 #include <algorithm>
 #include <fstream>
 #include <set>
@@ -12,16 +11,11 @@
 #include "main.h"
 #include "PFM.hpp"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-
-#include "PETSc_solver.h"
-
-#include "domain.h"
+//#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string/predicate.hpp>
 #include "domain_structure.hpp"
 #include "variable_structure.hpp"
 #include "config_structure.hpp"
-#include "scalar.h"
 
 using namespace std;
 class CEnergyDensity 
@@ -44,12 +38,13 @@ class CEnergyDensity
 
 
 	int iSpecies ; /*!< \brief Species index for this module */ 
+	int iMatrix ;
 	/*--- PETSc Solver ---*/	
-		PETScSolver s ;
-		int *d_nnz, *o_nnz ;
-		int row, col[ 5 ], ncol ;
-		double C[ 5 ] ;
-		double *NormalizeCoeff ;
+		// PETScSolver s ;
+		// int *d_nnz, *o_nnz ;
+		// int row, col[ 5 ], ncol ;
+		// double C[ 5 ] ;
+		// double *NormalizeCoeff ;
 	/*--- Solver Control Parameter ---*/	
 	double GVarN[2], GVarP[2] ;
 	double C53, C43, Reflec ;
@@ -67,14 +62,6 @@ class CEnergyDensity
 	void Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 	void Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 
-	/*!
-	 * \brief Calculate the matrix A and source term B w/ the non-orthogonal correction. 
-	 *		  Note: The S-G flux treat as convection flux, maybe don't need to correct the non-orthogonal term.
-	 * \param[in] domain - Grid information.
-	 * \param[in] config - Definition of the particular problem.
-	 * \param[in] var    - Variable.
-	 */
-	void Bulid_A_B_2nd( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 
 	/*!
 	 * \brief Reset the number density gradient to be zero.
