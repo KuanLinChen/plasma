@@ -1,6 +1,0 @@
-/home/kuan/Desktop/PFMPP_v0.0.2/bulid/CMakeFiles/rebuild_cache.dir
-/home/kuan/Desktop/PFMPP_v0.0.2/bulid/CMakeFiles/main.dir
-/home/kuan/Desktop/PFMPP_v0.0.2/bulid/CMakeFiles/edit_cache.dir
-/home/kuan/Desktop/PFMPP_v0.0.2/bulid/PlasmaFluid/CMakeFiles/rebuild_cache.dir
-/home/kuan/Desktop/PFMPP_v0.0.2/bulid/PlasmaFluid/CMakeFiles/PlasmaFluid.dir
-/home/kuan/Desktop/PFMPP_v0.0.2/bulid/PlasmaFluid/CMakeFiles/edit_cache.dir
