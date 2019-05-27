@@ -10,8 +10,6 @@ void CDriftDiffusion::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 	iSpecies = index ;
 	SpeciesType = config->Species[ index ].Type ;
 
-	/*--- PETSc Solver ---*/
-	/*--- PETSc Solver ---*/	
 	Correction 		 = config->Equation[ SpeciesType ].Correction ;
 	WallType 		 = config->Equation[ SpeciesType ].WallBoundaryType ;
 
