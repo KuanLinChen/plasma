@@ -4,7 +4,7 @@
 #include <fstream>
 #include <map>
 #include "json.hpp"
-#include "main.h"
+//#include "main.h"
 #include "PFM.hpp"
 
 using nlohmann::json;

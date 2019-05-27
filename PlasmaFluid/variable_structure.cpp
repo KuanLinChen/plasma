@@ -43,8 +43,8 @@ CVariable::CVariable()
 	//RefSurfaceCharge  	= Ref_Phi*Ref_Eps/Ref_L ;
 	Ref_JD 		= Ref_Eps*(Ref_Phi/Ref_L)/Ref_t ;
 	Ref_ES 		= Ref_EN/Ref_t ;
-    Ref_SS  	= Ref_N * Ref_V/Ref_L ;
-    Ref_EField	= Ref_Phi/Ref_L ;
+  Ref_SS  	= Ref_N * Ref_V/Ref_L ;
+  Ref_EField	= Ref_Phi/Ref_L ;
 }
 void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
@@ -143,30 +143,31 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 	int nCell = plasma.Mesh.cell_number ;
 
 	/*--- Chemistry Module ---*/
-		Chemistry.init( config->CasePath + "chemistry_parameter.txt", nCell ) ;
-		//exit(1) ;
-		if ( (Chemistry.species_size-config->TotalSpeciesNum) != 0 ) {
-			cout<<"config->TotalSpeciesNum: "<<config->TotalSpeciesNum<<endl;
-			cout<<"Chemistry.species_size: "<<Chemistry.species_size<<endl;
-			cout<<"Species Number doesn't not match pls check Chemistry and Configure"<<endl;exit(1) ;
-		}
+	Chemistry.init( config->CasePath + "chemistry_parameter.txt", nCell ) ;
+	//exit(1) ;
+	if ( (Chemistry.species_size-config->TotalSpeciesNum) != 0 ) {
+		cout<<"config->TotalSpeciesNum: "<<config->TotalSpeciesNum<<endl;
+		cout<<"Chemistry.species_size: "<<Chemistry.species_size<<endl;
+		cout<<"Species Number doesn't not match pls check Chemistry and Configure"<<endl;exit(1) ;
+	}
+	//exit(1) ;
+	//if( mpi_rank == 0 ) cout<< (Chemistry.species_size-config->TotalSpeciesNum)<<endl;
+	//exit(1) ;
+	InputNumberDensity = new double[ nCell*config->TotalSpeciesNum ] ;
+	InputTemperature   = new double[ nCell*config->TotalSpeciesNum ] ;
+	InputEField        = new double[ nCell*config->TotalSpeciesNum ] ;
+	coll_freq          = new double[ nCell ] ;
 
-		//if( mpi_rank == 0 ) cout<< (Chemistry.species_size-config->TotalSpeciesNum)<<endl;
-		//exit(1) ;
-	   	InputNumberDensity	= new double[ nCell*config->TotalSpeciesNum ] ;
-	   	InputTemperature	= new double[ nCell*config->TotalSpeciesNum ] ;
-	   	InputEField			= new double[ nCell*config->TotalSpeciesNum ] ;
-	   	coll_freq			= new double[ nCell ] ;
+	//MobilityPoint		= Chemistry.ptr_mobility();
+	//DiffusivityPoint	= Chemistry.ptr_diffusion();
+	//chemistry module - calculate transport coefficients, chemical source and electron energy loss
+	ReactionRatePoint	= Chemistry.ptr_source_sink();
+	EnergySourcePoint	= Chemistry.ptr_energy_loss();
+	if ( config->eEnergyLossFile.size() > 0 ) {
+		//Lookup table
+	} else {
 
-	   	//MobilityPoint		= Chemistry.ptr_mobility();
-    	//DiffusivityPoint	= Chemistry.ptr_diffusion();
-    	//chemistry module - calculate transport coefficients, chemical source and electron energy loss
-    	ReactionRatePoint	= Chemistry.ptr_source_sink();
-    	EnergySourcePoint	= Chemistry.ptr_energy_loss();
-    	// if ( config->eEnergyLossFile.size() > 0 ) {
-    	// 	//Lookup table
-    	// } else {
-    	// }
+	}
 
 
 		//ElectricalMap.insert( pair< int, CElectrical>( container.Type, container ) ) ;
@@ -245,27 +246,27 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 		PreT 	= new CScalar [ config->TotalSpeciesNum ] ;
 
 		U0 		= new CScalar [ config->TotalSpeciesNum ] ;
-		PreU0 	= new CScalar [ config->TotalSpeciesNum ] ;
-		AvgU0 	= new CScalar [ config->TotalSpeciesNum ] ;
+		PreU0 = new CScalar [ config->TotalSpeciesNum ] ;
+		AvgU0 = new CScalar [ config->TotalSpeciesNum ] ;
 
 		U1 		= new CScalar [ config->TotalSpeciesNum ] ;
-		PreU1 	= new CScalar [ config->TotalSpeciesNum ] ;
-		AvgU1 	= new CScalar [ config->TotalSpeciesNum ] ;
+		PreU1 = new CScalar [ config->TotalSpeciesNum ] ;
+		AvgU1 = new CScalar [ config->TotalSpeciesNum ] ;
 		
 		U2 		= new CScalar [ config->TotalSpeciesNum ] ;
-		PreU2 	= new CScalar [ config->TotalSpeciesNum ] ;
-		AvgU2 	= new CScalar [ config->TotalSpeciesNum ] ;
+		PreU2 = new CScalar [ config->TotalSpeciesNum ] ;
+		AvgU2 = new CScalar [ config->TotalSpeciesNum ] ;
 
 		U3 		= new CScalar [ config->TotalSpeciesNum ] ;
-		PreU3 	= new CScalar [ config->TotalSpeciesNum ] ;
-		AvgU3 	= new CScalar [ config->TotalSpeciesNum ] ;
+		PreU3 = new CScalar [ config->TotalSpeciesNum ] ;
+		AvgU3 = new CScalar [ config->TotalSpeciesNum ] ;
 		
 		U4 		= new CScalar [ config->TotalSpeciesNum ] ;
-		PreU4 	= new CScalar [ config->TotalSpeciesNum ] ;
-		AvgU4 	= new CScalar [ config->TotalSpeciesNum ] ;
+		PreU4 = new CScalar [ config->TotalSpeciesNum ] ;
+		AvgU4 = new CScalar [ config->TotalSpeciesNum ] ;
 
 		JouleHeating 		= new CScalar [ config->TotalSpeciesNum ] ;
-		AvgJouleHeating 	= new CScalar [ config->TotalSpeciesNum ] ;
+		AvgJouleHeating = new CScalar [ config->TotalSpeciesNum ] ;
 
 		
 		LFASourceSink 	= new CScalar [ 3 ] ;
@@ -462,19 +463,21 @@ void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_
 		if ( Cell_i->type == PLASMA ){
 
 			for ( int jSpecies = 0; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
-				U0[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity/Ref_N ;
 
+				U0[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity/Ref_N ;
 				U1[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity*0.E-15/Ref_Flux ;
 				U2[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity*0.E-15/Ref_Flux ;
 				U3[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity*0.E-15/Ref_Flux ;//config->Species[jSpecies].InitialDensity ;
-				TotalNumberDensity[ i ] += U0[ jSpecies ][ i ]*Ref_N ; //unit
+				TotalNumberDensity[ i ] += U0[ jSpecies ][ i ]*Ref_N ;
+
 			}
+
 			if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ) {
 				r = Cell_i->r[0] ;
 				z = Cell_i->r[1] ;
 				U0[ 1 ][ i ] += N0*exp( -(r*r+pow(z-z0, 2.0)) / pow(sigma, 2.0) ) ;
 			}
-		}
+		}//End plasma cells
 	}//End cell loop
 
 
@@ -530,9 +533,9 @@ void CVariable::CalTotalPressure( boost::shared_ptr<CDomain> &m, boost::shared_p
 void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config  )
 {
 	int nCell = plasma.Mesh.cell_number ;
-	//ComputeDebyeLengthRatio_CFL( m, config  ) ;
-//cout<<"CV: A"<<endl;
+
 	Cell *Cell_i ;
+
 	for ( int i = 0 ; i < nCell ; i++ ) {
 
 		Cell_i  = plasma.get_cell( i ) ;
@@ -543,28 +546,35 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 
 			for( int k = 0 ; k < config->TotalSpeciesNum ; k++ ){
 				*(InputNumberDensity + ( (i)*config->TotalSpeciesNum + k ) ) = U0[ k ][ i ]*Ref_N ;
-				if ( config->Species[k].Type == BACKGROUND ) TotalNumberDensity[ i ] += U0[ k ][ i ]*Ref_N ;
 				//cout<<*(InputNumberDensity + ( (i)*config->TotalSpeciesNum + k ) )<<endl;
+				if ( config->Species[k].Type == BACKGROUND ) TotalNumberDensity[ i ] += U0[ k ][ i ]*Ref_N ;
 			}
-
-		}
-		//cout<<"Ngas: "<<TotalNumberDensity[ i ]<<endl;
+		}//End plasma cells
 	}//End cell loop
+	//exit(1);
 
-	
 	for ( int i = 0 ; i < nCell ; i++ ) {
 
 		Cell_i  = plasma.get_cell( i ) ;
 
 		if( Cell_i->type == PLASMA ) {
-			for ( int k = 0 ; k < config->TotalSpeciesNum ; k++ ){
-				if( k == 0 )	*(InputTemperature + ( (i)*config->TotalSpeciesNum + k ) ) = T[ k ][ i ] ;
-				else *(InputTemperature + ( (i)*config->TotalSpeciesNum + k ) ) = T[ k ][ i ]*11604.52500617 ;
-				//cout<<*(InputTemperature + ( (i)*config->TotalSpeciesNum + k ) )<<endl;
-			}
-		}
+			for ( int iSpecies = 0 ; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) {
+
+				if( iSpecies == 0 )	{
+					/* electron */
+					*(InputTemperature + ( (i)*config->TotalSpeciesNum + iSpecies ) ) = T[ iSpecies ][ i ] ;
+
+				}	else {
+					/* other species */
+					*(InputTemperature + ( (i)*config->TotalSpeciesNum + iSpecies ) ) = T[ iSpecies ][ i ]*11604.52500617 ;
+					//cout<<*(InputTemperature + ( (i)*config->TotalSpeciesNum + iSpecies ) )<<endl; exit(1) ;
+				}
+
+			}//End iSpecies
+		}//End plasma cells
 	}//End cell loop
-//cout<<"CV: C"<<endl;
+
+
 	if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "2Fluid" ) {
 		//CalMeanEnergy( m ) ;
 	} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "3Fluid" ){
@@ -572,47 +582,46 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 	} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ){
 		//CalMeanEnergy( m ) ;
 	} else if( config->PFM_Assumption == "LMEA" ) {
+		cout<<"Here"<<endl;
 	    Chemistry.CalTotalPressure( InputNumberDensity, InputTemperature ) ;
 	    Chemistry.CalSourceSinkRate_for_Te( InputTemperature ) ;
 	    Chemistry.CalSourceSinkRate_for_gas( InputTemperature ) ;
-		//cout<<"A"<<endl;exit(1) ;
-	}else{
+
+	} else {
 		cout<<"Error in variable_structure.cpp, ChemistryUpdate"<<endl;
 		cout<<"PFM_Assumption -> "<<config->PFM_Assumption<<endl;
 		cout<<"PFM_SubModel   -> "<<config->PFM_SubModel<<endl;
 	}
-//cout<<"CV: D"<<endl;
-    /*--- Update electron transport coefficients ---*/
-    	UpdateElectronTransport( m, config ) ;
 
-    	if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ){
-    		//
-    	}else{
-				UpdateIonNeutralTransport( m, config ) ;
-    	}
-		//cout<<"TEST"<<endl;exit(1) ;
-//cout<<"CV: E"<<endl;
-    /*--- Update electron transport coefficients ---*/
-		if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "2Fluid" ) {
+	/*--- Update electron transport coefficients ---*/
+	UpdateElectronTransport( m, config ) ;
 
-			SourceSink_2Fluid( m, config ) ;
+	if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ){
+	//
+	} else {
+		UpdateIonNeutralTransport( m, config ) ;
+	}
+		
+	/* Update electron transport coefficients */
+	if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "2Fluid" ) {
 
-		} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "3Fluid" ) {
+	SourceSink_2Fluid( m, config ) ;
 
-			SourceSink_3Fluid( m, config ) ;
+	} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "3Fluid" ) {
 
-		} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ){
+		SourceSink_3Fluid( m, config ) ;
 
-			SourceSink_Streamer( m, config ) ;
+	} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ){
 
-		} else {
+		SourceSink_Streamer( m, config ) ;
 
-	    	Chemistry.SourceSink( InputNumberDensity, InputTemperature ) ;
-	    	ReactionRatePoint	= Chemistry.ptr_source_sink() ;
-	    	EnergySourcePoint	= Chemistry.ptr_energy_loss() ;
-	    	
-		}
-//cout<<"CV: F"<<endl;
+	} else {
+
+		Chemistry.SourceSink( InputNumberDensity, InputTemperature ) ;
+		ReactionRatePoint	= Chemistry.ptr_source_sink() ;
+		EnergySourcePoint	= Chemistry.ptr_energy_loss() ;
+	}
+	exit(1) ;
 }
 void CVariable::CalReducedElectricField( boost::shared_ptr<CDomain> &m )
 {
@@ -1241,7 +1250,7 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 void CVariable::AddAverage_Electrode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
 	I_AvgPowerElectrode 	+= I_PowerElectrode_global_sum/config->StepPerCycle ;
-	I_AvgGroundElectrode  	+= I_GroundElectrode_global_sum/config->StepPerCycle ;
+	I_AvgGroundElectrode 	+= I_GroundElectrode_global_sum/config->StepPerCycle ;
 }
 void CVariable::ResetAvgZero_Electrode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {

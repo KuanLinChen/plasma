@@ -1,16 +1,8 @@
 #pragma once
-#include <cmath>
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <string.h>
-#include <algorithm>
-#include <fstream>
-#include "domain_structure.hpp"
+//#include "PFM.hpp"
+//#include "config_structure.hpp"
+//#include "domain_structure.hpp"
 #include "variable_structure.hpp"
-#include "config_structure.hpp"
-
-#include "PFM.hpp"
 
 using namespace std;
 class CPost 

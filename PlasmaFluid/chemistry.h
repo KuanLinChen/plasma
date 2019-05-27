@@ -21,11 +21,19 @@ using namespace std;
 #ifndef chemistry_H
 #define chemistry_H
 
+#define FORMULA   1
+#define TABLE 	  2
+#define CONSTANT  3
+#define GAS_TABLE 4
 
 //inline double interpolation(double*,double*,double*,double*,double*);
 
 class  GLOBAL
-{   public: vector<double>   global;  };
+{   
+	public: 
+		vector<double>   global ;  
+
+};
 
 
 class  table_opt
@@ -43,53 +51,54 @@ class  table_opt
 
 
 
-/******************************************************************************************************
-*******************************************************************************************************
-    |--------------------------------------------------------------------------------------|
-	| The species_identity contains a lot of information about species(e, ions, neutrals)  |
-	| For example: names, mass, diffusion, mobility, source-sink term, etc.                |
-	| It is used by Object chemistry.													   |
-	|--------------------------------------------------------------------------------------|
-*******************************************************************************************************
-******************************************************************************************************/
+/**
+ * @brief Class for species identity. 
+ *        The species_identity contains a lot of information about species(e, ions, neutrals).
+ *        For example: names, mass, diffusion, mobility, source-sink term, etc.
+ */
 class species_identity
 {
 	public:
-	vector<string>                name;
-	int                           e_id;
-	vector<int>	              	  neutral_id;
-	vector<int>                   ion_id;
-	vector<GLOBAL>                sourcesink;
-	vector<GLOBAL>                diffusion;
-	vector<GLOBAL>                mobility;
-	void                          readnamefile(string);
-	vector<int>      	     	 diff_type;
-	vector<int>                   mob_type;
-	vector<double>   	      		diff_constant;
-	vector<double>                mob_constant;
-	vector<double>                mass;
-	vector<double>                amu;
-	vector<double>                self_diff_constatn;
-	vector<double>                self_mob_constatn;
-	vector<double>                binary_diameter;
-	vector<double>                LJ;
-	vector<double>                polarizability;
-	vector<double>                viscosity;
-	vector<double>                reduce_amu;
-	vector<int>                   judge_species;
-	vector<string>                mob_file;
-	vector<string>                diff_file;
-	vector<int>                   interpolation;
-	vector<table_opt>             thermal_table;
-	vector<string>                thermal_file;
+	vector<string>    name ;       /*!< \brief Name of Species.  */
+	int               e_id ;       /*!< \brief electron species id. default is 0.  */
+	vector<int>	      neutral_id ; /*!< \brief neutral species id . */
+	vector<int>       ion_id ;     /*!< \brief ion species id.  */
+
+	vector<GLOBAL>    sourcesink ; /*!< \brief source/sink of Species.  */
+	vector<GLOBAL>    diffusion ;  /*!< \brief diffusion coefficient of Species.  */
+	vector<GLOBAL>    mobility ;   /*!< \brief mobility coefficient of Species.  */
+
+	/**
+	 * @brief      Reads species infomations.
+	 *
+	 * @param[in]  <unnamed>  Sepcies file name
+	 */
+	void              ReadSpeciesInfomations( string ) ;
+
+	vector<int>      	diff_type;
+	vector<int>       mob_type;
+	vector<double>   	diff_constant;
+	vector<double>    mob_constant;
+	vector<double>    mass;
+	vector<double>    amu;
+	vector<double>    self_diff_constatn;
+	vector<double>    self_mob_constatn;
+	vector<double>    binary_diameter;
+	vector<double>    LJ;
+	vector<double>    polarizability;
+	vector<double>    viscosity;
+	vector<double>    reduce_amu;
+	vector<string>    mob_file;
+	vector<string>    diff_file;
+	vector<int>       interpolation;
+	vector<table_opt> thermal_table;
+	vector<string>    thermal_file;
 	
 	
 //  Plus information of light radiation  2008-12-29	
 	vector<string>                light_name;
 	vector<double>                wavelength;
 	vector<GLOBAL>                light_power;
-//	vector<int>                   light_id;
-	
 		
 	species_identity(){ }
 	~species_identity(){ }
@@ -217,7 +226,7 @@ class  chemistry
 	vector<single_reaction>   channel;
 	GLOBAL                    energy_loss;
 	GLOBAL	                  coll_frequency ;
-	GLOBAL 					  CollisionFrequency ;        
+	GLOBAL                    CollisionFrequency ;        
 	int                       domain_size;
 	string                    SpeciesFileName;
 	string                    ChannelFileName;
@@ -225,7 +234,7 @@ class  chemistry
 	double                    T_Gas;
 	
 	double                    rate_formula(double*,int);
-	void                      read_input(string);
+	void                      read_input( string ) ;
 	void                      energy_loss_coll_fre_diff_mob_init();
 	void                      read_reaction_table(string);
 	void                      loading_each_channel_file();

@@ -8,7 +8,7 @@
 //#include <fstream>
 //#include <set>
 #include "json.hpp"
-#include "main.h"
+//#include "main.h"
 #include "PFM.hpp"
 
 #include <boost/algorithm/string.hpp>

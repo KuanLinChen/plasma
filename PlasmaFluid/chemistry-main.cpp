@@ -20,7 +20,7 @@ inline double mob_interpolation(double xmin,double xmax,double ymin,double ymax,
 |  It is called in the structor of object chemistry not
 |  species_identity::species_identity
 ==============================================================*/
-void species_identity::readnamefile(string  spec_file_temp)
+void species_identity::ReadSpeciesInfomations(string  spec_file_temp)
 {
 		int               i,j,k;
 		int       	  wordstart;
@@ -31,143 +31,149 @@ void species_identity::readnamefile(string  spec_file_temp)
 		vector<string>    wordunit;
 		//IsLightTurnOn=0;
 		namefile.open(spec_file_temp.c_str(),ios::in);
-		if (!namefile) {cout << "Failed to open species_name.dat" << endl; exit(1);}
-		else
-		{
-		    while (getline(namefile,wordtemp))
-		    {
-			if ( wordtemp[0] != '#' && wordtemp[0] != '\0' && wordtemp[0] != '\n' && wordtemp[0] != '\r')
-			{
-				//*****************************************************************************************
-				// copy from textbook page216                                                             *
-				// clean the separators in the sentence                                                   *
-				// Applied string::find_first_not_of(),string::length(),string::substr()                  *
-				// string::find_first_not_of()                                                            *
-				//*****************************************************************************************
-				/***/wordunit.clear();                                                                   //
-				/***/wordstart=wordtemp.find_first_not_of(separators);                                   //
-				/***/wordend=0;                                                                          //
-				/***/while (wordstart != string::npos)                                                   //
-				/***/{                                                                                   //
-				/***/		wordend=wordtemp.find_first_of(separators,wordstart+1);                  //
-				/***/		if(wordend == string::npos) wordend = wordtemp.length();                 //
-				/***/		wordunit.push_back(wordtemp.substr(wordstart,wordend-wordstart));        //
-				/***/		wordstart=wordtemp.find_first_not_of(separators,wordend+1);              //
-				/***/}                                                                                   //
-				//*****************************************************************************************
-				if (wordunit.size() > 0 )
-				{
-					if (wordunit.front() == "electron" || wordunit.front() == "neutral" || wordunit.front() == "ion" || wordunit.front() == "light")
-					{
-						wordtemp2 = wordunit.front();
-					}
-					else
-					{
-						if (wordtemp2 == "electron")
-						{
-						    name.push_back(wordunit.front());
-						    e_id=name.size()-1;
-						}
-						else if (wordtemp2 == "neutral")
-						{
-						    name.push_back(wordunit.front());
-						    neutral_id.push_back(name.size()-1);
-						}
-						else if (wordtemp2 == "ion")
-						{
-						    name.push_back(wordunit.front());
-						    ion_id.push_back(name.size()-1);
-						}
-						else if (wordtemp2 == "light")
-						{
-						    //IsLightTurnOn=1;
-						    light_name.push_back(wordunit.front());
-						}
-						if (wordtemp2 == "electron" || wordtemp2 == "neutral" || wordtemp2 == "ion")
-						{
-						for (i=0 ;i < wordunit.size()-1 ; ++i )
-						{
-						    if (wordunit[i] == "diffusion_type")     diff_type.push_back(atoi(wordunit[i+1].c_str()));
-						    if (wordunit[i] == "mobility_type")      mob_type.push_back(atoi(wordunit[i+1].c_str()));
-						    if (wordunit[i] == "diff_constant")      diff_constant.push_back(atof(wordunit[i+1].c_str()));
-						    if (wordunit[i] == "mob_constant")       mob_constant.push_back(atof(wordunit[i+1].c_str()));
-						    if (wordunit[i] == "amu")                amu.push_back(atof(wordunit[i+1].c_str( )));
-						    if (wordunit[i] == "self_diff_constant") self_diff_constatn.push_back(atof(wordunit[i+1].c_str( )));
-						    if (wordunit[i] == "self_mob_constant" ) self_mob_constatn.push_back(atof(wordunit[i+1].c_str( )));
-						    if (wordunit[i] == "binary_diameter")    binary_diameter.push_back(atof(wordunit[i+1].c_str()));
-						    if (wordunit[i] == "LJ_potential")       LJ.push_back(atof(wordunit[i+1].c_str()));
-						    if (wordunit[i] == "polarizability")     polarizability.push_back(atof(wordunit[i+1].c_str()));
-						    if (wordunit[i] == "viscosity")          viscosity.push_back(atof(wordunit[i+1].c_str()));
-						    if (wordunit[i] == "mob_file")           mob_file.push_back(wordunit[i+1]);
-						    if (wordunit[i] == "diff_file")          diff_file.push_back(wordunit[i+1]);
-						    if (wordunit[i] == "thermal_file")       thermal_file.push_back(wordunit[i+1]);
-						    if (wordunit[i] == "interpolation")
-						    {
-							    if (wordunit[i+1] == "n" || wordunit[i+1] == "0" || wordunit[i+1] == "N"|| wordunit[i+1] == "no")
-							    {
-						    		    interpolation.push_back(0);
-							    }
-							    else if(wordunit[i+1] == "y" || wordunit[i+1] == "1" || wordunit[i+1] == "Y"|| wordunit[i+1] == "yes")
-							    {
-								    interpolation.push_back(1);
-							    }
-							    else { cerr << "Could not identity the option of interpolation " << endl;}
-						    }
-						}
-						    //******************************************
-						    //  Check the lastest word in species file
-						    //******************************************
-						    i=wordunit.size()-1;
-						    if (wordunit[i] == "diffusion_type")     diff_type.push_back(1000);
-						    if (wordunit[i] == "mobility_type")      mob_type.push_back(1000);
-						    if (wordunit[i] == "diff_constant")      diff_constant.push_back(0.0);
-						    if (wordunit[i] == "mob_constant")       mob_constant.push_back(0.0);
-						    if (wordunit[i] == "amu")                amu.push_back(0.0);
-						    if (wordunit[i] == "self_diff_constant") self_diff_constatn.push_back(0.0);
-						    if (wordunit[i] == "self_mob_constant" ) self_mob_constatn.push_back(0.0);
-						    if (wordunit[i] == "binary_diameter")    binary_diameter.push_back(0.0);
-						    if (wordunit[i] == "LJ_potential")       LJ.push_back(0.0);
-						    if (wordunit[i] == "polarizability")     polarizability.push_back(0.0);
-						    if (wordunit[i] == "viscosity")          viscosity.push_back(0.0);
-						    if (wordunit[i] == "mob_file")           mob_file.push_back("none");
-						    if (wordunit[i] == "diff_file")          diff_file.push_back("none");
-						    if (wordunit[i] == "interpolation")      interpolation.push_back(0);
-						    if (wordunit[i] == "thermal_file")       thermal_file.push_back("none");
-						}
-						else if (wordtemp2 == "light")
-						{
-						    for (i=0 ;i < wordunit.size() ; ++i )
-						    {
-							if (wordunit[i] == "wave_length")    wavelength.push_back( atof(wordunit[i+1].c_str() ) );
-						    }
-						}
-					}
-				}
-			}
-
-		    }
-
+		if (!namefile) {
+			cout << "Failed to open species_name.dat" << endl ; 
+			exit(1) ;
 		}
+
+	  while ( getline( namefile, wordtemp) ) {
+
+			if ( wordtemp[0] != '#' && wordtemp[0] != '\0' && wordtemp[0] != '\n' && wordtemp[0] != '\r') {
+				/*
+					copy from textbook page216                                                             
+					clean the separators in the sentence                                                   
+					Applied string::find_first_not_of(),string::length(),string::substr()                  
+					string::find_first_not_of()                                                            
+				*/
+				wordunit.clear();                                
+				wordstart=wordtemp.find_first_not_of(separators);
+				wordend=0;                                       
+				while (wordstart != string::npos)                
+				{                                                
+					wordend=wordtemp.find_first_of(separators,wordstart+1);
+						if(wordend == string::npos) wordend = wordtemp.length();
+						wordunit.push_back(wordtemp.substr(wordstart,wordend-wordstart));
+						wordstart=wordtemp.find_first_not_of(separators,wordend+1);
+				}
+				//*****************************************************************************************
+				if (wordunit.size() > 0 ) {
+
+					if (wordunit.front() == "electron" || wordunit.front() == "neutral" || wordunit.front() == "ion" || wordunit.front() == "light") {
+
+						wordtemp2 = wordunit.front() ;
+
+					}	else {
+
+						if (wordtemp2 == "electron") {
+
+					    name.push_back(wordunit.front());
+					    e_id=name.size()-1;
+
+						}	else if (wordtemp2 == "neutral") {
+
+					    name.push_back(wordunit.front());
+					    neutral_id.push_back(name.size()-1);
+
+						}	else if (wordtemp2 == "ion") {
+
+					    name.push_back(wordunit.front());
+					    ion_id.push_back(name.size()-1);
+
+						}	else if (wordtemp2 == "light") {
+						   //IsLightTurnOn=1;
+					    light_name.push_back(wordunit.front());
+						}
+
+						if (wordtemp2 == "electron" || wordtemp2 == "neutral" || wordtemp2 == "ion") {
+
+							for (i=0 ;i < wordunit.size()-1 ; ++i ) {
+
+								if ( wordunit[i] == "diffusion_type"     ) diff_type.push_back(atoi(wordunit[i+1].c_str()));
+								if ( wordunit[i] == "mobility_type"      ) mob_type.push_back(atoi(wordunit[i+1].c_str()));
+								if ( wordunit[i] == "diff_constant"      ) diff_constant.push_back(atof(wordunit[i+1].c_str()));
+								if ( wordunit[i] == "mob_constant"       ) mob_constant.push_back(atof(wordunit[i+1].c_str()));
+								if ( wordunit[i] == "amu"                ) amu.push_back(atof(wordunit[i+1].c_str( )));
+								if ( wordunit[i] == "self_diff_constant" ) self_diff_constatn.push_back(atof(wordunit[i+1].c_str( )));
+								if ( wordunit[i] == "self_mob_constant"  ) self_mob_constatn.push_back(atof(wordunit[i+1].c_str( )));
+								if ( wordunit[i] == "binary_diameter"    ) binary_diameter.push_back(atof(wordunit[i+1].c_str()));
+								if ( wordunit[i] == "LJ_potential"       ) LJ.push_back(atof(wordunit[i+1].c_str()));
+								if ( wordunit[i] == "polarizability"     ) polarizability.push_back(atof(wordunit[i+1].c_str()));
+								if ( wordunit[i] == "viscosity"          ) viscosity.push_back(atof(wordunit[i+1].c_str()));
+								if ( wordunit[i] == "mob_file"           ) mob_file.push_back(wordunit[i+1]);
+								if ( wordunit[i] == "diff_file"          ) diff_file.push_back(wordunit[i+1]);
+								if ( wordunit[i] == "thermal_file"       ) thermal_file.push_back(wordunit[i+1]);
+
+								if ( wordunit[i] == "interpolation"      ) {
+									if (wordunit[i+1] == "n" || wordunit[i+1] == "0" || wordunit[i+1] == "N"|| wordunit[i+1] == "no") {
+											interpolation.push_back(0);
+
+									}	else if(wordunit[i+1] == "y" || wordunit[i+1] == "1" || wordunit[i+1] == "Y"|| wordunit[i+1] == "yes") {
+										interpolation.push_back(1);
+									} else { 
+										cerr << "Could not identity the option of interpolation " << endl;
+									}
+								}//End interpolation
+							}//End information of each species 
+
+							//******************************************
+							//  Check the lastest word in species file
+							//******************************************
+							 
+							i=wordunit.size()-1;
+							if (wordunit[i] == "diffusion_type")     diff_type.push_back(1000);
+							if (wordunit[i] == "mobility_type")      mob_type.push_back(1000);
+							if (wordunit[i] == "diff_constant")      diff_constant.push_back(0.0);
+							if (wordunit[i] == "mob_constant")       mob_constant.push_back(0.0);
+							if (wordunit[i] == "amu")                amu.push_back(0.0);
+							if (wordunit[i] == "self_diff_constant") self_diff_constatn.push_back(0.0);
+							if (wordunit[i] == "self_mob_constant" ) self_mob_constatn.push_back(0.0);
+							if (wordunit[i] == "binary_diameter")    binary_diameter.push_back(0.0);
+							if (wordunit[i] == "LJ_potential")       LJ.push_back(0.0);
+							if (wordunit[i] == "polarizability")     polarizability.push_back(0.0);
+							if (wordunit[i] == "viscosity")          viscosity.push_back(0.0);
+							if (wordunit[i] == "mob_file")           mob_file.push_back("none");
+							if (wordunit[i] == "diff_file")          diff_file.push_back("none");
+							if (wordunit[i] == "interpolation")      interpolation.push_back(0);
+							if (wordunit[i] == "thermal_file")       thermal_file.push_back("none");
+
+						}	else if (wordtemp2 == "light") {
+
+							for (i=0 ;i < wordunit.size() ; ++i ) {
+								if (wordunit[i] == "wave_length")    
+									wavelength.push_back( atof(wordunit[i+1].c_str() ) );
+							}
+
+						}//End individual species 
+					}
+				}//Bypass comment
+			}//if wordunit > 0 
+		}//end while
 		namefile.close();
 		namefile.clear();
+
 		// initial other parameter
 		table_opt temp_table_for_initial;
 		temp_table_for_initial.size_n = 0;
 		temp_table_for_initial.dT = 0.0;
 		temp_table_for_initial.max_T = 0.0;
 		temp_table_for_initial.min_T = 0.0;
+
 		for (i=0;i<name.size();++i)
 		{
 			thermal_table.push_back(temp_table_for_initial);
 		}
+
 		for (i=0;i<amu.size();++i)
 		{
-			if (i != e_id)
-			{
+			if ( i != e_id ) {
+
 				mass.push_back(amu[i] / 6.022142e26);
+
+			}	else { 
+				mass.push_back (9.10938e-31);
 			}
-			else { mass.push_back (9.10938e-31);}
 		}
+
 		for (i=0;i<amu.size();++i)
 		{
 			for (j=0;j<amu.size();++j)
@@ -175,10 +181,6 @@ void species_identity::readnamefile(string  spec_file_temp)
 				reduce_amu.push_back(amu[i]*amu[j]/(amu[i]+amu[j]));
 			}
 		}
-		for (k=0;k<name.size();++k)        judge_species.push_back(1000);
-		for (j=0;j<neutral_id.size();++j)  judge_species[neutral_id[j]] = 1;
-		for (j=0;j<ion_id.size();++j)  	   judge_species[ion_id[j]] = -1;
-		judge_species[e_id] = 0;
 
 		// check number of species
 		if ( (name.size()               - diff_type.size()
@@ -227,11 +229,11 @@ exit(0);
 
 
 
-chemistry::chemistry (string  chemistry_file,string species_temp,int cal_size)
+chemistry::chemistry( string chemistry_file, string species_temp, int cal_size )
 {
-	domain_size=cal_size;
+	domain_size = cal_size;
 	//read_input(inputname);
-	species.readnamefile(SpeciesFileName);
+	species.ReadSpeciesInfomations(SpeciesFileName);
 	read_reaction_table(ChannelFileName);
 	loading_each_channel_file();
 	newtable_establish();
@@ -243,24 +245,24 @@ chemistry::chemistry (string  chemistry_file,string species_temp)
 {
 	domain_size=1;
 	//read_input(inputname);
-	species.readnamefile(SpeciesFileName);
+	species.ReadSpeciesInfomations(SpeciesFileName);
 	read_reaction_table(ChannelFileName);
 	loading_each_channel_file();
 	newtable_establish();
 	energy_loss_coll_fre_diff_mob_init()	;
 	OptimizationSourceSink();
 }
-
+/* Generally called in our code. */
 void chemistry::init(string  inputname,int cal_size)
 {
 
-    if(gb_Debug){
-      cout << "chemistry::init() - Debug_1" << endl;
-    }
+	if ( gb_Debug ) {
+		cout << "chemistry::init() - Debug_1" << endl ;
+	}
 
 	read_input(inputname);
 	domain_size=cal_size;
-	species.readnamefile(SpeciesFileName);
+	species.ReadSpeciesInfomations(SpeciesFileName);
 	read_reaction_table(ChannelFileName);
 
     if(gb_Debug){
@@ -288,110 +290,52 @@ void chemistry::init(string  inputname,int cal_size)
     }
 }
 
-/*
-void chemistry::init(string  chemistry_file,string species_temp,int cal_size) {
-
-
-	domain_size=cal_size;
-	species.readnamefile(species_temp);
-	read_reaction_table(chemistry_file);
-	loading_each_channel_file();
-	newtable_establish();
-	energy_loss_coll_fre_diff_mob_init();
-	OptimizationSourceSink();
-}
-*/
-/*
-int i,j;
-for (j=0;j<channel.size();++j) {
-cerr << endl;
-cerr << "  Threshold   : " << channel[j].threshold << endl;
-cerr << "  sink: " << endl;
-for (i=0;i<species.name.size();++i)
+void   chemistry::read_input( string react_file )
 {
-	if (channel[j].sink[i] != 0) cerr << species.name[i]<<":  "<< channel[j].sink[i]<<"  ";
-}
-cerr << endl;
-cerr << "source: " << endl;
-for (i=0;i<species.name.size();++i)
-{
-	if (channel[j].source[i] != 0) cerr << species.name[i]<<" "<<channel[j].source[i] <<"  ";
-}
-cerr << endl;
-cerr << "reaction file: "<< channel[j].filename << endl;
-cerr << "type of file: "<< channel[j].rate_type << endl;
-cerr << "rate constant: "<< channel[j].rate_constant << endl;
-cerr << "Is data out: "<< channel[j].is_data_output << endl;
-cerr << "output file: "<< channel[j].output_name << endl;
-cerr << "interpolation: "<< channel[j].is_interpolation << endl;
-cerr << endl;
-}
-exit(0);
-*/
+	string   wordtemp ;
+	ifstream namefile ;
+	int wordstart ;
+	int wordend ;
+	vector<string> wordunit ;
 
+	namefile.open(react_file.c_str(),ios::in) ;
+	/* Check file is exist*/
+	if ( !namefile ) {
+		cerr << "Failed to open reaction channel file" << endl ;
+		exit(1) ;
+	} 
 
-/*
-void chemistry::init(string  chemistry_file,string species_temp) {
-	domain_size=1;
-	species.readnamefile(species_temp);
-	read_reaction_table(chemistry_file);
-	loading_each_channel_file();
-	newtable_establish();
-	energy_loss_coll_fre_diff_mob_init();
-	OptimizationSourceSink();
-}
-*/
-
-
-void   chemistry::read_input(string react_file)
-{
-	string            wordtemp;
-	ifstream  	  namefile;
-	//Mark by KL: int               i,j,k;
-	int       	  wordstart;
-	int       	  wordend;
-	vector<string>    wordunit;
-
-		namefile.open(react_file.c_str(),ios::in);
-		if (!namefile) {cerr << "Failed to open reaction channel file" << endl; exit(1);}
-		else
-		{
-		    while (getline(namefile,wordtemp))
-		    {
-			if ( wordtemp[0] != '#' && wordtemp[0] != '\0' && wordtemp[0] != '\n' && wordtemp[0] != '\r')
-			{
-				//*****************************************************************************************
-				// copy from textbook page216                                                             *
-				// clean the separators in the sentence                                                   *
-				// Applied string::find_first_not_of(),string::length(),string::substr()                  *
-				// string::find_first_not_of()                                                            *
-				//*****************************************************************************************
-				/***/wordunit.clear();                                                                   //
-				/***/wordstart=wordtemp.find_first_not_of(separators);                                   //
-				/***/wordend=0;                                                                          //
-				/***/while (wordstart != string::npos)                                                   //
-				/***/{                                                                                   //
-				/***/		wordend=wordtemp.find_first_of(separators,wordstart+1);                  //
-				/***/		if(wordend == string::npos) wordend = wordtemp.length();                 //
-				/***/		wordunit.push_back(wordtemp.substr(wordstart,wordend-wordstart));        //
-				/***/		wordstart=wordtemp.find_first_not_of(separators,wordend+1);              //
-				/***/}                                                                                   //
-				//*****************************************************************************************
-				if (wordunit[0] == "Electron_table_size" ) table_e_size=atoi(wordunit[1].c_str()) ;
-				if (wordunit[0] == "Table_Te_min" )        table_Te_min=atof(wordunit[1].c_str());
-				if (wordunit[0] == "Table_Te_max" )        table_Te_max=atof(wordunit[1].c_str());
-				if (wordunit[0] == "Table_gas_min" )        table_gas_min=atof(wordunit[1].c_str());
-				if (wordunit[0] == "Table_gas_max" )        table_gas_max=atof(wordunit[1].c_str());
-				if (wordunit[0] == "T_Gas" )               T_Gas =atof(wordunit[1].c_str());
-				if (wordunit[0] == "SPECIES" )             SpeciesFileName=wordunit[1] ;
-				if (wordunit[0] == "CHEMISTRY" )           ChannelFileName=wordunit[1] ;
-				if (wordunit[0] == "Ion_table_size" )      table_ion_size=atoi(wordunit[1].c_str());
-				if (wordunit[0] == "Neutral_table_size" )  table_neutral_size=atoi(wordunit[1].c_str());
-			}
-
-		    }
-
+	while ( getline( namefile, wordtemp ) ) {
+		if ( wordtemp[0] != '#' && wordtemp[0] != '\0' && wordtemp[0] != '\n' && wordtemp[0] != '\r') {
+			//*****************************************************************************************
+			// copy from textbook page216                                                             *
+			// clean the separators in the sentence                                                   *
+			// Applied string::find_first_not_of(),string::length(),string::substr()                  *
+			// string::find_first_not_of()                                                            *
+			//*****************************************************************************************
+			/***/wordunit.clear();                                                                   //
+			/***/wordstart = wordtemp.find_first_not_of(separators);                                 //
+			/***/wordend=0;                                                                          //
+			/***/while (wordstart != string::npos)                                                   //
+			/***/{                                                                                   //
+			/***/		wordend=wordtemp.find_first_of(separators,wordstart+1);                  //
+			/***/		if(wordend == string::npos) wordend = wordtemp.length();                 //
+			/***/		wordunit.push_back(wordtemp.substr(wordstart,wordend-wordstart));        //
+			/***/		wordstart=wordtemp.find_first_not_of(separators,wordend+1);              //
+			/***/}                                                                                   //
+			//*****************************************************************************************
+			if (wordunit[0] == "Electron_table_size" ) table_e_size  = atoi( wordunit[1].c_str() ) ;
+			if (wordunit[0] == "Table_Te_min" )        table_Te_min  = atof( wordunit[1].c_str() ) ;
+			if (wordunit[0] == "Table_Te_max" )        table_Te_max  = atof( wordunit[1].c_str() ) ;
+			if (wordunit[0] == "Table_gas_min" )       table_gas_min = atof( wordunit[1].c_str() ) ;
+			if (wordunit[0] == "Table_gas_max" )       table_gas_max = atof( wordunit[1].c_str() ) ;
+			if (wordunit[0] == "T_Gas" )               T_Gas         = atof( wordunit[1].c_str() ) ;
+			if (wordunit[0] == "SPECIES" )             SpeciesFileName = wordunit[1] ;
+			if (wordunit[0] == "CHEMISTRY" )           ChannelFileName = wordunit[1] ;
+			if (wordunit[0] == "Ion_table_size" )      table_ion_size 		= atoi(wordunit[1].c_str()) ;
+			if (wordunit[0] == "Neutral_table_size" )  table_neutral_size = atoi(wordunit[1].c_str()) ;
 		}
+	}//End read file
 		namefile.close();
 		namefile.clear();
 
@@ -406,105 +350,117 @@ void   chemistry::read_input(string react_file)
 =============================================================*/
 void   chemistry::read_reaction_table(string react_file)
 {
-//cout << "hahah" << endl;
-//exit(1);
+	single_reaction   *temp;
+	int       	  i,j,k;
+	int               temp_int;
+	int       	  wordstart;
+	int       	  wordend;
+	int       	  s_s_flag;
+	ifstream  	  reac_file;
+	string            wordtemp;
+	vector<int>       pow_index;
+	vector<string>    wordunit;
+	vector<string>::iterator  iter_i;
+	vector<int>::iterator     iter_j;
 
-		single_reaction   *temp;
-		int       	  i,j,k;
-		int               temp_int;
-		int       	  wordstart;
-		int       	  wordend;
-		int       	  s_s_flag;
-		ifstream  	  reac_file;
-		string            wordtemp;
-		vector<int>       pow_index;
-		vector<string>    wordunit;
-		vector<string>::iterator  iter_i;
-		vector<int>::iterator     iter_j;
+	reac_file.open(react_file.c_str(),ios::in);
+	if (!reac_file) {
+		cerr << "Failed to open reaction_channel.list" << endl ; 
+		exit(1) ;
+	} else {
+		while ( getline( reac_file, wordtemp) ) {
+			wordunit.clear();
+			if (wordtemp.length() > 3 && wordtemp[0] != '#' && wordtemp[0] != '\0' && wordtemp[0] != '\n' && wordtemp[0] != '\r') {
 
-		reac_file.open(react_file.c_str(),ios::in);
-		if (!reac_file) {cerr << "Failed to open reaction_channel.list" << endl; exit(1);}
-		else{
-			while (getline(reac_file,wordtemp))
-			{
-				wordunit.clear();
-				if (wordtemp.length() > 3 && wordtemp[0] != '#' && wordtemp[0] != '\0' && wordtemp[0] != '\n' && wordtemp[0] != '\r')
+				wordstart=wordtemp.find_first_not_of(separators);
+		 		wordend=0;
+
+				while (wordstart != string::npos)
 				{
-					wordstart=wordtemp.find_first_not_of(separators);
-			    		wordend=0;
-					while (wordstart != string::npos)
-					{
-						wordend=wordtemp.find_first_of(separators,wordstart+1);
-						if(wordend == string::npos) wordend = wordtemp.length();
-						wordunit.push_back(wordtemp.substr(wordstart,wordend-wordstart));
-						wordstart=wordtemp.find_first_not_of(separators,wordend+1);
-					}
-					s_s_flag=0;
-					for (i=0;i<wordunit.size();++i)
-					{
-						if (wordunit[i] == "->")
-						{
-							s_s_flag=19028;
-						}
-					}
-					if (s_s_flag == 0) {cerr << "The reaction of number " << i <<" has no sign ->."<<endl;exit(1);}
-					s_s_flag=0;
-					i=0;
-						while (s_s_flag==0)
-						{
-							if(isdigit(wordunit[i][0])!=0)
-							{
-								temp_int=0;
-								for (k=0;k<species.name.size();++k)
-								{
-								    if (wordunit[i+1] == species.name[k]) temp_int=8736;
-								}
-								for (k=0;k<species.light_name.size();++k)
-								{
-								    if (wordunit[i+1] == species.light_name[k])  temp_int = 89878;
-								}
-
-								if (temp_int == 0) {cout << "The species of species file and reaction channel file are not matched."<<endl;exit(1);}
-							}
-							if (wordunit[i] == "->" || wordunit[i] == "ratefile") s_s_flag=9173;
-							i=i+1;
-						}
-						while (wordunit[i] != "ratefile" && wordunit[i] != "AAA")
-						{
-							if(isdigit(wordunit[i][0])!=0)
-							{
-								temp_int=0;
-								for (k=0;k<species.name.size();++k)
-								{
-								    if (wordunit[i+1] ==species.name[k]) temp_int=1000;
-
-								}
-								//cout << wordunit[i+1] << endl;
-								for (k=0;k<species.light_name.size();++k)
-								{
-								    if (wordunit[i+1] == species.light_name[k])  temp_int = 89878;
-								}
-								//cout <<temp_int << endl;
-								if (temp_int == 0)
-								{
-								    cout << "The reaction channel file are not matched. In read_reaction_table"<<endl;
-								    cout << "The species "<< wordunit[i+1] <<" do not be found in species_name.txt"<< endl;
-								    exit(1);
-								}
-							}
-							i=i+1;
-						}
+					wordend=wordtemp.find_first_of(separators,wordstart+1);
+					if(wordend == string::npos) wordend = wordtemp.length();
+					wordunit.push_back(wordtemp.substr(wordstart,wordend-wordstart));
+					wordstart=wordtemp.find_first_not_of(separators,wordend+1);
 				}
+
+				s_s_flag=0;
+				for ( i=0 ; i < wordunit.size() ; ++i ) {
+					if ( wordunit[i] == "->" ) s_s_flag = 19028 ;
+				}
+				if (s_s_flag == 0) {
+					cerr << "The reaction of number " << i <<" has no sign '->'."<<endl ; 
+					exit(1);
+				}
+
+				s_s_flag=0;
+				i=0;
+
+				/* Chech the name in species file and channel file are match ? */
+				while ( s_s_flag == 0 ) {
+
+					if ( isdigit( wordunit[i][0] ) != 0 ) {
+						temp_int=0;
+						for (k=0;k<species.name.size();++k)	{
+							if (wordunit[i+1] == species.name[k]) temp_int=8736;
+						}
+						for (k=0;k<species.light_name.size();++k) {
+							if (wordunit[i+1] == species.light_name[k])  temp_int = 89878;
+						}
+
+						if (temp_int == 0) {
+							cout << "The species of species file and reaction channel file are not matched."<<endl;
+							exit(1);
+						}
+					}
+
+					if ( wordunit[i] == "->" || wordunit[i] == "ratefile" ) s_s_flag=9173;
+					i=i+1;
+
+				}//end while
+
+
+				while (wordunit[i] != "ratefile" && wordunit[i] != "AAA") {
+
+					if ( isdigit(wordunit[i][0])!=0 ) {
+
+						temp_int=0;
+						for (k=0;k<species.name.size();++k) {
+							if (wordunit[i+1] ==species.name[k]) temp_int = 1000 ;
+						}
+							//cout << wordunit[i+1] << endl;
+						for ( k=0 ; k < species.light_name.size() ; ++k ) {
+						    if (wordunit[i+1] == species.light_name[k])  temp_int = 89878;
+						}
+						//cout <<temp_int << endl;
+						if ( temp_int == 0 ) {
+							cout << "The reaction channel file are not matched. In read_reaction_table"<<endl;
+							cout << "The species "<< wordunit[i+1] <<" do not be found in species_name.txt"<< endl;
+							exit(1);
+						}
+					}//end if
+					i=i+1;
+				}//end while
 			}
 		}
-		reac_file.close();
-		reac_file.clear();
-		for (i=0;i<species.name.size();++i) pow_index.push_back(0);
-		reac_file.open(react_file.c_str(),ios::in);
-		if (!reac_file) {cerr << "Failed to open reaction_channel.list" << endl; exit(1);}
-		else{
-		    while (getline(reac_file,wordtemp)){
-			temp = new single_reaction;
+	}
+	reac_file.close();
+	reac_file.clear();
+
+
+	for ( i=0 ; i < species.name.size() ; ++i ) pow_index.push_back(0);
+
+	reac_file.open(react_file.c_str(),ios::in);
+
+	if ( !reac_file ) {
+		cerr << "Failed to open reaction_channel.list" << endl ; 
+		exit(1) ;
+
+	}	else {
+
+		while ( getline( reac_file, wordtemp ) ) {
+
+			temp = new single_reaction ;
+
 			/************************************************************
 			*      		Initial temp vector
 			*************************************************************/
@@ -600,10 +556,12 @@ void   chemistry::read_reaction_table(string react_file)
 }
 
 
-
-void   chemistry::loading_each_channel_file()
+/**
+ * @brief Read ecah channel file.
+ * @date 05/27/2019
+ */
+void chemistry::loading_each_channel_file()
 {
-	int 	        i,j;
 	ifstream        rate_file;
 	string          inword;
 	vector<string>  wordunit;
@@ -611,44 +569,54 @@ void   chemistry::loading_each_channel_file()
 	int             wordend;
 	double          temp_double;
 
-	for (i=0;i<channel.size();++i)
-	{
-//cerr << "   No.   " << i << endl;
-		if (channel[i].rate_type == 1)
-		{
+	for ( int i = 0 ; i < channel.size() ; ++i ) {
+
+		/* rate_type = foumula */
+		if ( channel[ i ].rate_type == FORMULA ) {
+
 			wordunit.clear();
 			rate_file.open(channel[i].filename.c_str(),ios::in);
-			if (!rate_file) {cerr << "Failed to open "<< channel[i].filename<< endl; exit(1);}
-			else
-			{
-				while(getline(rate_file,inword))
-				{
-					if (inword[0] != '#'&& inword[0] != '\n' && inword[0] != '\0' && inword[0] != '\r')
-					{
-						wordstart=inword.find_first_not_of(separators);
-						wordend=0;
-						while (wordstart != string::npos)
-						{
-						    wordend=inword.find_first_of(separators,wordstart+1);
-						    if(wordend == string::npos) wordend = inword.length();
-						    wordunit.push_back(inword.substr(wordstart,wordend-wordstart));
-						    wordstart=inword.find_first_not_of(separators,wordend+1);
-						}
-					}
-				}
-				for (j=0;j<wordunit.size();++j)
-				{
-					if(wordunit[j] == "A1") channel[i].formula_coefficient[0]=atof(wordunit[j+1].c_str());
-					if(wordunit[j] == "A2") channel[i].formula_coefficient[1]=atof(wordunit[j+1].c_str());
-					if(wordunit[j] == "A3") channel[i].formula_coefficient[2]=atof(wordunit[j+1].c_str());
-					if(wordunit[j] == "A4") channel[i].formula_coefficient[3]=atof(wordunit[j+1].c_str());
-				}
+
+			/* Check file is exist*/
+			if (!rate_file) {
+				cerr << "Failed to open "<< channel[i].filename<< endl ;
+				exit(1) ;
 			}
+			/* Star read the file data. */
+			while(getline(rate_file,inword)) {
+
+				if (inword[0] != '#' && inword[0] != '\n' && inword[0] != '\0' && inword[0] != '\r') {
+
+					wordstart = inword.find_first_not_of(separators);
+
+					wordend = 0 ;
+
+					while (wordstart != string::npos) {
+
+						wordend=inword.find_first_of(separators,wordstart+1);
+						if(wordend == string::npos) wordend = inword.length();
+						wordunit.push_back(inword.substr(wordstart,wordend-wordstart));
+						wordstart=inword.find_first_not_of(separators,wordend+1);
+					}
+
+				}//bypass the comment
+
+			}//End read file
+
+			/* rate = A1*(A2/Tg)^A3 exp(A4/T) */
+			for ( int j = 0; j < wordunit.size() ; ++j ) {
+				if(wordunit[j] == "A1") channel[i].formula_coefficient[0]=atof(wordunit[j+1].c_str());
+				if(wordunit[j] == "A2") channel[i].formula_coefficient[1]=atof(wordunit[j+1].c_str());
+				if(wordunit[j] == "A3") channel[i].formula_coefficient[2]=atof(wordunit[j+1].c_str());
+				if(wordunit[j] == "A4") channel[i].formula_coefficient[3]=atof(wordunit[j+1].c_str());
+			}
+
 			rate_file.close();
 			rate_file.clear();
-		}
-		else if (channel[i].rate_type == 2)
-		{
+
+		/* rate_type = table */
+		} else if (channel[i].rate_type == TABLE ) {
+
 			rate_file.open(channel[i].filename.c_str(),ios::in);
 			if (!rate_file) {cerr << "Failed to open " << channel[i].filename << endl; exit(1);}
 			else
@@ -656,6 +624,7 @@ void   chemistry::loading_each_channel_file()
 				while (!rate_file.eof())
 				{
 					rate_file >> inword ;
+
 					if (inword == "EndDescription")
 					{
 						while (rate_file >> temp_double)
@@ -674,35 +643,41 @@ void   chemistry::loading_each_channel_file()
 			}
 			rate_file.close();
 			rate_file.clear();
-		}
-		else if (channel[i].rate_type == 3)
-		{
-		}
-		else if (channel[i].rate_type == 4)
-		{
+
+		/* rate_type = constant */
+		} else if (channel[i].rate_type == CONSTANT ) {
+
+			//for constant rate type, we don't need to read the file.
+
+		/* rate_type = gas table */
+		}	else if ( channel[i].rate_type == GAS_TABLE )	{
 			rate_file.open(channel[i].filename.c_str(),ios::in);
-			if (!rate_file) {cerr << "Failed to open " << channel[i].filename << endl; exit(1);}
-			else
-			{
-				while (!rate_file.eof())
-				{
-					rate_file >> inword ;
-					if (inword == "EndDescription")
-					{
-						while (rate_file >> temp_double)
-						{
-							channel[i].origin_eV.push_back(temp_double);
-							rate_file >> temp_double;
-							channel[i].origin_rate.push_back(temp_double);
-						}
+
+			if (!rate_file) {
+				cerr << "Failed to open " << channel[i].filename << endl; 
+				exit(1);
+			} 
+
+			while ( !rate_file.eof() ) {
+
+				rate_file >> inword ;
+
+				/*read data after "EndDescription" */
+				if ( inword == "EndDescription") {
+
+					while ( rate_file >> temp_double ) {
+
+						channel[i].origin_eV.push_back(temp_double);
+						rate_file >> temp_double;
+						channel[i].origin_rate.push_back(temp_double);
 					}
-					else if (isdigit(inword[0]) != 0 || isdigit(inword[1]) != 0)
-					{
-						cerr << "Waring!!!  please insert the word \"EndDescription\" in front of reaction file" << endl;
-						cerr << "The name of file is " << channel[i].filename << endl; exit(1);
-					}
+
+				}	else if ( isdigit(inword[0]) != 0 || isdigit(inword[1]) != 0 ) {
+
+					cerr << "Waring!!!  please insert the word \"EndDescription\" in front of reaction file" << endl;
+					cerr << "The name of file is " << channel[i].filename << endl; exit(1);
 				}
-			}
+			}//End while
 			rate_file.close();
 			rate_file.clear();
 			/*
@@ -1115,24 +1090,36 @@ void chemistry::newtable_establish()
 }
 
 
-/*=========================================================
-| rate=A1 x (A2/Tg)^A3 exp(A4/Tg)                          |
-==========================================================*/
-double  chemistry::rate_formula(double *temperature,int k){
-	double   rate;
-	if (channel[k].formula_coefficient[3] == 0.0 && channel[k].formula_coefficient[2] != 0.0){
+/**
+ * @brief      Calculate rate by formula, rate=A1 x (A2/Tg)^A3 exp(A4/Tg) 
+ *
+ * @param[in]  temperature  The temperature.
+ * @param[in]  k            The channel.
+ *
+ * @return     rate constant of channel k.
+ */
+double  chemistry::rate_formula(double *temperature, int k ) 
+{
+	double rate=0.0 ;
+	if ( channel[k].formula_coefficient[3] == 0.0 && channel[k].formula_coefficient[2] != 0.0) {
+
 		rate=channel[k].formula_coefficient[0]*pow(channel[k].formula_coefficient[1]/(*temperature),channel[k].formula_coefficient[2]);
-	}
-	else if (channel[k].formula_coefficient[2] == 0.0 && channel[k].formula_coefficient[3] != 0.0){
+
+	}	else if (channel[k].formula_coefficient[2] == 0.0 && channel[k].formula_coefficient[3] != 0.0) {
+
 		rate=channel[k].formula_coefficient[0] * exp(channel[k].formula_coefficient[3]/(*temperature));
-	}
-	else if (channel[k].formula_coefficient[2] == 0.0 && channel[k].formula_coefficient[3] == 0.0){
+
+	}	else if (channel[k].formula_coefficient[2] == 0.0 && channel[k].formula_coefficient[3] == 0.0) {
+
 		rate=channel[k].formula_coefficient[0];
+
+	} else {
+
+		rate = channel[k].formula_coefficient[0]*pow(channel[k].formula_coefficient[1]/(*temperature),channel[k].formula_coefficient[2])
+				 * exp(channel[k].formula_coefficient[3]/(*temperature));
+
 	}
-	else{
-		rate=channel[k].formula_coefficient[0]*pow(channel[k].formula_coefficient[1]/(*temperature),channel[k].formula_coefficient[2])
-		      * exp(channel[k].formula_coefficient[3]/(*temperature));
-	}
+
 	return rate;
 }
 
@@ -1386,13 +1373,14 @@ void   chemistry::CalSourceSinkRate_for_Te(const double *T_species )
 	*/
 
 }
-
-
-
-
+/**
+ * @brief      Calculate source/sink for gas. (relate to the gas temperature)
+ *
+ * @param[in]  T_species  The temperature of species.
+ * @date 04/01/2009
+ */
 void   chemistry::CalSourceSinkRate_for_gas(const double *T_species )
 {
-	// Mark by KL: int j, k ;
 	int        i, l;
 	int        domain_int,coefficient;
 	int        buf_start, buf_start_channel;
@@ -1400,8 +1388,9 @@ void   chemistry::CalSourceSinkRate_for_gas(const double *T_species )
 
 	for (domain_int=0;domain_int<domain_size;++domain_int)
 	{
-		buf_start = domain_int*species_size;
+		buf_start         = domain_int*species_size;
 		buf_start_channel = domain_int*channel_size;
+
 		for (l=0;l<channel_size;++l)
 		{
 			if (channel[l].rate_type == 4)
@@ -1445,41 +1434,38 @@ void   chemistry::CalSourceSinkRate_for_gas(const double *T_species )
 	}
 
 }
-
-
-/*********************************************************************************************************************
-**********************************************************************************************************************
-
-                    Calculate total pressure and total density
-2009-04-01:  No consider gas temperature
-**********************************************************************************************************************
-**********************************************************************************************************************/
-
-void   chemistry::CalTotalPressure(const double *D_species , const double* T_species)
+/**
+ * @brief Calculate total pressure and total density. (No consider gas temperature)
+ *
+ * @param[in]  D_species  The density of species.
+ * @param[in]  T_species  The temperature of species.
+ * @date 04/01/2009
+ */
+void   chemistry::CalTotalPressure( const double *D_species , const double* T_species)
 {
 	int     k ;
-	//mark by kl :int i, j l ;
-	int     domain_int;
 	int     buf_start;
-	int     buf_start_channel;
 
-	for (domain_int=0;domain_int<domain_size;++domain_int)
-	{
-		buf_start = domain_int*species_size;
-		buf_start_channel = domain_int*channel_size;
+	for ( int i = 0 ; i < domain_size ; ++i ) {
 
-		total_gas_density[domain_int]=0.0;
-		total_gas_pressure[domain_int]=0.0;
-		for (k=0;k<species_size;++k)
-		{
-			if (k != species.e_id)
-			{
-				total_gas_density[domain_int] = total_gas_density[domain_int] + (*(D_species+k+buf_start));
+		buf_start 				= i*species_size ;
+
+		/* reset */
+		total_gas_density [ i ] = 0.0 ;
+		total_gas_pressure[ i ] = 0.0 ;
+
+		for ( int iSpecies =0 ; iSpecies  < species_size ; ++iSpecies  ) {
+
+			/* ignore partial pressure of electron */
+			if ( iSpecies  != species.e_id ) {
+				total_gas_density[ i ] = total_gas_density[ i ] + (*( D_species + iSpecies + buf_start ) );
 			}
-		}
-		total_gas_pressure[domain_int]=1.03558e-25*total_gas_density[domain_int]*(*(T_species+species_size-1+buf_start)) ;
-	}
 
+		}//End iSpecies
+
+		total_gas_pressure[i]=1.03558e-25*total_gas_density[i]*(*(T_species+species_size-1+buf_start)) ;
+
+	}//End domein loop
 
 }
 
@@ -1496,85 +1482,105 @@ void   chemistry::CalTotalPressure(const double *D_species , const double* T_spe
 //for (i=0;i<species.sourcesink.size();++i)  cerr << "in sourcesink  in global : " << species.sourcesink[i].global.size() << endl;
 //cerr << "energy_loss  size :  " << energy_loss.global.size() << endl;
 //cerr << "coll_frequency size :  " << coll_frequency.global.size() << endl;
-void   chemistry::SourceSink(const double* D_species,const double* T_species){
+
+/**
+ * @brief After obtaining rate, It is time to estimate source and sink, electron energy loss, Collision frequence
+ *
+ * @param[in]  D_species  The density of species.
+ * @param[in]  T_species  The temperature of species.
+ * @date 05/27/2009
+ */
+void   chemistry::SourceSink(const double* D_species,const double* T_species)
+{
 	int       domain_int;
 	int       i , j , k , reactant_id ;
-	//Mark by KL : int 	int_buffer ;
 	int       coefficient;
 	int       buf_start_channel;
 	int       buf_start;
 	double    temp,temp_e;
-	// initial sourcesink and light power //
-	for (i=0;i<sourcesink_size;++i) {
-		for (j=0;j<domain_size;++j) species.sourcesink[i].global[j]=0.0;
-	}
+
+	/* initial sourcesink and light power */
+	for ( i = 0 ; i < sourcesink_size ; ++i ) {
+		for ( j = 0 ; j < domain_size ; ++j ) {
+			species.sourcesink[ i ].global[ j ] = 0.0 ;
+		}//End cell loop
+	}//End iSpecies
+
 	for (i=0;i<light_size;++i) {
-		for (j=0;j<domain_size;++j) species.light_power[i].global[j]=0.0;
+		for (j=0;j<domain_size;++j) {
+			species.light_power[ i ].global[ j ] = 0.0 ;
+		}
 	}
+
 	reactant_id=10000;
 
-	for (domain_int=0;domain_int<domain_size;++domain_int)
-	{
+	for ( domain_int = 0 ; domain_int < domain_size ; ++domain_int ) {
 
-		buf_start = domain_int*species_size;
+		buf_start = domain_int*species_size ;
+
 		buf_start_channel = domain_int*channel_size;
+
 		coll_frequency.global[domain_int]=0.0;
+
 		energy_loss.global[domain_int]=0.0;
-		for (k=0;k<channel_size;++k) {
-			temp=chem_rate_buf[k+buf_start_channel];
-			temp_e=temp;
-			//cout<<" KL0: "<<temp_e<<endl;//Rate Constant
-//cout << "  rate:  "<< temp << endl;
-			for (i=0;i< OPT_channel_sourcesink[k].sink_n ; ++i)
-			{
+
+		for ( k = 0 ; k < channel_size ; ++k ) {
+
+			temp=chem_rate_buf[ k+buf_start_channel ] ;
+
+			temp_e = temp ;
+
+			for ( i = 0 ; i < OPT_channel_sourcesink[k].sink_n ; ++i ) {
+
 				coefficient = OPT_channel_sourcesink[k].reactant_ID[i];
-		        	if ( OPT_channel_sourcesink[k].coefficient_reactant[coefficient] == 1 )
-				{
-					    temp = temp * (*(D_species+coefficient+buf_start));
-					    if (OPT_channel_sourcesink[k].IS_momentum_Xsfer == 1)
-					    {
-						if (coefficient != species.e_id)
-						{
-						    reactant_id=coefficient;
-						    //cout<<" Kmt =  "<<temp_e<<endl;
-						    temp_e=temp_e * (*(D_species+coefficient+buf_start));
-						    //cout<<"N_back = "<<*(D_species+coefficient+buf_start)<<endl;//BackGround NumberDensity
-						    //cout<<"Kmt*N_back = "<<temp_e<<endl;
+
+				if ( OPT_channel_sourcesink[k].coefficient_reactant[coefficient] == 1 ) {
+
+					temp = temp * (*(D_species+coefficient+buf_start));
+
+					if ( OPT_channel_sourcesink[k].IS_momentum_Xsfer == 1 ) {
+						if (coefficient != species.e_id) {
+							reactant_id=coefficient;
+							//cout<<" Kmt =  "<<temp_e<<endl;
+							temp_e=temp_e * (*(D_species+coefficient+buf_start));
+							//cout<<"N_back = "<<*(D_species+coefficient+buf_start)<<endl;//BackGround NumberDensity
+							//cout<<"Kmt*N_back = "<<temp_e<<endl;
 						}
-					    }
-				}
-				else if (OPT_channel_sourcesink[k].coefficient_reactant[coefficient] == 2)
-				{
-					    temp = temp * pow( (*(D_species+coefficient+buf_start)) , 2);
-					    if (OPT_channel_sourcesink[k].IS_momentum_Xsfer == 1)
-					    {
+					}//Is momentum transfer
+
+				}	else if (OPT_channel_sourcesink[k].coefficient_reactant[coefficient] == 2) {
+
+					temp = temp * pow( (*(D_species+coefficient+buf_start)) , 2);
+					if (OPT_channel_sourcesink[k].IS_momentum_Xsfer == 1) {
+
 						cerr << " Big error at momentum Xsfer. Exit Chemistry-module " << endl;
 						exit(1);
-						if (coefficient != species.e_id)
-						{
+						if (coefficient != species.e_id) {
 						    reactant_id=coefficient;
 						    temp_e=temp_e * pow( (*(D_species+coefficient+buf_start)) , 2) ;
 						    //cout<<"KL2: "<<*(D_species+coefficient+buf_start)<<endl;
 						}
-					    }
-				}
-				else if (OPT_channel_sourcesink[k].coefficient_reactant[coefficient] == 3)
-				{
-					    temp = temp * pow( (*(D_species+coefficient+buf_start)) , 3);
-					    if (OPT_channel_sourcesink[k].IS_momentum_Xsfer == 1)
-					    {
+					}
+
+				}	else if (OPT_channel_sourcesink[k].coefficient_reactant[coefficient] == 3) {
+
+					temp = temp * pow( (*(D_species+coefficient+buf_start)) , 3);
+					if ( OPT_channel_sourcesink[k].IS_momentum_Xsfer == 1 ) {
 						cerr << " Big error at momentum Xsfer. Exit Chemistry-module " << endl;
 						exit(1);
 						if (coefficient != species.e_id){
-						    reactant_id=coefficient;
-						    temp_e=temp_e * pow( (*(D_species+coefficient+buf_start)) , 3);
-						    //cout<<"KL3: "<<*(D_species+coefficient+buf_start)<<endl;
+							reactant_id=coefficient;
+							temp_e=temp_e * pow( (*(D_species+coefficient+buf_start)) , 3);
+							//cout<<"KL3: "<<*(D_species+coefficient+buf_start)<<endl;
 						}
-					    }
-				}
-		        }
-			//  channel Source-Sink term //
+					}
+
+				}//
+			}//end sink n
+
+			/*  channel Source-Sink term */
 			channel[k].Channel_SourceSink[domain_int]=temp;
+
 			//  collisional frequency of electron  //
 			if ( OPT_channel_sourcesink[k].coefficient_reactant[species.e_id] != 0 ) {
 				if (OPT_channel_sourcesink[k].IS_momentum_Xsfer == 1)  coll_frequency.global[domain_int] = coll_frequency.global[domain_int] +  temp_e;
@@ -1584,11 +1590,12 @@ void   chemistry::SourceSink(const double* D_species,const double* T_species){
 		        if ( OPT_channel_sourcesink[k].coefficient_reactant[species.e_id] != 0 || OPT_channel_sourcesink[k].coefficient_product[species.e_id] != 0) {
 				//cerr << "reactant_id" << species.name[reactant_id] << endl;
 				//cerr << "klkl;lkljc,moool   " <<  energy_loss.global[domain_int] << endl;
+				//
 				//elastic energy loss term
 				if (OPT_channel_sourcesink[k].IS_momentum_Xsfer != 1)
 				{
 					energy_loss.global[domain_int] = energy_loss.global[domain_int] + (temp * e_loss_energy[k]);
-//cout << k <<"  e loss  energy  " << (temp * e_loss_energy[k])<< endl;
+				//cout << k <<"  e loss  energy  " << (temp * e_loss_energy[k])<< endl;
 				}
 				else
 				{
@@ -1608,26 +1615,27 @@ void   chemistry::SourceSink(const double* D_species,const double* T_species){
 				//cerr << k << "  " << (temp * channel[k].threshold) << endl;
 					//cerr << "elastic  "<< k << "  "  <<3.0 * species.mass[species.e_id]/species.mass[reactant_id] * (*(D_species[species.e_id]+domain_int))*temp_e*(*(T_species[species.e_id]+domain_int)) << endl;
 
-		        }
-			// sourcesink = source - sink //
+		}
 
-	                for (i=0 ; i<species_size ;++i)
-			{
-				if ( net_sourcesink[k].sign[i] != 0 )
-				{
+
+			/* sourcesink = source - sink */
+			for ( i=0 ; i<species_size ;++i ) {
+				if ( net_sourcesink[k].sign[i] != 0 ) {
+
 					species.sourcesink[i].global[domain_int]
 					= species.sourcesink[i].global[domain_int] + temp * net_sourcesink[k].sign[i];
-				}
-	                }
-			if (channel[k].emit_id >= 0)
-			{
+					cout<<"iSpecies: "<<i<<"\t"<<"Source: "<<species.sourcesink[i].global[domain_int]<<endl;
+
+				}//End net rate
+			}//End iSpecies
+
+			if (channel[k].emit_id >= 0) {
 				species.light_power[channel[k].emit_id].global[domain_int] = species.light_power[channel[k].emit_id].global[domain_int] + (temp * 1.9864748e-16 / species.wavelength[channel[k].emit_id]);
 				//cerr << "  emit id  " << channel[k].emit_id<< endl;
 				//cerr << k <<"    "<<temp * 1.9864748e-16 / species.wavelength[channel[k].emit_id] << endl;
 			}
 		}
-	}
-
+	}//End cell loop
 }
 
 

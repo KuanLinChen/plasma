@@ -25,7 +25,7 @@ void CEnergyDensity::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCon
 	Reflec = config->ReflectionCoefficient ;
 	its=0 ;
 
-	iMatrix = 1 + config->TotalSpeciesNum  + 1 ;
+	iMatrix = 1 + config->TotalSpeciesNum  + 1 -1 ;
 }
 void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &variable  )
 {
@@ -39,7 +39,8 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 				break ;
 
 			case 1://neumann
-				exit(1) ; //not support yet
+				cout<<"CEnergyDensity-Neumann, not support yet."<<endl;
+				exit(1) ;
 				break;
 
 			case 2://zero number density

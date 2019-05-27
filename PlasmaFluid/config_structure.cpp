@@ -1,4 +1,3 @@
-
 #include "config_structure.hpp"
 
 CConfig::CConfig()

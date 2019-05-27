@@ -388,8 +388,8 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 		if ( Cell_i->type == PLASMA ){
 
 			/*--- Unsteady term ---*/
-			//C[ 0 ] = Cell_i->volume/var->Dt ;
 			plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
+
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
@@ -477,7 +477,6 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 	 			SourceSink = (double)*( var->ReactionRatePoint[iSpecies] + i  )/var->Ref_SS ;
 	 		}
 	 		var->ProductionRate[iSpecies][ i ] = SourceSink ;
-
 	 		//Source += SourceSink*Cell_i->volume ;//*var->Dt ;
 	 		plasma.add_entry_in_source_term( iSpecies+1, i, SourceSink*Cell_i->volume ) ;
 
@@ -609,6 +608,7 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 	 		} else {
 	 			SourceSink = (double)*( var->ReactionRatePoint[iSpecies] + i  )/var->Ref_SS ;
 	 		}
+
 	 		var->ProductionRate[iSpecies][ i ] = SourceSink ;
 
 	 		//Source += SourceSink*Cell_i->volume ;//*var->Dt ;

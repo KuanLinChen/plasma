@@ -96,7 +96,6 @@ class CDomain
 		int local_cell_number ;
 
 		int test ;
-		int nDim ;
 		double PN[ 3 ], Pf[ 3 ], Nf[ 3 ], PPf[ 3 ], NPf[ 3 ], fPf[ 3 ], mf[ 3 ] ;
 		double LSQ_Weight( double dx, double dy ) {
 

@@ -3,8 +3,11 @@
 using namespace std;
 
 extern int mpi_rank, mpi_size ;
+extern int nDim ;
 extern ultraMPP plasma ;
 extern map<string,int> var_name ; 
+
+const double		vacuum_permittivity 	=  8.8541878176e-12 ; /* Unit in F/m */
 
 #define MASTER_NODE		0
 

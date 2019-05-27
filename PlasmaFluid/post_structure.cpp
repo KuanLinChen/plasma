@@ -5,8 +5,6 @@ CPost::CPost()
 }
 void CPost::Init()
 {
-
-
 }
 void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var, int Cycle, int Step )
 {
@@ -15,9 +13,8 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 
 	plasma.set_output( var->Phi.data_id ) ;
 	plasma.set_output( var->NetQ.data_id ) ;
-	for ( int nDim = 0 ; nDim < m->nDim ; nDim ++ ) {
-		//Output <<  var->EField[ nDim ] ;
-		plasma.set_output( var->EField[nDim].data_id ) ;
+	for ( int dim = 0 ; dim < nDim ; dim ++ ) {
+		plasma.set_output( var->EField[dim].data_id ) ;
 	}
 	plasma.set_output( var->E_Mag.data_id ) ;
 
@@ -69,24 +66,21 @@ void CPost::PlotDecomposition( boost::shared_ptr<CConfig> &config, boost::shared
 }
 void CPost::OutputAverageFlow( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var, int Cycle )
 {
-	// IO Output ;
-	// Output.set_output_type ( config->OutputFormat ) ;
-	// Output.set_filename( "1AvgFlow-"+to_string(Cycle)+".dat" ) ;
+	plasma.set_output( "1AvgFlow-"+to_string(Cycle) ) ;
 
-	// Output <<  var->AvgPhi ;
-	// Output <<  var->AvgDebyeLength ;
-	// Output <<  var->AvgCFL ;
-	// Output <<  var->eAvgEnergyLoss ;
-	// Output <<  var->AvgEField[0] ;
-	// Output <<  var->AvgEField[1] ;
-	// //Output <<  var->AvgEField[2] ;
-	// for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) Output <<   var->AvgT[iSpecies] ;
-	// for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) Output <<  var->AvgU0[ iSpecies ] ;
-	// for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) Output <<  var->AvgU1[ iSpecies ] ;
-	// for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) Output <<  var->AvgU2[ iSpecies ] ;
-	// //for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) Output <<  var->AvgU3[ iSpecies ] ;
-	// for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) Output <<  var->AvgU4[ iSpecies ] ;
-	// for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) Output <<  var->AvgJouleHeating[ iSpecies ] ;
-
-	// Output<<endl;
+	plasma.set_output( var->AvgPhi.data_id ) ;
+	for ( int dim = 0 ; dim < nDim ; dim ++ ) {
+		plasma.set_output( var->AvgEField[dim].data_id ) ;
+	}
+	plasma.set_output( var->eAvgEnergyLoss.data_id ) ;
+	
+	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->    T[ iSpecies ].data_id ) ;
+	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU0[ iSpecies ].data_id ) ;
+	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU1[ iSpecies ].data_id ) ;
+	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU2[ iSpecies ].data_id ) ;
+	if( nDim == 3 ) 
+	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU3[ iSpecies ].data_id ) ;
+	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU4[ iSpecies ].data_id ) ;
+	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgJouleHeating[ iSpecies ].data_id ) ;
+	plasma.write_output(to_string(Cycle)) ;
 }

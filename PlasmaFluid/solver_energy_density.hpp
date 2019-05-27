@@ -7,12 +7,9 @@
 #include <algorithm>
 #include <fstream>
 #include <set>
-#include "json.hpp"
-#include "main.h"
-#include "PFM.hpp"
+//#include "json.hpp"
 
-//#include <boost/algorithm/string.hpp>
-//#include <boost/algorithm/string/predicate.hpp>
+#include "PFM.hpp"
 #include "domain_structure.hpp"
 #include "variable_structure.hpp"
 #include "config_structure.hpp"
@@ -38,13 +35,8 @@ class CEnergyDensity
 
 
 	int iSpecies ; /*!< \brief Species index for this module */ 
-	int iMatrix ;
-	/*--- PETSc Solver ---*/	
-		// PETScSolver s ;
-		// int *d_nnz, *o_nnz ;
-		// int row, col[ 5 ], ncol ;
-		// double C[ 5 ] ;
-		// double *NormalizeCoeff ;
+	int iMatrix ; /*!< \brief The i-th matrix solver in plasma container. */ 
+
 	/*--- Solver Control Parameter ---*/	
 	double GVarN[2], GVarP[2] ;
 	double C53, C43, Reflec ;
