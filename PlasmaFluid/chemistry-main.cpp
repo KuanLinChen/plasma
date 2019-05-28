@@ -1624,7 +1624,7 @@ void   chemistry::SourceSink(const double* D_species,const double* T_species)
 
 					species.sourcesink[i].global[domain_int]
 					= species.sourcesink[i].global[domain_int] + temp * net_sourcesink[k].sign[i];
-					cout<<"iSpecies: "<<i<<"\t"<<"Source: "<<species.sourcesink[i].global[domain_int]<<endl;
+					//cout<<"iSpecies: "<<i<<"\t"<<"Source: "<<species.sourcesink[i].global[domain_int]<<endl;
 
 				}//End net rate
 			}//End iSpecies

@@ -31,27 +31,27 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 {
 	Zero_Gradient( m, variable ) ;
 
-	/*--- 1st solve the equation w/o cross diffusion term ---*/
-//cout<<"CEnergyDensity: A"<<endl;
-		switch( WallType ){
-			case 0: //default
-				Bulid_A_B_1st_default( m, config, variable ) ;
-				break ;
+	switch( WallType ){
 
-			case 1://neumann
-				cout<<"CEnergyDensity-Neumann, not support yet."<<endl;
-				exit(1) ;
-				break;
+		case 0: //default
+			Bulid_A_B_1st_default( m, config, variable ) ;
+			break ;
 
-			case 2://zero number density
-				Bulid_A_B_1st_zero( m, config, variable ) ;
-				break;
-			default:
-				break;
-		}
+		case 1://neumann
+			cout<<"CEnergyDensity-Neumann, not support yet."<<endl;
+			exit(1) ;
+			break;
 
-		plasma.get_solution( iMatrix, variable->U4[iSpecies].data ) ;
-		variable->U4[iSpecies] = variable->U4[iSpecies] ;
+		case 2://zero number density
+			Bulid_A_B_1st_zero( m, config, variable ) ;
+			break;
+		default:
+			break;
+
+	}//Wall boundary type.
+
+	plasma.get_solution( iMatrix, variable->U4[iSpecies].data ) ;
+	variable->U4[iSpecies] = variable->U4[iSpecies] ;
 
 	/*--- calculate electron temperature ---*/
 		CalculateTemperature( m, variable ) ;
@@ -159,7 +159,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
 	 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
 	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						plasma.add_entry_in_source_term(iMatrix, i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						plasma.add_entry_in_source_term( iMatrix, i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
 						break;
 
 						/*--- Ion, drift flux ---*/	
@@ -214,7 +214,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
 	 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
 	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						plasma.add_entry_in_source_term(iMatrix, i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						plasma.add_entry_in_source_term( iMatrix, i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
 	 						
 						break;
 
@@ -326,26 +326,19 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 
 					Pe = vn*m->PFM_CELL[ i ][ k ].dDist/Diff ;
 
-					
 					if ( Pe < -ZERO  ){
 
-						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 
 					} else if ( Pe > ZERO  ){
 
-						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 
 					} else {
 
 						Diff = -(1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;  
-						//C[ 0 ] 	  += -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
-						//C[ncol]    =  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id,  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
 					}
@@ -353,27 +346,26 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 	 			} else {//Discontinue face
 
 					Diff 	= -var->Diff[iSpecies][ i ] ;  
-					//C[ 0 ] += -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
 					plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
 	 			}//For discontuity face
+
 	 		}//End bulk face
 
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			if( Cell_i->face[ k ]->type == NEUMANN ){
+	 			if ( Cell_i->face[ k ]->type == NEUMANN ) {
 	 				//do nothing
 	 			} else {
 
 					Diff 	= -var->Diff[iSpecies][ i ] ;  
-					//C[ 0 ] += -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
-					plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id,-C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+					plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
 	 			}
 	 		}
 
 	 		/*--- Previous solution ---*/
-	 		//Source += var->PreU4[iSpecies][ i ] * Cell_i->volume/var->Dt ;
-	 		plasma.add_entry_in_source_term( iSpecies+1, i, var->PreU4[iSpecies][ i ] * Cell_i->volume/var->Dt ) ;
+	 		plasma.add_entry_in_source_term( iMatrix, i, var->PreU4[iSpecies][ i ] * Cell_i->volume/var->Dt ) ;
+
 			/*--- Joule heating, Note: since d_Te is in eV, there is no need to multiply the elementary charge ---*/
 			JdotE = config->Species[iSpecies].Charge*( var->EField[ 0 ][ i ]*var->U1[ iSpecies ][ i ] 
 	 												 + var->EField[ 1 ][ i ]*var->U2[ iSpecies ][ i ] ) ;
@@ -381,7 +373,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 	 		/*--- energy loss term ---*/
 	 		// switch ( eLOSS ) {
 	 		// 	case 1:
-	 				SourceSink = *(var->EnergySourcePoint + (i) ) ;
+	 		SourceSink = *(var->EnergySourcePoint + (i) ) ;
 				// 	break;
 				// case 2:
 	 		// 		SourceSink = var->eEnergyLossTable.GetValueLog( var->T[iSpecies][ i ] ) * var->TotalNumberDensity[ i ]*var->U0[ iSpecies ][ i ] ;
@@ -394,7 +386,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 	 		//exit(1) ;
 	 		//Source += (-SourceSink)*Cell_i->volume*var->Dt ;
 	 		//Source += (JdotE-SourceSink/var->Ref_ES)*Cell_i->volume ;
-	 		plasma.add_entry_in_source_term( iSpecies+1, i, (JdotE-SourceSink/var->Ref_ES)*Cell_i->volume ) ;
+	 		plasma.add_entry_in_source_term( iMatrix, i, (JdotE-SourceSink/var->Ref_ES)*Cell_i->volume ) ;
 	 		var->eEnergyLoss[ i ] = SourceSink ;
 	 		var->JouleHeating[iSpecies][i] = JdotE*var->Qe ;
 
@@ -503,12 +495,11 @@ void CEnergyDensity::CalculateTemperature( boost::shared_ptr<CDomain> &m, boost:
 			if ( val < 0.05 ){
 
 				val = 0.05 ;
-				//cout<<"zero"<<endl;
-//			}else if( isnan(val) ){
-//				val = 1.e-5 ;
-			
-			} else if( val > 50.0 ){
+
+			} else if( val > 50.0 ) {
+
 				val = 50.0 ;
+				
 			}
 			//if(var->U0[ iSpecies ][ i ] == 0.0 ) {cout<<"N: Zero"<<endl; exit(1) ;}
 			var->T[iSpecies][ i ] = val ;

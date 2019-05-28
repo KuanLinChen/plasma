@@ -200,7 +200,7 @@ int main( int argc, char * argv[] )
 	// PetscFinalize();
 	// MPI_Barrier(MPI_COMM_WORLD);
 	// MPI_Finalize() ;
-	plasma.end_MPP() ;
+	//plasma.end_MPP() ;
 	return 0 ;
 }
 

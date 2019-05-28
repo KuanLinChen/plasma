@@ -44,6 +44,9 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ )	
 	plasma.set_output( var->ProductionRate[ iSpecies ].data_id ) ;
 	
+	/* Joule Heating */
+	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ )	
+	plasma.set_output( var->JouleHeating[ iSpecies ].data_id ) ;
 
 	/* Mobility */
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ )	

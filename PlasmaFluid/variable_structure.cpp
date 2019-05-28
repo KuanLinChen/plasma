@@ -582,7 +582,7 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 	} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ){
 		//CalMeanEnergy( m ) ;
 	} else if( config->PFM_Assumption == "LMEA" ) {
-		cout<<"Here"<<endl;
+		//cout<<"Here"<<endl;
 	    Chemistry.CalTotalPressure( InputNumberDensity, InputTemperature ) ;
 	    Chemistry.CalSourceSinkRate_for_Te( InputTemperature ) ;
 	    Chemistry.CalSourceSinkRate_for_gas( InputTemperature ) ;
@@ -621,7 +621,6 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 		ReactionRatePoint	= Chemistry.ptr_source_sink() ;
 		EnergySourcePoint	= Chemistry.ptr_energy_loss() ;
 	}
-	exit(1) ;
 }
 void CVariable::CalReducedElectricField( boost::shared_ptr<CDomain> &m )
 {
@@ -662,14 +661,20 @@ void CVariable::UpdateSolution( boost::shared_ptr<CDomain> &m )
 			PreU0[ k ][ i ] = U0[ k ][ i ] ;
 			PreU1[ k ][ i ] = U1[ k ][ i ] ;
 			PreU2[ k ][ i ] = U2[ k ][ i ] ;
-			PreU3[ k ][ i ] = U3[ k ][ i ] ;
-			PreU4[k  ][ i ] = U4[ k ][ i ] ;
+			PreU4[ k ][ i ] = U4[ k ][ i ] ;
 		}
+
 		PreU0[ k ] = PreU0[ k ] ;
 		PreU1[ k ] = PreU1[ k ] ;
 		PreU2[ k ] = PreU2[ k ] ;
-		PreU3[ k ] = PreU3[ k ] ;
 		PreU4[ k ] = PreU4[ k ] ;
+
+		if( nDim == 3 ) {
+			for ( int i = 0 ; i < nCell ; i++ ) {
+				PreU3[ k ][ i ] = U3[ k ][ i ] ;
+			}
+			PreU3[ k ] = PreU3[ k ] ;
+		}
 	}
 	for ( int nDim = 0 ; nDim < 3 ; nDim++ ){
 		for ( int i = 0 ; i < nCell ; i++ ) {
@@ -702,12 +707,12 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			break;
 
 		case 1://cout<<"Mobility calculate from collision table." <<endl ;
-		 	for ( int i = 0 ; i < nCell ; i++ ) {
-		 		Cell_i  = plasma.get_cell( i ) ;
-		 		collision = TotalNumberDensity[i]*CollTable.GetValue( T[ 0 ][ i ] ) ; //unit
-		 	if(Cell_i->type == PLASMA ) 
-		 			Mobi[ 0 ][ i ] = (Qe*Ref_Qe)/(Me*Ref_Mass)/collision ;
-		 	}
+			for ( int i = 0 ; i < nCell ; i++ ) {
+				Cell_i  = plasma.get_cell( i ) ;
+				collision = TotalNumberDensity[i]*CollTable.GetValue( T[ 0 ][ i ] ) ; //unit
+				if(Cell_i->type == PLASMA ) 
+					Mobi[ 0 ][ i ] = (Qe*Ref_Qe)/(Me*Ref_Mass)/collision ;
+			}
 			break;
 
 		case 2://cout<<"Mobility calculate from electron temperature table." <<endl ;

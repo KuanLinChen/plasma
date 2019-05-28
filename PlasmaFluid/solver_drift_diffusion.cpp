@@ -74,16 +74,16 @@ void CDriftDiffusion::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 		plasma.get_solution( iSpecies+1, variable->U0[iSpecies].data ) ;
 
 		//cout<<"CDriftDiffusion: D"<<endl;
-		Cell *Cell_i ;
-		for ( int i = 0 ; i < m->local_cell_number ; i++ ) {
+		// Cell *Cell_i ;
+		// for ( int i = 0 ; i < m->local_cell_number ; i++ ) {
 
-			Cell_i = plasma.get_cell(i) ;
+		// 	Cell_i = plasma.get_cell(i) ;
 
-			if ( variable->U0[iSpecies][ i ] < 1.E+3 and Cell_i->type == PLASMA ) {
-				variable->U0[iSpecies][ i ] = 1.E+3 ;
-			}
+		// 	if ( variable->U0[iSpecies][ i ] < 1.E+3 and Cell_i->type == PLASMA ) {
+		// 		variable->U0[iSpecies][ i ] = 1.E+3 ;
+		// 	}
 
-		} 
+		// } 
 		//cout<<"CDriftDiffusion: E"<<endl;
 
 		variable->U0[iSpecies] = variable->U0[iSpecies] ;
@@ -354,8 +354,9 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 	 		plasma.add_entry_in_matrix( iSpecies+1, i, Cell_i->id, 1.0 ) ;
 	 		var->ProductionRate[iSpecies][ i ] = 0.0 ;
 	 		
-	 	}
+	 	}//End plasma Cell.
 	}//Cell Loop
+	
 	plasma.finish_matrix_construction( iSpecies+1 ) ;
 	plasma.finish_source_term_construction( iSpecies+1 ) ;
 		
@@ -429,6 +430,7 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 						//
 						plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 						plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+
 					} else {
 						//cout<<"iSpecies: "<<iSpecies<<"\t"<<"Diffusion"<<endl;
 						//Diff = -0.5*( var->Diff[iSpecies][ i ] + var->Diff[iSpecies][ j ] );
@@ -465,17 +467,19 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 	 		}
 
 	 		/*--- Previous solution ---*/
-	 		//Source += (var->PreU0[iSpecies][ i ])*Cell_i->volume/var->Dt ;
-	 		plasma.add_entry_in_source_term( iSpecies+1, i, (var->PreU0[iSpecies][ i ])*Cell_i->volume/var->Dt ) ;
+	 		plasma.add_entry_in_source_term( iSpecies+1, i, var->PreU0[iSpecies][ i ]*Cell_i->volume/var->Dt ) ;
 
 	 		/*--- Source/Sink term ---*/
 	 		if ( config->PFM_Assumption == "LFA" ) {
+
 	 			SourceSink = var->LFASourceSink[ iSpecies ][ i ]/var->Ref_SS ;
+
 	 		} else {
+
 	 			SourceSink = (double)*( var->ReactionRatePoint[iSpecies] + i  )/var->Ref_SS ;
+
 	 		}
 	 		var->ProductionRate[iSpecies][ i ] = SourceSink ;
-	 		//Source += SourceSink*Cell_i->volume ;//*var->Dt ;
 	 		plasma.add_entry_in_source_term( iSpecies+1, i, SourceSink*Cell_i->volume ) ;
 
 	 	/*--- Loop over SOLID cells ---*/
@@ -499,6 +503,7 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 
 	plasma.before_matrix_construction( iSpecies+1 ) ;
 	plasma.before_source_term_construction( iSpecies+1 ) ;
+
 	for( int i = 0 ; i < nCell ; i++ ) {
 
 		Cell_i = plasma.get_cell(i) ;
@@ -513,8 +518,8 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 		if ( Cell_i->type == PLASMA ){
 
 			/*--- Unsteady term ---*/
-			//C[ 0 ] = Cell_i->volume/var->Dt ;
 			plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
+
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
@@ -542,29 +547,20 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 
 					if ( Pe < -ZERO ) {
 
-						//C[ 0 ] += vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-						//C[ncol] = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-
 						plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 						plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 
 					} else if ( Pe > ZERO ) {
 
-						//C[ 0 ] += vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-						//C[ncol] = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-						//cout<<"iSpecies: "<<iSpecies<<"\t"<<"Convection"<<endl;
-						//
 						plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 						plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+
 					} else {
-						//cout<<"iSpecies: "<<iSpecies<<"\t"<<"Diffusion"<<endl;
-						//Diff = -0.5*( var->Diff[iSpecies][ i ] + var->Diff[iSpecies][ j ] );
+
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						//cout<<"iSpecies"<<endl;
-						//C[ 0 ] 	  += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;//*var->Dt ;
-						//C[ncol]    =  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;//*var->Dt ;
 						plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
 						plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;	
+
 					}
 
 	 			} else {/*--- For discontuity face ---*/
@@ -573,8 +569,8 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 					U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
  					V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
  					vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] );
- 					//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;
  					plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+
 	 			}
 	 		}//End bulk face
 
@@ -582,16 +578,17 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			if( Cell_i->face[ k ]->type == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == NEUMANN ) {
+
 	 				//do nothing
-	 			}else{
+
+	 			} else {
 
 					/*--- Drift term ---*/
 					U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
 					V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
 					vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] );
-					//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;
-					plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ) ;
+					plasma.add_entry_in_matrix( iSpecies+1, i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea  ) ;
 
 	 			}
 	 		}
@@ -608,8 +605,6 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 	 		}
 
 	 		var->ProductionRate[iSpecies][ i ] = SourceSink ;
-
-	 		//Source += SourceSink*Cell_i->volume ;//*var->Dt ;
 	 		plasma.add_entry_in_source_term( iSpecies+1, i, SourceSink*Cell_i->volume ) ;
 
 	 	/*--- Loop over SOLID cells ---*/
@@ -801,7 +796,7 @@ void CDriftDiffusion::Calculate_Gradient_Neumann( boost::shared_ptr<CDomain> &m,
 				dVar = BC_Value - var->U0[ iSpecies ][ i ] ;
 
 				Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
-	      		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
+	      Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
 
 			}
 			var->GradU0[ iSpecies ][ 0 ][ i ] = Gx ;
