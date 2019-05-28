@@ -983,7 +983,7 @@ void CPoisson::Calculate_Gradient_Neumann2( boost::shared_ptr<CDomain> &m, boost
 
 				}
 				Gx = Gx + var->LSQ_Cx[ k ][ i ]*dVar ;
-		    	Gy = Gy + var->LSQ_Cy[ k ][ i ]*dVar ;
+		    Gy = Gy + var->LSQ_Cy[ k ][ i ]*dVar ;
 			}
 			//cout<<"Loop over boundary faces"<<endl;
 
@@ -1008,7 +1008,7 @@ void CPoisson::Calculate_Gradient_Neumann2( boost::shared_ptr<CDomain> &m, boost
 				dVar = BC_Value - var->Phi[ i ] ;
 				//cout<<var->Phi[ i ]<<endl;
 				Gx = Gx + var->LSQ_Cx[ k ][ i ]*dVar ;
-		    	Gy = Gy + var->LSQ_Cy[ k ][ i ]*dVar ;
+		    Gy = Gy + var->LSQ_Cy[ k ][ i ]*dVar ;
 
 			}
 			var->EField[ 0 ][ i ] = Gx ;
@@ -1178,7 +1178,9 @@ void CPoisson::CalculateEffectivePermitt( boost::shared_ptr<CDomain> &m, boost::
 	Cell *Cell_i ;
 
 	for( int i = 0 ; i < m->local_cell_number ; i++ ) {
+		
 		eps = 0.0 ;
+
 		Cell_i  = plasma.get_cell( i ) ;
 
 		if( Cell_i->type == PLASMA ){
@@ -1227,6 +1229,7 @@ void CPoisson::CalculatePermitt( boost::shared_ptr<CDomain> &m, boost::shared_pt
 	for( int i = 0 ; i < m->local_cell_number ; i++ ) {
 
 		var->Eps[ i ] = var->Eps0[ i ] ;
+
 	}
 	var->Eps = var->Eps ;
 }

@@ -42,13 +42,13 @@ class CScalar
 		return data_name ;
 	}
 	/*---*/
-	CScalar & operator= ( const double value ) {
+	inline CScalar & operator= ( const double value ) {
 		for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 			data[ i ] = value  ;
 		}
 	}
 	/*---*/
-	CScalar & operator= ( const CScalar & c )
+	inline CScalar & operator= ( const CScalar & c )
 	{
 	        plasma.syn_parallel_cell_data( data_id ) ;
 	}

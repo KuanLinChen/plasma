@@ -41,7 +41,7 @@ class CDriftDiffusion
 	 */ 
 	void Init( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &config, int index ) ;
 
-
+	int iMatrix ;
 	int iSpecies, SpeciesType ; /*!< \brief Species index for this module */ 
 	/*--- PETSc Solver ---*/	
 	/*--- Solver Control Parameter ---*/	
