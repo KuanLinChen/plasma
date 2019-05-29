@@ -54,6 +54,7 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 
 	/*--- calculate electron temperature ---*/
 		CalculateTemperature( m, variable ) ;
+		if( iSpecies == ELECTRON )CalculatePowerAbs( m, variable  );
 }
 void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
@@ -554,4 +555,24 @@ void CEnergyDensity::CalculateTemperature( boost::shared_ptr<CDomain> &m, boost:
 	}//Loop over all cells
 	
 	var->T[iSpecies] = var->T[iSpecies] ;
+}
+void CEnergyDensity::CalculatePowerAbs( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
+{
+	int nCell = m->local_cell_number  ;
+	double val=0.0, C23=2.0/3.0 ;
+
+	Cell *Cell_i ;
+	double power_local=0.0 ;
+	var->PowerAbs = 0.0 ;
+
+	for ( int i = 0 ; i < nCell ; i++ ) {
+		Cell_i = plasma.get_cell(i) ;
+		if ( Cell_i->type != PLASMA ){
+			//no power
+		} else {
+			power_local += var->JouleHeating[iSpecies][i]*Cell_i->volume ;
+		}
+	}//Loop over all cells
+	var->PowerAbs = plasma.parallel_sum( &power_local ) ;
+	MPI_Barrier(MPI_COMM_WORLD) ;
 }

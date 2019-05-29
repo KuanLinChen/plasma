@@ -191,6 +191,7 @@ int main( int argc, char * argv[] )
 
 			/* Output cycle average data */
 			if( WRT_CYC_AVG ) {			
+				cout<<"Power Abs.:"<<Var->AvgPowerAbs <<endl;
 				post->OutputAverageFlow( Config, Var, MainCycle ) ;
 			}
 

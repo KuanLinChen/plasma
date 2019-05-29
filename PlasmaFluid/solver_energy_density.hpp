@@ -76,6 +76,15 @@ class CEnergyDensity
 	 */
 	void CalculateTemperature( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
 
+	/**
+	 * @brief     Calculate the poewe absorption. (JdotE times volume)
+	 *
+	 * @param     m     The mesh module.
+	 * @param     var   The variable module.
+	 * Note: return valule to variable module->PowerAbs.
+	 */
+	void CalculatePowerAbs( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
+
 	double DotProduct(double *A, double *B ){
 		return A[0]*B[0] + A[1]*B[1] ;
 	};

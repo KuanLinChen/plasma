@@ -160,7 +160,7 @@ class CVariable
 
 	/*--- Chemistry Module ---*/
 	chemistry Chemistry ;
-
+	double PowerAbs;
 	/*! 
 	 * \brief Update the source/sink, electron energy source and transport coefficients.
 	 * \param[in] domain - Name of the file with the grid information.
@@ -204,7 +204,6 @@ class CVariable
     CScalar eEnergyLoss, eAvgEnergyLoss ;
     double PhysicalTime ;/*!< \brief Physical time. */
     double Dt ;/*!< \brief Time step size. */
-
     /*! 
 	 * \brief Reset the average variable to be zero.
 	 * \param[in] domain - Name of the file with the grid information.
@@ -219,7 +218,18 @@ class CVariable
 	 */
     void AddAverage  ( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 
-    void CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
+
+
+	double AvgPowerAbs ;/*!< \brief Cycle averaged Power absorption. */
+	void ResetAvgZero_PowerAbs( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
+	void AddAverage_PowerAbs ( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
+
+
+
+
+
+
+  void CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 	void ResetAvgZero_Electrode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 	void AddAverage_Electrode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 	CScalar   **CondJD ;/*!< \brief Conduction current density. */ 

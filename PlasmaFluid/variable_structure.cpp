@@ -1227,6 +1227,7 @@ void CVariable::ResetAvgZero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 		AvgU4[ iSpecies ].zero() ;
 		AvgJouleHeating[ iSpecies ].zero() ;
 	}
+	//AvgPowerAbs = 0.0 ;
 }
 void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
@@ -1251,6 +1252,16 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 			AvgJouleHeating[ iSpecies ][ i ] += JouleHeating[ iSpecies ][ i ]/config->StepPerCycle ;
 		}
 	}
+	//AvgPowerAbs += PowerAbs/config->StepPerCycle  ;
+}
+void CVariable::ResetAvgZero_PowerAbs( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
+{
+	AvgPowerAbs = 0.0 ;
+}
+void CVariable::AddAverage_PowerAbs( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
+{
+
+	AvgPowerAbs += PowerAbs/config->StepPerCycle  ;
 }
 void CVariable::AddAverage_Electrode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
