@@ -238,7 +238,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 
 	 		/*--- Previous solution ---*/
 	 		//Source += var->PreU4[iSpecies][ i ] * Cell_i->volume ;
-	 		plasma.add_entry_in_source_term(iMatrix, i,  var->PreU4[iSpecies][ i ] * Cell_i->volume ) ;
+	 		plasma.add_entry_in_source_term( iMatrix, i,  var->PreU4[iSpecies][ i ] * Cell_i->volume ) ;
 
 			/*--- Joule heating, Note: since d_Te is in eV, there is no need to multiply the elementary charge ---*/
 			JdotE = config->Species[iSpecies].Charge*( var->EField[ 0 ][ i ]*var->U1[ iSpecies ][ i ] 
