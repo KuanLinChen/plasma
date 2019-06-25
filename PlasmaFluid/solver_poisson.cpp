@@ -227,9 +227,9 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 		} else {
 
 			for ( int k = 0 ; k < iCell ; k++ ) {
+
 				/*--- Orthogonal term ---*/
 				j = Cell_i->cell[ k ]->local_id ;
-
 				Cell_j = plasma.get_cell( j ) ;
 
 				jCell = Cell_j->cell_number ;
@@ -939,6 +939,7 @@ void CPoisson::Calculate_Gradient_Neumann2( boost::shared_ptr<CDomain> &m, boost
 		Cell_i = plasma.get_cell(i) ;
 
 		Gx = 0.0 ; Gy = 0.0 ;
+
 		iCell = Cell_i->cell_number ;  
 		iFace = Cell_i->face_number ; 
 		
@@ -953,7 +954,6 @@ void CPoisson::Calculate_Gradient_Neumann2( boost::shared_ptr<CDomain> &m, boost
 			for ( int k = 0 ; k < iCell ; k++ ) {
 
 				j = Cell_i->cell[ k ]->local_id ;
-
 				Cell_j = plasma.get_cell( j ) ;
 
 				if (Cell_i->type != Cell_j->type ) {//For discontinued face
@@ -1015,7 +1015,11 @@ void CPoisson::Calculate_Gradient_Neumann2( boost::shared_ptr<CDomain> &m, boost
 			var->EField[ 1 ][ i ] = Gy ;
 
 		}//For Dielectric or Plasma
+
+		//cout<<"Gy: "<<Gy<<endl;
 	}//Loop over all cells
+	//cout<<endl;
+	//exit(1);
 }
 void CPoisson::Calculate_Gradient_GG( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {

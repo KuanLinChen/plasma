@@ -43,7 +43,9 @@ class CDriftDiffusion
 
 	int iMatrix ;
 	int iSpecies, SpeciesType ; /*!< \brief Species index for this module */ 
-	/*--- PETSc Solver ---*/	
+	/*--- For Debug ---*/	
+	int ncol ;
+	double C[ 5 ] ;
 	/*--- Solver Control Parameter ---*/	
 		double GVarN[2], GVarP[2] ;
 		int Correction, WallType, its ;  /*!< \brief expilicit correction of the non-orthogonal effect & ksp iteration number */ 

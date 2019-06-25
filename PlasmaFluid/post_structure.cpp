@@ -38,6 +38,9 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 		/* y- flux */
 		for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ )	
 		plasma.set_output( var->U2[ iSpecies ].data_id ) ;
+
+		for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ )	
+		plasma.set_output( var->U4[ iSpecies ].data_id ) ;
 	}//End streamer
 
 	/* Production Rate */
@@ -77,7 +80,7 @@ void CPost::OutputAverageFlow( boost::shared_ptr<CConfig> &config, boost::shared
 	}
 	plasma.set_output( var->eAvgEnergyLoss.data_id ) ;
 	
-	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->    T[ iSpecies ].data_id ) ;
+	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var-> AvgT[ iSpecies ].data_id ) ;
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU0[ iSpecies ].data_id ) ;
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU1[ iSpecies ].data_id ) ;
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU2[ iSpecies ].data_id ) ;

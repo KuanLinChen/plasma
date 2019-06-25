@@ -32,7 +32,10 @@ class CEnergyDensity
 	 * \param[in] index  - Index of this module, it should be match the species index.
 	 */ 
 	void Init( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &config, int index ) ;
-
+	
+	/*--- For Debug ---*/	
+	int ncol ;
+	double C[ 5 ] ;
 
 	int iSpecies ; /*!< \brief Species index for this module */ 
 	int iMatrix ; /*!< \brief The i-th matrix solver in plasma container. */ 

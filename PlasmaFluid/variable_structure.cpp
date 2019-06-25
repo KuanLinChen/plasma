@@ -546,7 +546,7 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 
 			for( int k = 0 ; k < config->TotalSpeciesNum ; k++ ){
 				*(InputNumberDensity + ( (i)*config->TotalSpeciesNum + k ) ) = U0[ k ][ i ]*Ref_N ;
-				//cout<<*(InputNumberDensity + ( (i)*config->TotalSpeciesNum + k ) )<<endl;
+				//cout<<"InputNumberDensity: "<<*(InputNumberDensity + ( (i)*config->TotalSpeciesNum + k ) )<<endl;
 				if ( config->Species[k].Type == BACKGROUND ) TotalNumberDensity[ i ] += U0[ k ][ i ]*Ref_N ;
 			}
 		}//End plasma cells
@@ -576,7 +576,7 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 
 
 	if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "2Fluid" ) {
-		//CalMeanEnergy( m ) ;
+		CalMeanEnergy( m ) ;
 	} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "3Fluid" ){
 
 	} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ){
@@ -644,7 +644,7 @@ void CVariable::CalMeanEnergy( boost::shared_ptr<CDomain> &m )
 	int nCell = plasma.Mesh.cell_number ;
 	for ( int i = 0 ; i < nCell ; i++ ) {
 		//U4[ 0 ][ i ] = MeanEnergyTable.GetValueLog( ReducedElectricField[ i ] )/Ref_EN ;
-		U4[ 0 ][ i ] = MeanEnergyTable.GetValueLog( E_Mag[ i ] ) ;
+		U4[ 0 ][ i ] = MeanEnergyTable.GetValue( E_Mag[ i ] ) ;
 		 T[ 0 ][ i ] = U4[ 0 ][ i ]*C23 ;
 	}
 	U4[ 0 ] = U4[ 0 ] ;
@@ -661,12 +661,14 @@ void CVariable::UpdateSolution( boost::shared_ptr<CDomain> &m )
 			PreU0[ k ][ i ] = U0[ k ][ i ] ;
 			PreU1[ k ][ i ] = U1[ k ][ i ] ;
 			PreU2[ k ][ i ] = U2[ k ][ i ] ;
+			PreT [ k ][ i ] =  T[ k ][ i ] ;
 			PreU4[ k ][ i ] = U4[ k ][ i ] ;
 		}
 
 		PreU0[ k ] = PreU0[ k ] ;
 		PreU1[ k ] = PreU1[ k ] ;
 		PreU2[ k ] = PreU2[ k ] ;
+		PreT [ k ] = PreT [ k ] ;
 		PreU4[ k ] = PreU4[ k ] ;
 
 		if( nDim == 3 ) {
@@ -1227,7 +1229,7 @@ void CVariable::ResetAvgZero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 		AvgU4[ iSpecies ].zero() ;
 		AvgJouleHeating[ iSpecies ].zero() ;
 	}
-	//AvgPowerAbs = 0.0 ;
+	AvgPowerAbs = 0.0 ;
 }
 void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
@@ -1244,6 +1246,7 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 	for ( int iSpecies = 0 ; iSpecies < config->TotalSpeciesNum ; iSpecies++ ){
 		for ( int i = 0 ; i <plasma.Mesh.cell_number  ; i++ ) {
 			 AvgT[ iSpecies ][ i ] +=  T[ iSpecies ][ i ]/config->StepPerCycle ;
+			 if(iSpecies==0) cout<<"i: "<<i<<", T: "<<AvgT[ iSpecies ][ i ]<<endl;
 			AvgU0[ iSpecies ][ i ] += U0[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU1[ iSpecies ][ i ] += U1[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU2[ iSpecies ][ i ] += U2[ iSpecies ][ i ]/config->StepPerCycle ;
@@ -1252,7 +1255,7 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 			AvgJouleHeating[ iSpecies ][ i ] += JouleHeating[ iSpecies ][ i ]/config->StepPerCycle ;
 		}
 	}
-	//AvgPowerAbs += PowerAbs/config->StepPerCycle  ;
+	AvgPowerAbs += PowerAbs/config->StepPerCycle  ;
 }
 void CVariable::ResetAvgZero_PowerAbs( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
@@ -1463,16 +1466,17 @@ void CVariable::Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m )
 
 			if ( Cell_i->type != Cell_i->cell[ k ]->type ) {//For discontinued face
 
-				Pf[ 0 ] =Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-				Pf[ 1 ] =Cell_i->face[ k ]->r[1] - Cell_i->r[0] ;
-				//cout<<Cell[ i ][ k ].nf[0]<<endl;
-				//cout<<Cell[ i ][ k ].nf[1]<<endl;
+				Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+				Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+
 				fPf[ 0 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
 				fPf[ 1 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
-				dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
-				dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
-				//dx = cell[ i ].face[ k ]->r[0]  - cell[ i ]->r[0] ;
-				//dy = cell[ i ].face[ k ]->r[1]  - cell[ i ].y ;
+				//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
+				//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
+				//
+				dx = Cell_i->face[ k ]->r[0]  - Cell_i->r[0] ;
+				dy = Cell_i->face[ k ]->r[1]  - Cell_i->r[1] ;
+
 			} else {
 
 				dx =Cell_i->cell[ k ]->r[0]  - Cell_i->r[0] ;
@@ -1495,11 +1499,11 @@ void CVariable::Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m )
 			fPf[ 0 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
 			fPf[ 1 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
 
-			dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
-			dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
+			//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
+			//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
 			//cout<<fPf[ 0 ]<<"\t"<<fPf[ 0 ]<<endl;
-			//dx = cell[ i ].face[ k ]->r[0]  - cell[ i ]->r[0] ;
-			//dy = cell[ i ].face[ k ]->r[1]  - cell[ i ].y ;
+			dx = Cell_i->face[ k ]->r[0]  - Cell_i->r[0] ;
+			dy = Cell_i->face[ k ]->r[1]  - Cell_i->r[1] ;
 
 			a11 = a11 + dx*dx ; 	
 			a12 = a12 + dx*dy ;
@@ -1526,19 +1530,22 @@ void CVariable::Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m )
 				Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
 				fPf[ 0 ] = DotProduct( Pf,  m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
 				fPf[ 1 ] = DotProduct( Pf,  m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
-				dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
-				dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
+				//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
+				//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
 				//cout<<fPf[ 0 ]<<"\t"<<fPf[ 0 ]<<endl;
-				//dx =  cell[ i ].face[ k ]->r[0] - cell[ i ]->r[0] ;
-				//dy =  cell[ i ].face[ k ]->r[1] - cell[ i ].y ;
+				dx =  Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+				dy =  Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
 
 			} else {
 
 				dx = Cell_i->cell[ k ]->r[0]  - Cell_i->r[0] ;
 				dy = Cell_i->cell[ k ]->r[1]  - Cell_i->r[1] ;
+				//cout<<"normal dy: "<<dy<<endl;
 			}
 			LSQ_Cx[ k ][ i ] = ia11*dx + ia12*dy ;
 			LSQ_Cy[ k ][ i ] = ia21*dx + ia22*dy ;
+			//cout<<"LSQ_Cx["<<k<<"]["<<i<<"]: "<<LSQ_Cx[ k ][ i ]<<endl;
+			//cout<<"LSQ_Cy["<<k<<"]["<<i<<"]: "<<LSQ_Cy[ k ][ i ]<<endl;
 		}
 		//if(mpi_rank==0) cout<<"---------------------------------------"<<endl;
 		/*--- Cal. LSQ Coefficient for domain boundary "faces" ---*/
@@ -1548,16 +1555,19 @@ void CVariable::Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m )
 			Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
 			fPf[ 0 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
 			fPf[ 1 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
-			dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
-			dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
-			//cout<<fPf[ 0 ]<<"\t"<<fPf[ 0 ]<<endl;
-			//dx =  cell[ i ].face[ k ]->r[0] - cell[ i ]->r[0] ;
-			//dy =  cell[ i ].face[ k ]->r[1] - cell[ i ].y ;
+			//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
+			//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
+
+			dx =  Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+			dy =  Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
 			LSQ_Cx[ k ][ i ] = ia11*dx + ia12*dy ;
 			LSQ_Cy[ k ][ i ] = ia21*dx + ia22*dy ;
+			//cout<<"LSQ_Cx["<<k<<"]["<<i<<"]: "<<LSQ_Cx[ k ][ i ]<<endl;
+			//cout<<"LSQ_Cy["<<k<<"]["<<i<<"]: "<<LSQ_Cy[ k ][ i ]<<endl;
 		}//End boundaty face
+		//cout<<endl;
 	}//End cell loop
-	// MPI_Barrier(MPI_COMM_WORLD); exit(1) ;
+	//MPI_Barrier(MPI_COMM_WORLD); exit(1) ;
 	for( int k = 0 ;  k < 6 ; k++ ){
 		LSQ_Cx[ k ] = LSQ_Cx[ k ] ;
 		LSQ_Cy[ k ] = LSQ_Cy[ k ] ;
@@ -1614,21 +1624,23 @@ void CVariable::SourceSink_2Fluid( boost::shared_ptr<CDomain> &m, boost::shared_
 
 			E_Td = ReducedElectricField[ i ] ;
 
-			alpha 	= AlphaTable.GetValue( E_Mag[ i ] );// * TotalNumberDensity[ i ] ;
-
+			alpha 	= AlphaTable.GetValue( E_Mag[ i ] )* TotalNumberDensity[ i ] ;
+			cout<<"alpha: "<<alpha<<endl;
 			nu = U1[0][ i ] ;
 			nv = U2[0][ i ] ;
 
 			U0_e = U0[ 0 ][ i ]*Ref_N ;
 			U0_pi= U0[ 1 ][ i ]*Ref_N ;
 
+
 			Flux2 = sqrt( nu*nu + nv*nv ) ;
+			cout<<"Flux: "<<Flux2<<endl;
 
-			*( ReactionRatePoint[ 0 ] + i  ) = 	alpha*Flux2 - Gamma_ep*U0_e*U0_pi ;
-			*( ReactionRatePoint[ 1 ] + i  ) =  alpha*Flux2 - Gamma_ep*U0_e*U0_pi ;//- Gamma_np*U0_pi*U0_ni ;
+			*( ReactionRatePoint[ 0 ] + i  ) = 	alpha*Flux2 ;//- Gamma_ep*U0_e*U0_pi ;
+			*( ReactionRatePoint[ 1 ] + i  ) =  alpha*Flux2 ;//- Gamma_ep*U0_e*U0_pi ;//- Gamma_np*U0_pi*U0_ni ;
 
-			LFASourceSink[ 0 ][ i ] = (alpha-eta)*Flux2 - Gamma_ep*U0_e*U0_pi ;
-			LFASourceSink[ 1 ][ i ] = (alpha    )*Flux2 - Gamma_ep*U0_e*U0_pi ;//- Gamma_np*U0_pi*U0_ni ;
+			LFASourceSink[ 0 ][ i ] = (alpha-eta)*Flux2 ;//- Gamma_ep*U0_e*U0_pi ;
+			LFASourceSink[ 1 ][ i ] = (alpha    )*Flux2 ;//- Gamma_ep*U0_e*U0_pi ;//- Gamma_np*U0_pi*U0_ni ;
 
 		}
 	}

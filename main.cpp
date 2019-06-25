@@ -179,6 +179,7 @@ int main( int argc, char * argv[] )
 					//cout<<"A"<<endl;
 					electron_energy_solver->Solver( mesh, Config, Var ) ;
 				}
+
 				/* Output instantaneous flow field data */
  				if( WRT_INS ) post->OutputFlow( mesh, Config, Var, MainCycle, MainStep ) ;
 

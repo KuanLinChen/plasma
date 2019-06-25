@@ -1,6 +1,6 @@
 
 #include "solver_drift_diffusion.hpp"
-
+#define Debug_Bulid_A_B_1st_zero 0
 using namespace std ;
 CDriftDiffusion::CDriftDiffusion()
 {
@@ -23,54 +23,42 @@ void CDriftDiffusion::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 	Reflec = config->ReflectionCoefficient ;
 	its=0 ;
 	iMatrix = iSpecies + 1 ;
+// #if Debug_0
+// cout<<"test debub"<<endl;
+// #endif
 
 }
 void CDriftDiffusion::Solve_Diffusion( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &variable  )
 {
-	// s.reuse_initialGuess( false ) ;
-	// /*--- 1st solve the equation w/o cross diffusion term, using expilicit ---*/
-	// 	Bulid_A_B_0st( m, config, variable ) ;
-	// 	//cout<<"CDriftDiffusion: C"<<endl;
-	// 	s.solve() ; its = s.its ;
-	// 	//cout<<"CDriftDiffusion: D"<<endl;
-	// 	for ( int i = 0 ; i < m->local_cell_number ; i++ ) {
-	// 		variable->U0[iSpecies][ i ] = s.x[ i ] ;
-	// 		//cout<<"solutions: "<<s.x[ i ]<<endl;
-	// 	}
-	// 	variable->U0[iSpecies] = variable->U0[iSpecies] ;
+
 }
 void CDriftDiffusion::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &variable  )
 {
-		//cout<<"CDriftDiffusion: A"<<endl;
-		Zero_Gradient( m, variable ) ;
+	if( config->Species[iSpecies].Activate ==0) return ; 
 
+		Zero_Gradient( m, variable ) ;
 	/*--- 1st solve the equation w/o cross diffusion term ---*/
-		//cout<<"CDriftDiffusion: B"<<endl;
 		switch( WallType ){
 			case 0: //default
-			//cout<<"default"<<endl;
 				Bulid_A_B_1st_default( m, config, variable ) ;
 				break ;
 
 			case 1://neumann
 				Bulid_A_B_1st_neumann( m, config, variable ) ;
-			//cout<<"neumann"<<endl;
 				break;
 
 			case 2://zero number density
-			//	cout<<"ZERO"<<endl;
 				Bulid_A_B_1st_zero( m, config, variable ) ;
 				break;
 
 			case 3://Zero-Dimension
-			//	cout<<"0D"<<endl;
 				Bulid_A_B_1st_0D( m, config, variable ) ;
 			break;
 
 			default:
+				cout<<"wall type"<<WallType<<endl;exit(1);
 				break;
 		}
-		//cout<<"CDriftDiffusion: C"<<endl;
 		//s.solve() ; its = s.its ;
 		plasma.get_solution( iMatrix, variable->U0[iSpecies].data ) ;
 
@@ -88,6 +76,9 @@ void CDriftDiffusion::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 		//cout<<"CDriftDiffusion: E"<<endl;
 
 		variable->U0[iSpecies] = variable->U0[iSpecies] ;
+		// for( int i = 0 ; i < m->local_cell_number ; i++ )
+		// cout<<"i: "<<", solutaion: "<<variable->U0[iSpecies][ i ]<<endl;
+		// exit(1) ;
 		//cout<<"CDriftDiffusion: F"<<endl;
 
 	/*--- calculate drift-diffustion flux ---*/
@@ -134,6 +125,7 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 
 	for( int i = 0 ; i < nCell ; i++ ) {
 
+
 		Cell_i = plasma.get_cell(i) ;
 
 		iFace 	 = Cell_i->face_number ;
@@ -151,9 +143,7 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
-				j = Cell_i->cell[k]->local_id ;
-
-				Cell_j = plasma.get_cell(j) ;
+				j = Cell_i->cell[k]->local_id ; Cell_j = plasma.get_cell(j) ;
 
 				if ( Cell_j->type == PLASMA ){
 
@@ -175,25 +165,20 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 
 					if ( Pe < -ZERO ) {
 
-						//C[ 0 ] += vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-						//C[ncol] = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 
 					} else if ( Pe > ZERO ) {
 
-						//C[ 0 ] += vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-						//C[ncol] = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 
 					} else {
 
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						//C[ 0 ] 	  += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;//*var->Dt ;
-						//C[ncol]    =  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;//*var->Dt ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;	
+						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+
 					}
 
 	 			} else {/*--- For discontuity face ---*/
@@ -222,7 +207,7 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 	 							}
 	 							
 	 						}
-	 						Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
+	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
 	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
 							plasma.add_entry_in_matrix     ( iMatrix, i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
 							plasma.add_entry_in_source_term( iMatrix, i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
@@ -318,7 +303,7 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 						case 2:	
 
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//	C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
 	  					plasma.add_entry_in_matrix     ( iMatrix, i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf  ) ;
 	  						/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
@@ -346,7 +331,6 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 	 		}
 	 		var->ProductionRate[iSpecies][ i ] = SourceSink ;
 
-	 		//Source += SourceSink*Cell_i->volume ;//*var->Dt ;
 	 		plasma.add_entry_in_source_term( iMatrix, i, SourceSink*Cell_i->volume ) ;
 
 	 	/*--- Loop over SOLID cells ---*/
@@ -384,11 +368,21 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 		iFace 	 = Cell_i->face_number ;
 		iCell 	 = Cell_i->cell_number ;
 
+		#if Debug_Bulid_A_B_1st_zero
+			ncol = 1 ;
+			Source = 0.0 ;
+			for( int k = 0 ; k < 5 ; k++ ) C[ k ] = 0.0 ;	
+		#endif
+
 		/*--- Loop over PLASMA cells ---*/
 		if ( Cell_i->type == PLASMA ){
 
 			/*--- Unsteady term ---*/
 			plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
+
+			#if Debug_Bulid_A_B_1st_zero
+				C[ 0 ] = Cell_i->volume/var->Dt ;
+			#endif
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
@@ -419,24 +413,41 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 
+						#if Debug_Bulid_A_B_1st_zero
+							C[ 0 ] += vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+							C[ncol] = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						#endif
+
 					} else if ( Pe > ZERO ) {
 
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+
+						#if Debug_Bulid_A_B_1st_zero
+							C[ 0 ] += vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+							C[ncol] = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						#endif
 
 					} else {
 
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
 						plasma.add_entry_in_matrix( iMatrix, i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;	
+						#if Debug_Bulid_A_B_1st_zero
+							C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+							C[ncol] =  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+						#endif
 
 					}
+					ncol ++ ;
 
 	 			} else {/*--- For discontuity face ---*/
 
 					Diff 	= -var->Diff[iSpecies][ i ] ;
 	  			plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-
+	  			#if Debug_Bulid_A_B_1st_zero
+	  				C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;
+	  			#endif
 	 			}
 	 		}//End bulk face
 
@@ -450,12 +461,15 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 
 					Diff = -var->Diff[iSpecies][ i ] ;
 					plasma.add_entry_in_matrix( iMatrix, i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-
+					#if Debug_Bulid_A_B_1st_zero
+						C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+					#endif
 	 			}
 	 		}
 
 	 		/*--- Previous solution ---*/
 	 		plasma.add_entry_in_source_term( iMatrix, i, var->PreU0[iSpecies][ i ]*Cell_i->volume/var->Dt ) ;
+	 		// Source += var->PreU0[iSpecies][ i ]*Cell_i->volume/var->Dt ;
 
 	 		/*--- Source/Sink term ---*/
 	 		if ( config->PFM_Assumption == "LFA" ) {
@@ -469,17 +483,36 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 	 		}
 	 		var->ProductionRate[iSpecies][ i ] = SourceSink ;
 	 		plasma.add_entry_in_source_term( iMatrix, i, SourceSink*Cell_i->volume ) ;
+	 		#if Debug_Bulid_A_B_1st_zero
+	 			Source += SourceSink*Cell_i->volume ;
+	 		#endif
 
 	 	/*--- Loop over SOLID cells ---*/
 	 	} else {
 
 	 		plasma.add_entry_in_matrix( iMatrix, i, Cell_i->id, 1.0 ) ;
-	 		var->ProductionRate[iSpecies][ i ] = 0.0 ;
-	 		
+	 		#if Debug_Bulid_A_B_1st_zero
+	 			C[0] = 1.0 ;
+	 		#endif
+	 		var->ProductionRate[iSpecies][ i ] = 0.0 ;	
 	 	}
+
+	 	#if Debug_Bulid_A_B_1st_zero
+			cout<<"i: "<<i<<endl;
+			for ( int icol = 0 ; icol < ncol ; icol++ ){
+				cout<<scientific<<"C["<<icol<<"]: "<<C[icol]<<endl;
+			}
+			cout<<Source<<endl;
+			cout<<endl;
+	 	#endif
+
 	}//Cell Loop
 	plasma.finish_matrix_construction( iMatrix ) ;
 	plasma.finish_source_term_construction( iMatrix ) ;
+
+	#if Debug_Bulid_A_B_1st_zero
+		exit(1) ;
+	#endif
 }
 void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
@@ -752,7 +785,7 @@ void CDriftDiffusion::Calculate_Gradient_Neumann( boost::shared_ptr<CDomain> &m,
 			for ( int k = 0 ; k < iCell ; k++ ) {
 
 				j = m->PFM_CELL[ i ][ k ].NeighborCellId ;
-				
+				Cell_j = plasma.get_cell(j) ;
 				if ( Cell_j->type != PLASMA ) {//For discontinued face, apply neumann
 
 					GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
@@ -837,7 +870,6 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 			for ( int k = 0 ; k < iCell ; k++ ) {
 
 				j = Cell_i->cell[k]->local_id ;
-
 				Cell_j = plasma.get_cell( j ) ;
 
 				if ( Cell_i->type == PLASMA ) {
@@ -966,11 +998,11 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 
 		  						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
 
-		  						GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
+		  					GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
 								GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
 								PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
-		  						faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
+		  					faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
 
 		 						xFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 								yFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -1089,7 +1121,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 
 	 	/*--- Loop over SOLID cells ---*/
 	 	} else {
-	 		xFlux  = 0.0 ;
+	 		xFlux = 0.0 ;
 	 		yFlux = 0.0 ;
 	 	}
 	 	var->U1[ iSpecies ][ i ] = xFlux/Cell_i->volume ;
@@ -1127,8 +1159,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
-				j = Cell_i->cell[ k ]->local_id ;
-
+				j      = Cell_i->cell[ k ]->local_id ;
 				Cell_j = plasma.get_cell( j ) ;
 
 				if ( Cell_j->type == PLASMA ){
@@ -1222,7 +1253,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 
 	 	/*--- Loop over SOLID cells ---*/
 	 	} else {
-	 		xFlux  = 0.0 ;
+	 		xFlux = 0.0 ;
 	 		yFlux = 0.0 ;
 	 	}
 	 	var->U1[ iSpecies ][ i ] = xFlux/Cell_i->volume ;
@@ -1244,7 +1275,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 
 	Cell *Cell_i, *Cell_j ;
 	for( int i = 0 ; i < nCell ; i++ ) {
-
+		// cout<<"i: "<<i<<endl;
 		Cell_i = plasma.get_cell(i) ;
 
 		iFace 	 = Cell_i->face_number ;
@@ -1305,6 +1336,12 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 
 					xFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+					// cout<<"faceFlux: "<<faceFlux<<endl;
+					// cout<<"dPPF:     "<<m->PFM_CELL[ i ][ k ].dPPf<<endl;
+					// cout<<"nf[0]: "<<m->PFM_CELL[ i ][ k ].nf[ 0 ]<<endl ;
+					// cout<<"nf[1]: "<<m->PFM_CELL[ i ][ k ].nf[ 1 ]<<endl ;
+					// cout<<"x0["<<k<<"]: "<< xFlux <<endl;
+	 			// 	cout<<"y0["<<k<<"]: "<< yFlux <<endl;
 					//if( iSpecies == 0 ) cout<<yFlux/Cell_i->volume<<endl;
 
 	 			} else if( Cell_j->type != PLASMA ) {//Discontinue face
@@ -1318,6 +1355,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 						
 					xFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+					//cout<<"x1["<<k<<"]: "<< xFlux <<endl;
+	 				//cout<<"y1["<<k<<"]: "<< yFlux <<endl;
 
 	 			}//For discontuity face
 	 		}//End bulk face
@@ -1339,6 +1378,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 						
 					xFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+					//cout<<"x2["<<k<<"]: "<< xFlux <<endl;
+	 				//cout<<"y2["<<k<<"]: "<< yFlux <<endl;
 					//if( iSpecies == 0 ) cout<<yFlux/Cell_i->volume<<endl;
 
 	 			}
@@ -1350,12 +1391,14 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 	 		xFlux = 0.0 ;
 	 		yFlux = 0.0 ;
 	 	}
-
+	 	// cout<<"xFlux: "<<xFlux<<endl;
+	 	// cout<<"yFlux: "<<yFlux<<endl<<endl;
 	 	//if( iSpecies == 0 ) cout<<yFlux/Cell_i->volume<<endl;
 	 	var->U1[ iSpecies ][ i ] = xFlux/Cell_i->volume ;
 		var->U2[ iSpecies ][ i ] = yFlux/Cell_i->volume ;
 
 	}//Cell Loop
+	// exit(1) ;
 
 	/*--- Update ghost cells ---*/
 	var->U1[ iSpecies ] = var->U1[ iSpecies ] ;
