@@ -19,16 +19,16 @@ void CDomain::SetupCellFaceType()
 		Cell_i  = MPP->get_cell( i ) ;
 
 			 if ( Cell_i->Typename == "PLASMA"  ) Cell_i->type = PLASMA ;
-	else if ( Cell_i->Typename == "POWER"   ) Cell_i->type = POWER 	 ;
-	else if ( Cell_i->Typename == "POWER_1" ) Cell_i->type = POWER_1 ;
-	else if ( Cell_i->Typename == "POWER_2" ) Cell_i->type = POWER_2 ;
-	else if ( Cell_i->Typename == "POWER_3" ) Cell_i->type = POWER_3 ;
-	else if ( Cell_i->Typename == "POWER_4" ) Cell_i->type = POWER_4 ;
-	else if ( Cell_i->Typename == "POWER_5" ) Cell_i->type = POWER_5 ;
-	else if ( Cell_i->Typename == "POWER_6" ) Cell_i->type = POWER_6 ;
-	else if ( Cell_i->Typename == "POWER_7" ) Cell_i->type = POWER_7 ;
-	else if ( Cell_i->Typename == "POWER_8" ) Cell_i->type = POWER_8 ;
-	else if ( Cell_i->Typename == "POWER_9" ) Cell_i->type = POWER_9 ;
+		else if ( Cell_i->Typename == "POWER"   ) Cell_i->type = POWER 	 ;
+		else if ( Cell_i->Typename == "POWER_1" ) Cell_i->type = POWER_1 ;
+		else if ( Cell_i->Typename == "POWER_2" ) Cell_i->type = POWER_2 ;
+		else if ( Cell_i->Typename == "POWER_3" ) Cell_i->type = POWER_3 ;
+		else if ( Cell_i->Typename == "POWER_4" ) Cell_i->type = POWER_4 ;
+		else if ( Cell_i->Typename == "POWER_5" ) Cell_i->type = POWER_5 ;
+		else if ( Cell_i->Typename == "POWER_6" ) Cell_i->type = POWER_6 ;
+		else if ( Cell_i->Typename == "POWER_7" ) Cell_i->type = POWER_7 ;
+		else if ( Cell_i->Typename == "POWER_8" ) Cell_i->type = POWER_8 ;
+		else if ( Cell_i->Typename == "POWER_9" ) Cell_i->type = POWER_9 ;
 
 		else if ( Cell_i->Typename == "GROUND"   ) Cell_i->type = GROUND   ;
 		else if ( Cell_i->Typename == "GROUND_1" ) Cell_i->type = GROUND_1 ;

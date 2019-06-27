@@ -283,226 +283,249 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 }
 void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
-	// int iFace=0, jFace=0, iCell=0, jCell=0, j=0, P=0, N=0, Pj=0, Nj=0, kk=0, col=0, jj ;
-	// int nCell = m->local_cell_number ;//+ m->ghost_cell_number_level_1 ; //Include overloap cell
-	// double Ad_dPN=0.0, HarmonicMean=0.0, Source=0.0, electrode_voltage=0.0, ShapeFunction=0.0, CP=0.0, CN=0.0, BC_Value=0.0 ;
+	int iFace=0, jFace=0, iCell=0, jCell=0, j=0, P=0, N=0, Pj=0, Nj=0, kk=0, col=0, jj ;
+	int nCell = m->local_cell_number ;//+ m->ghost_cell_number_level_1 ; //Include overloap cell
+	double Ad_dPN=0.0, HarmonicMean=0.0, Source=0.0, electrode_voltage=0.0, ShapeFunction=0.0, CP=0.0, CN=0.0, BC_Value=0.0 ;
 
-	// s.ZeroEntriesMat() ;
-	// Cell *Cell_i, *Cell_j, *Cell_jj, *Cell_ii ;
-	// for( int i = 0 ; i < nCell ; i++ ) {
+	Cell *Cell_i, *Cell_j ;
+	// 0 stand for poisson equation.
+	plasma.before_matrix_construction( 0 ) ;
+	plasma.before_source_term_construction( 0 ) ;
 
-	// 	Cell_i = plasma.get_cell(i) ;
+	Cell *Cell_i, *Cell_j, *Cell_jj, *Cell_ii ;
+	for( int i = 0 ; i < nCell ; i++ ) {
 
-	// 	iFace 	 = Cell_i->face_number ;
-	// 	iCell 	 = Cell_i->cell_number ;
+		Cell_i = plasma.get_cell(i) ;
 
-	// 	/*--- Reset  ---*/
-	// 	row 	 = m->cell[ i ].id ;//Global id.
-	// 	P = row ;
-	// 	Source 	 = 0.0 ;
+		iFace 	 = Cell_i->face_number ;
+		iCell 	 = Cell_i->cell_number ;
 
-	// 	/*--- Loop over electrode cells ---*/
-	// 	if ( Cell_i->type == POWER or Cell_i->type == GROUND ){
+		/*--- Loop over electrode cells ---*/
+		if ( Cell_i->type == POWER or Cell_i->type == GROUND ){
 
-	// 		s.Add_Entries( row, P, 1.0 ) ;
-	// 		Source += (SineVoltage( Cell_i->type, config, var )) ;
+			plasma.add_entry_in_matrix     ( 0, i, Cell_i->id, 1.0 ) ;
+			plasma.add_entry_in_source_term( 0, i, SineVoltage( Cell_i->type, config, var ) ) ;
 
-	// 	} else {
 
-	// 		for ( int k = 0 ; k < iCell ; k++ ) {
-	// 			/*--- Orthogonal term ---*/
-	// 			j 	  = m->PFM_CELL[ i ][ k ].NeighborCellId ;
+		} else {
 
-	// 			jCell = Cell_j->cell_number ;
-	// 			jFace = Cell_j->face_number ;
+			for ( int k = 0 ; k < iCell ; k++ ) {
 
-	// 			N = m->PFM_CELL[ i ][ k ].NeighborGlobalCellId ;
+				/*--- Orthogonal term ---*/
+				//j 	  = m->PFM_CELL[ i ][ k ].NeighborCellId ;
+				j = Cell_i->cell[ k ]->local_id ;
+				Cell_j = plasma.get_cell( j ) ;
 
-	// 			HarmonicMean = var->Eps[ i ]*var->Eps[ j ]
-	// 						/( var->Eps[ j ]*(m->PFM_CELL[ i ][ k ].dPPf) 
-	// 						+  var->Eps[ i ]*(m->PFM_CELL[ i ][ k ].dNPf) ) ;
+				jCell = Cell_j->cell_number ;
+				jFace = Cell_j->face_number ;
 
-	// 			Ad_dPN = HarmonicMean * ( m->PFM_CELL[ i ][ k ].dArea ) ;
 
-	// 			s.Add_Entries( row, P, -Ad_dPN ) ; 
-	// 			s.Add_Entries( row, N,  Ad_dPN ) ; 
+				//N = m->PFM_CELL[ i ][ k ].NeighborGlobalCellId ;
+				N = Cell_j->id ;
 
-	// 			Source += (-1.0)*(m->PFM_CELL[ i ][ k ].SurfaceCharge)*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf 
-	// 			 		/ ( var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf ) * m->PFM_CELL[ i ][ k ].dArea ;				 		
+				HarmonicMean = var->Eps[ i ]*var->Eps[ j ]
+							/( var->Eps[ j ]*(m->PFM_CELL[ i ][ k ].dPPf) 
+							+  var->Eps[ i ]*(m->PFM_CELL[ i ][ k ].dNPf) ) ;
 
-	// 			/*--- Non-Orthogonal term 
-	// 				For ∇P gradient term @ P point, dVar = V_j - V_i		
-	// 			*/
-	// 			for ( int kk = 0 ; kk < iCell ; kk++ ) {
+				Ad_dPN = HarmonicMean * ( m->PFM_CELL[ i ][ k ].dArea ) ;
 
-	// 				col = m->PFM_CELL[ i ][ kk ].NeighborGlobalCellId ;
-	// 				jj 	= m->PFM_CELL[ i ][ kk ].NeighborCellId ;
-	// 				//V_i term - P point
-	// 				ShapeFunction =  var->LSQ_Cx[ kk ][ i ]*m->PFM_CELL[ i ][ k ].PPP[ 0 ] 
-	// 				 				+var->LSQ_Cy[ kk ][ i ]*m->PFM_CELL[ i ][ k ].PPP[ 1 ] ; //(∇ dot P'P)
+				plasma.add_entry_in_matrix( 0, i, Cell_i->id, -Ad_dPN ) ;
+				plasma.add_entry_in_matrix( 0, i, Cell_j->id,  Ad_dPN ) ;
 
-	// 				s.Add_Entries( row, P, -Ad_dPN*ShapeFunction*(-1.0) ) ;
+				Source += (-1.0)*(m->PFM_CELL[ i ][ k ].SurfaceCharge)*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf 
+				 		/ ( var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf ) * m->PFM_CELL[ i ][ k ].dArea ;				 		
 
-	// 				//V_j term - N point
-	// 				if ( Cell_i->type == m->cell[ jj ].type ){
+				/*--- Non-Orthogonal term 
+					For ∇P gradient term @ P point, dVar = V_j - V_i		
+				*/
+				for ( int kk = 0 ; kk < iCell ; kk++ ) {
 
-	// 					s.Add_Entries( row, col, -Ad_dPN*ShapeFunction*(1.0) ) ;
+					col = m->PFM_CELL[ i ][ kk ].NeighborGlobalCellId ;
 
-	// 				} else {
+					//jj 	= m->PFM_CELL[ i ][ kk ].NeighborCellId ;
+					jj = Cell_i->cell[ kk ]->local_id ;
+					Cell_jj = plasma.get_cell( jj ) ;
 
-	// 					if( m->cell[ jj ].type == POWER or m->cell[ jj ].type == GROUND ){
-	// 						//calculate gradient using value in the surface.
-	// 						electrode_voltage = SineVoltage( m->cell[ jj ].type, config, var ) ;
-	// 						Source += (-1.0)*-Ad_dPN*ShapeFunction*electrode_voltage ;
+					//V_i term - P point
+					ShapeFunction = var->LSQ_Cx[ kk ][ i ]*m->PFM_CELL[ i ][ k ].PPP[ 0 ] 
+					 							+ var->LSQ_Cy[ kk ][ i ]*m->PFM_CELL[ i ][ k ].PPP[ 1 ] ; //(∇ dot P'P)
 
-	// 					} else {
-	// 						//plasma-dielectric interface.
-	// 						BC_Value = m->PFM_CELL[ i ][ kk ].dNPf*m->PFM_CELL[ i ][ kk ].dPPf * m->PFM_CELL[ i ][ kk ].SurfaceCharge
-	// 							  / ( var->Eps[ jj ]*m->PFM_CELL[ i ][ kk ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ kk ].dNPf ) ;
-	// 						Source += (-1.0)*-Ad_dPN*ShapeFunction*BC_Value ;
-	// 						/*
-	// 							BC_Value +=( var->Phi[ j ]*var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Phi[ i ]*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf ) 
-	// 							/ ( var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf );
-	// 						*/
-	// 						CN = ( var->Eps[ jj ]*m->PFM_CELL[ i ][ kk ].dPPf ) / ( var->Eps[ jj ]*m->PFM_CELL[ i ][ kk ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ kk ].dNPf );
-	// 						CP = ( var->Eps[ i  ]*m->PFM_CELL[ i ][ kk ].dNPf ) / ( var->Eps[ jj ]*m->PFM_CELL[ i ][ kk ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ kk ].dNPf );
-	// 						s.Add_Entries( row, col, (-Ad_dPN)*ShapeFunction*CN ) ;
-	// 						s.Add_Entries( row,   P, (-Ad_dPN)*ShapeFunction*CP ) ;
+					//s.Add_Entries( row, P, -Ad_dPN*ShapeFunction*(-1.0) ) ;
+					 	plasma.add_entry_in_matrix( 0, i, Cell_i->id, -Ad_dPN*ShapeFunction*(-1.0) ) ;
 
-	// 					}
-	// 				}//End P point, interior
-	// 			}//End ∇P.
+					//V_j term - N point
+					if ( Cell_i->type == Cell_jj->type ){
 
-	// 			for ( int kk = iFace ; kk < iCell ; kk++ ) {
+						//s.Add_Entries( row, col, -Ad_dPN*ShapeFunction*(1.0) ) ;
+						plasma.add_entry_in_matrix( 0, i, Cell_j->id,  Ad_dPN ) ;
 
-	// 				//col = m->PFM_CELL[ i ][ kk ].NeighborGlobalCellId ;
-	// 				//jj 	= m->PFM_CELL[ i ][ kk ].NeighborCellId ;
-	// 				//V_i term - P point
-	// 				ShapeFunction =  var->LSQ_Cx[kk][ i ]*m->PFM_CELL[ i ][ k ].PPP[ 0 ] 
-	// 								+var->LSQ_Cy[kk][ i ]*m->PFM_CELL[ i ][ k ].PPP[ 1 ] ;
+					} else {
 
-	// 				s.Add_Entries( row, P, (-Ad_dPN)*ShapeFunction*(-1.0) ) ;
+						if( Cell_jj->type == POWER or Cell_jj->type == GROUND ){
 
-	// 				//V_j term - N point
-	// 				if ( m->cell[ i ].face[ kk ]->type == POWER or m->cell[ i ].face[ kk ]->type == GROUND ){
+							//calculate gradient using value in the surface.
+							electrode_voltage = SineVoltage( m->cell[ jj ].type, config, var ) ;
+							//Source += (-1.0)*-Ad_dPN*ShapeFunction*electrode_voltage ;
+							plasma.add_entry_in_source_term( 0, i, (-1.0)*-Ad_dPN*ShapeFunction*electrode_voltage ) ;
 
-	// 					//calculate gradient using value in the surface.
-	// 					electrode_voltage = SineVoltage( m->cell[ i ].face[ kk ]->type, config, var ) ;
-	// 					Source += (-1.0)*(-Ad_dPN)*ShapeFunction*electrode_voltage ;
+						} else {
 
-	// 				} else if( m->cell[ i ].face[ kk ]->type == NEUMANN ) {
+							//plasma-dielectric interface.
+							BC_Value = m->PFM_CELL[ i ][ kk ].dNPf*m->PFM_CELL[ i ][ kk ].dPPf * m->PFM_CELL[ i ][ kk ].SurfaceCharge
+								  / ( var->Eps[ jj ]*m->PFM_CELL[ i ][ kk ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ kk ].dNPf ) ;
 
-	// 					s.Add_Entries( row, P, -Ad_dPN*ShapeFunction*(1.0) ) ;
+							//Source += (-1.0)*-Ad_dPN*ShapeFunction*BC_Value ;
+							plasma.add_entry_in_source_term( 0, i, (-1.0)*-Ad_dPN*ShapeFunction*BC_Value ) ;
 
-	// 				} else {
-	// 					cout<<"ERROR, No Dielectric in domain boundary @ ∇P."<<endl;exit(1) ;
-	// 				}
-	// 			}//End P point boundary face.
+							/*
+								BC_Value +=( var->Phi[ j ]*var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Phi[ i ]*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf ) 
+								/ ( var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf );
+							*/
+
+							CN = ( var->Eps[ jj ]*m->PFM_CELL[ i ][ kk ].dPPf ) / ( var->Eps[ jj ]*m->PFM_CELL[ i ][ kk ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ kk ].dNPf );
+							CP = ( var->Eps[ i  ]*m->PFM_CELL[ i ][ kk ].dNPf ) / ( var->Eps[ jj ]*m->PFM_CELL[ i ][ kk ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ kk ].dNPf );
+							//s.Add_Entries( row,   P, (-Ad_dPN)*ShapeFunction*CP ) ;
+							//s.Add_Entries( row, col, (-Ad_dPN)*ShapeFunction*CN ) ;
+							plasma.add_entry_in_matrix( 0, i, Cell_i->id, (-Ad_dPN)*ShapeFunction*CP ) ;
+							plasma.add_entry_in_matrix( 0, i, Cell_j->id, (-Ad_dPN)*ShapeFunction*CN ) ;
+
+						}
+					}//End P point, interior
+				}//End ∇P.
+
+				for ( int kk = iFace ; kk < iCell ; kk++ ) {
+
+					//V_i term - P point
+					ShapeFunction =  var->LSQ_Cx[kk][ i ]*m->PFM_CELL[ i ][ k ].PPP[ 0 ] 
+									+var->LSQ_Cy[kk][ i ]*m->PFM_CELL[ i ][ k ].PPP[ 1 ] ;
+
+					//s.Add_Entries( row, P, (-Ad_dPN)*ShapeFunction*(-1.0) ) ;
+					plasma.add_entry_in_matrix( 0, i, Cell_i->id, -Ad_dPN*ShapeFunction*(-1.0) ) ;
+
+					//V_j term - N point
+					if ( m->cell[ i ].face[ kk ]->type == POWER or m->cell[ i ].face[ kk ]->type == GROUND ){
+
+						//calculate gradient using value in the surface.
+						electrode_voltage = SineVoltage( m->cell[ i ].face[ kk ]->type, config, var ) ;
+						//Source += (-1.0)*(-Ad_dPN)*ShapeFunction*electrode_voltage ;
+						plasma.add_entry_in_source_term( 0, i,  (-1.0)*(-Ad_dPN)*ShapeFunction*electrode_voltage ) ;
+
+					} else if( m->cell[ i ].face[ kk ]->type == NEUMANN ) {
+
+						//s.Add_Entries( row, P, -Ad_dPN*ShapeFunction*(1.0) ) ;
+						plasma.add_entry_in_matrix( 0, i, Cell_i->id, -Ad_dPN*ShapeFunction*( 1.0) ) ;
+					} else {
+						cout<<"ERROR, No Dielectric in domain boundary @ ∇P."<<endl;exit(1) ;
+					}
+				}//End P point boundary face.
 		
-	// 			/*--- Non-Orthogonal term 
-	// 				For ∇N gradient term @ N point, dVar = V_j - V_i		
-	// 				for ( int kk = 0 ; kk < iCell ; kk++ ) {
-	// 			*/		
-	// 			if ( Cell_j->type == POWER or Cell_j->type == GROUND ){
-	// 				//No gradient
-	// 			} else {
-	// 				for ( int kk = 0 ; kk < jCell ; kk++ ) {
+				/*--- Non-Orthogonal term 
+					For ∇N gradient term @ N point, dVar = V_j - V_i		
+					for ( int kk = 0 ; kk < iCell ; kk++ ) {
+				*/		
+				if ( Cell_j->type == POWER or Cell_j->type == GROUND ){
+					//No gradient
+				} else {
 
-	// 					col = m->Cell[ j ][ kk ].NeighborGlobalCellId ;
-	// 					jj  = m->Cell[ j ][ kk ].NeighborCellId ;
+					for ( int kk = 0 ; kk < jCell ; kk++ ) {
 
-	// 					ShapeFunction =  var->LSQ_Cx[ kk ][ j ]*m->PFM_CELL[ i ][ k ].NNP[0] 
-	// 							  		+var->LSQ_Cy[ kk ][ j ]*m->PFM_CELL[ i ][ k ].NNP[1] ;
-	// 					//V_i term
-	// 					s.Add_Entries( row, N, Ad_dPN*ShapeFunction*(-1.0) ) ;
+						col = m->Cell[ j ][ kk ].NeighborGlobalCellId ;
 
-	// 					//V_j term
-	// 					if ( Cell_j->type == m->cell[ jj ].type ){
+						//jj  = m->Cell[ j ][ kk ].NeighborCellId ;
+						jj = Cell_j->cell[ kk ]->local_id ;
 
-	// 						s.Add_Entries( row, col, Ad_dPN*ShapeFunction*(1.0) ) ;
+						ShapeFunction =  var->LSQ_Cx[ kk ][ j ]*m->PFM_CELL[ i ][ k ].NNP[0] 
+								  		+var->LSQ_Cy[ kk ][ j ]*m->PFM_CELL[ i ][ k ].NNP[1] ;
+						//V_i term
+						s.Add_Entries( row, N, Ad_dPN*ShapeFunction*(-1.0) ) ;
 
-	// 					} else {
+						//V_j term
+						if ( Cell_j->type == m->cell[ jj ].type ){
 
-	// 						if ( m->cell[ jj ].type == POWER or m->cell[ jj ].type == GROUND ){
+							s.Add_Entries( row, col, Ad_dPN*ShapeFunction*(1.0) ) ;
 
-	// 							electrode_voltage = SineVoltage( m->cell[ jj ].type, config, var ) ;
-	// 							Source += (-1.0)*Ad_dPN*ShapeFunction*electrode_voltage ;
+						} else {
 
-	// 						} else {
+							if ( m->cell[ jj ].type == POWER or m->cell[ jj ].type == GROUND ){
 
-	// 							BC_Value = m->Cell[ j ][ kk ].dNPf*m->Cell[ j ][ kk ].dPPf * m->Cell[ j ][ kk ].SurfaceCharge
-	// 						 	 	  / ( var->Eps[ jj ]*m->Cell[ j ][ kk ].dPPf + var->Eps[ j ]*m->Cell[ j ][ kk ].dNPf ) ;
-	// 						 	Source += (-1.0)*Ad_dPN*ShapeFunction*BC_Value ;
-	// 						 	/*
-	// 								BC_Value +=( var->Phi[ j ]*var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Phi[ i ]*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf ) 
-	// 						 		/ ( var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf );
-	// 						 	*/
-	// 						 	CN = ( var->Eps[ jj]*m->Cell[ j ][ kk ].dPPf ) / ( var->Eps[ jj ]*m->Cell[ j ][ kk ].dPPf + var->Eps[ j ]*m->Cell[ j ][ k ].dNPf );
-	// 						 	CP = ( var->Eps[ j ]*m->Cell[ j ][ kk ].dNPf ) / ( var->Eps[ jj ]*m->Cell[ j ][ kk ].dPPf + var->Eps[ j ]*m->Cell[ j ][ k ].dNPf );
-	// 						 	s.Add_Entries( row, col, Ad_dPN*ShapeFunction*CN ) ;
-	// 						 	s.Add_Entries( row,   N, Ad_dPN*ShapeFunction*CP ) ;
-	// 						}
-	// 					}//NCell discontinue.
-	// 				}//End N point, interior.
+								electrode_voltage = SineVoltage( m->cell[ jj ].type, config, var ) ;
+								Source += (-1.0)*Ad_dPN*ShapeFunction*electrode_voltage ;
 
-	// 				for ( int kk = jFace ; kk < jCell ; kk++ ) {
+							} else {
 
-	// 					//col = m->Cell[ j ][ kk ].NeighborGlobalCellId ;
-	// 					//jj  = m->Cell[ j ][ kk ].NeighborCellId ;
+								BC_Value = m->Cell[ j ][ kk ].dNPf*m->Cell[ j ][ kk ].dPPf * m->Cell[ j ][ kk ].SurfaceCharge
+							 	 	  / ( var->Eps[ jj ]*m->Cell[ j ][ kk ].dPPf + var->Eps[ j ]*m->Cell[ j ][ kk ].dNPf ) ;
+							 	Source += (-1.0)*Ad_dPN*ShapeFunction*BC_Value ;
+							 	/*
+									BC_Value +=( var->Phi[ j ]*var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Phi[ i ]*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf ) 
+							 		/ ( var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf );
+							 	*/
+							 	CN = ( var->Eps[ jj]*m->Cell[ j ][ kk ].dPPf ) / ( var->Eps[ jj ]*m->Cell[ j ][ kk ].dPPf + var->Eps[ j ]*m->Cell[ j ][ k ].dNPf );
+							 	CP = ( var->Eps[ j ]*m->Cell[ j ][ kk ].dNPf ) / ( var->Eps[ jj ]*m->Cell[ j ][ kk ].dPPf + var->Eps[ j ]*m->Cell[ j ][ k ].dNPf );
+							 	s.Add_Entries( row, col, Ad_dPN*ShapeFunction*CN ) ;
+							 	s.Add_Entries( row,   N, Ad_dPN*ShapeFunction*CP ) ;
+							}
+						}//NCell discontinue.
+					}//End N point, interior.
 
-	// 					ShapeFunction =  var->LSQ_Cx[ kk ][ j ]*m->PFM_CELL[ i ][ k ].NNP[0] 
-	// 							  		+var->LSQ_Cy[ kk ][ j ]*m->PFM_CELL[ i ][ k ].NNP[1] ;
-	// 					//V_i term
-	// 					s.Add_Entries( row, N, Ad_dPN*ShapeFunction*(-1.0) ) ;
+					for ( int kk = jFace ; kk < jCell ; kk++ ) {
 
-	// 					if ( m->cell[ j ].face[ kk ]->type == GROUND or m->cell[ j ].face[ kk ]->type == POWER ){
+						//col = m->Cell[ j ][ kk ].NeighborGlobalCellId ;
+						//jj  = m->Cell[ j ][ kk ].NeighborCellId ;
 
-	// 						electrode_voltage = SineVoltage( m->cell[ j ].face[ kk ]->type, config, var ) ;
-	// 						Source += (-1.0)*Ad_dPN*ShapeFunction*electrode_voltage ;
+						ShapeFunction =  var->LSQ_Cx[ kk ][ j ]*m->PFM_CELL[ i ][ k ].NNP[0] 
+								  		+var->LSQ_Cy[ kk ][ j ]*m->PFM_CELL[ i ][ k ].NNP[1] ;
+						//V_i term
+						s.Add_Entries( row, N, Ad_dPN*ShapeFunction*(-1.0) ) ;
 
-	// 					} else if( m->cell[ j ].face[ kk ]->type == NEUMANN ) {
+						if ( m->cell[ j ].face[ kk ]->type == GROUND or m->cell[ j ].face[ kk ]->type == POWER ){
 
-	// 						s.Add_Entries( row, N, Ad_dPN*ShapeFunction*(1.0) ) ;
+							electrode_voltage = SineVoltage( m->cell[ j ].face[ kk ]->type, config, var ) ;
+							Source += (-1.0)*Ad_dPN*ShapeFunction*electrode_voltage ;
 
-	// 					} else {
-	// 						cout<<"ERROR, No Dielectric in domain boundary @ ∇N"<<endl; exit(1) ;
-	// 					}
-	// 				}//End N-point boundary
-	// 			}//End ∇N.	
+						} else if( m->cell[ j ].face[ kk ]->type == NEUMANN ) {
 
-	// 		}//Loop over neighbor cells
+							s.Add_Entries( row, N, Ad_dPN*ShapeFunction*(1.0) ) ;
 
-	// 	/*--------------------------------------------------------------*/
-	// 		for( int k = iCell ; k < iFace ; k++ ) {
+						} else {
+							cout<<"ERROR, No Dielectric in domain boundary @ ∇N"<<endl; exit(1) ;
+						}
+					}//End N-point boundary
+				}//End ∇N.	
 
-	// 			Ad_dPN = var->Eps[ i ]/(m->PFM_CELL[ i ][ k ].dDist)*(m->PFM_CELL[ i ][ k ].dArea) ;
+			}//Loop over neighbor cells
 
-	// 			if ( m->cell[ i ].face[ k ]->type == NEUMANN ){
+		/*--------------------------------------------------------------*/
+			for( int k = iCell ; k < iFace ; k++ ) {
 
-	// 			} else if ( m->cell[ i ].face[ k ]->type == GROUND or m->cell[ i ].face[ k ]->type == POWER ){
+				Ad_dPN = var->Eps[ i ]/(m->PFM_CELL[ i ][ k ].dDist)*(m->PFM_CELL[ i ][ k ].dArea) ;
 
-	// 				electrode_voltage = SineVoltage( m->cell[ i ].face[ k ]->type, config, var ) ;
-	// 				//if ( m->cell[ i ].face[ k ]->type == POWER ) var->Volt = electrode_voltage ;
+				if ( m->cell[ i ].face[ k ]->type == NEUMANN ){
 
-	// 				s.Add_Entries( row, row, -Ad_dPN ) ;
-	// 				Source += -(electrode_voltage)*Ad_dPN ;
+				} else if ( m->cell[ i ].face[ k ]->type == GROUND or m->cell[ i ].face[ k ]->type == POWER ){
 
-	// 			}else if ( m->cell[ i ].face[ k ]->type == DIELECTRIC ) {
+					electrode_voltage = SineVoltage( m->cell[ i ].face[ k ]->type, config, var ) ;
+					//if ( m->cell[ i ].face[ k ]->type == POWER ) var->Volt = electrode_voltage ;
 
-	// 				cout<<"Boundary face don't have DIELECTRIC, pls check w/ K.-L. Chen-2"<<endl;
-	// 				exit(1) ;
+					s.Add_Entries( row, row, -Ad_dPN ) ;
+					Source += -(electrode_voltage)*Ad_dPN ;
 
-	// 			}else{
-	// 				cout<< m->cell[ i ].face[ k ]->Typename<<endl;
-	// 				cout<< m->cell[ i ].face[ k ]->type<<endl;
-	// 				cout<<"error-\" solver_poisson.cpp-3\""<<endl;
-	// 			}
-	// 		}//Loop over boundary face cells
-	// 	/*--------------------------------------------------------------*/
-	// 	}
-	// 	Source += -var->NetQ[ i ]*(m->cell[ i ].volume) ;
-	// 	s.push_source ( row, Source) ;
-	// }//Cell Loop
+				}else if ( m->cell[ i ].face[ k ]->type == DIELECTRIC ) {
+
+					cout<<"Boundary face don't have DIELECTRIC, pls check w/ K.-L. Chen-2"<<endl;
+					exit(1) ;
+
+				}else{
+					cout<< m->cell[ i ].face[ k ]->Typename<<endl;
+					cout<< m->cell[ i ].face[ k ]->type<<endl;
+					cout<<"error-\" solver_poisson.cpp-3\""<<endl;
+				}
+			}//Loop over boundary face cells
+		/*--------------------------------------------------------------*/
+		}
+		Source += -var->NetQ[ i ]*(m->cell[ i ].volume) ;
+		s.push_source ( row, Source) ;
+	}//Cell Loop
 }
 void CPoisson::Bulid_A_B_1st( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
