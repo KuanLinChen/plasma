@@ -1246,7 +1246,7 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 	for ( int iSpecies = 0 ; iSpecies < config->TotalSpeciesNum ; iSpecies++ ){
 		for ( int i = 0 ; i <plasma.Mesh.cell_number  ; i++ ) {
 			 AvgT[ iSpecies ][ i ] +=  T[ iSpecies ][ i ]/config->StepPerCycle ;
-			 if(iSpecies==0) cout<<"i: "<<i<<", T: "<<AvgT[ iSpecies ][ i ]<<endl;
+			 //if(iSpecies==0) cout<<"i: "<<i<<", T: "<<AvgT[ iSpecies ][ i ]<<endl;
 			AvgU0[ iSpecies ][ i ] += U0[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU1[ iSpecies ][ i ] += U1[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU2[ iSpecies ][ i ] += U2[ iSpecies ][ i ]/config->StepPerCycle ;

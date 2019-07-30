@@ -116,7 +116,6 @@ int main( int argc, char * argv[] )
 		boost::shared_ptr<CEnergyDensity> electron_energy_solver ;
 		electron_energy_solver = boost::shared_ptr<CEnergyDensity> ( new CEnergyDensity ) ;
 		electron_energy_solver->Init( mesh, Config, 0 ) ;
-		//exit(1) ;
 	/*--- post-processing module ---*/
 		boost::shared_ptr<CPost> post ;
 		post = boost::shared_ptr<CPost> ( new CPost ) ;
