@@ -30,6 +30,7 @@ class CPoisson
 
 
 	public:
+		
 		CPoisson();
 
 	/*--- PETSc Solver ---*/	
@@ -65,7 +66,7 @@ class CPoisson
 	 * \param[in] var    - Variable.
 	 */
 	void Bulid_A_B_1st( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
-	void Calculate_Gradient_GG( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+
 	/*!
 	 * \brief Calculate the matrix A and source term B w/ the non-orthogonal correction. 
 	 * \param[in] domain - Grid information.
@@ -109,7 +110,7 @@ class CPoisson
 
 		void CalculateDispCurrentDensity( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 		//void CalculateTotalCurrentDensity( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
-		double SineVoltage( int FaceType, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+		double SineVoltage( string FaceType, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 		double DotProduct(double *A, double *B ){
 			return A[0]*B[0] + A[1]*B[1] ;
 		};

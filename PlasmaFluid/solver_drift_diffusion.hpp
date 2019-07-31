@@ -33,6 +33,8 @@ class CDriftDiffusion
 	 */		
 	CDriftDiffusion();
 
+	ultraMPP drift_diffusion ;
+
 	/*!
 	 * \brief Allocate the solution variables with the configuration setup.
 	 * \param[in] domain - Grid information.

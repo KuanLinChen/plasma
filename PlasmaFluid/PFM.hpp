@@ -1,5 +1,6 @@
 #pragma once
 #include "ultraMPP.h"
+#include "petscsys.h" 
 using namespace std;
 
 extern int mpi_rank, mpi_size ;

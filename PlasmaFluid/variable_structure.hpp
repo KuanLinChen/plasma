@@ -134,7 +134,7 @@ class CVariable
 	CScalar *U3, *AvgU3, *PreU3 ;/*!< \brief Present, cycle-averaged and Previoud time Z-mass flux */ 
 	CScalar *U4, *AvgU4, *PreU4 ;/*!< \brief Present, cycle-averaged and Previoud time energy flux */ 
 	CScalar *JouleHeating, *AvgJouleHeating ; /*!< \brief Present, cycle-averaged Joule heation term */
-	void CalculateDUDT( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
+
 
 	CScalar *LFASourceSink ; /*!< \brief  */
 	CScalar Kappa ;
@@ -289,8 +289,6 @@ class CVariable
 	void SourceSink_Cathode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 
 	void CalculateEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
-
-	double EmitterFlux( int iCell ) ;
 
     /*! 
 	 * \brief Initialize reference valut.

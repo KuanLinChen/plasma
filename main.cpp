@@ -5,24 +5,22 @@
 #include "variable_structure.hpp"
 #include "solver_poisson.hpp"
 #include "solver_drift_diffusion.hpp"
-#include "solver_drift_diffusion.hpp"
 #include "post_structure.hpp"
-#include "solver_energy_density.hpp"
+// #include "solver_energy_density.hpp"
 // #include "solver_fluid_model.hpp"
 // #include "solver_navier_stokes.hpp"
 // #include "variable_structure_NS.hpp"
 // #include "PETSc_solver.h"
 
 using namespace std ;
-int mpi_size ; /*!< \brief The number of processes. */
-int	mpi_rank ; /*!< \brief The rank(id) of the process. */
+int mpi_size, /*!< \brief The number of processes. */
+		mpi_rank ;/*!< \brief The rank(id) of the process. */
 int nDim ; /*!< \brief The dimension of the problem. */
 bool WRT_CYC_AVG = false ; /*!< \brief Trigger for write cycle averaged data. */
 bool WRT_INS = false ; /*!< \brief Trigger for write instantaneous averaged data. */
 bool MON_CYC = false ; /*!< \brief Trigger for monitor cycle averaged data. */
 bool MON_INS = false ; /*!< \brief Trigger for monitor instantaneous averaged data. */
 ultraMPP plasma ; 
-//map<string,int> var_name ;/*!< \brief map of variable names. It contain the nama of the variable and index associated to this name */
 
 int main( int argc, char * argv[] )
 {
@@ -49,13 +47,9 @@ int main( int argc, char * argv[] )
 	plasma.load_mesh( argv[1] + Config->MeshFile ) ;
 	/* potential + numSpecies*Continuity + electron energy */
 	int numMatrixSolver = 1 + Config->TotalSpeciesNum  + 1  ;
-	plasma.set_matrix_number( numMatrixSolver ) ;
-
-	/*--- Link ultraMPP & Read Mesh file ---*/
+	/*--- This module will be delets after some modification --*/
 	boost::shared_ptr<CDomain> mesh ;
 	mesh = boost::shared_ptr<CDomain> ( new CDomain ) ;
-	mesh->link_ultraMPP() ;
-	mesh->SetupCellFaceType() ;
 	mesh->BulidCellStructure() ;
 
 	/*--- Solution Variables ---*/
@@ -70,11 +64,14 @@ int main( int argc, char * argv[] )
 	poisson_solver->Init( mesh, Config ) ;
 
 	/*--- Dirft-diffusion solver ---*/
-	int DriftDiffusionNum=0, FullEqnNum=0 ;/*!< \brief Number of drift-diffusion eqn. & Full eqn. */
+	int DriftDiffusionNum=0, FullEqnNum=0 ;
 	int SpeciesType=0 ;
 	boost::shared_ptr<CDriftDiffusion> *continuity_solver ;
+/*2019/07/30
+*/
 
 	/* First: Count the number of D-D equation and full equation. */
+/*
 	for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {
 		SpeciesType = Config->Species[ jSpecies ].Type ;
 		if ( Config->Equation[ SpeciesType ].Equation == 0 ){
@@ -83,7 +80,9 @@ int main( int argc, char * argv[] )
 			FullEqnNum++ ;
 		}
 	} if(mpi_rank==0) cout<<"Number of D-D eqn: "<< DriftDiffusionNum <<", Number of full eqn: "<<FullEqnNum<<endl;
+*/
 	/* Second: Create the D.-D. equation modules */
+/*
 	if( DriftDiffusionNum > 0 ){			
 		continuity_solver = new boost::shared_ptr<CDriftDiffusion> [ DriftDiffusionNum ] ;
 		DriftDiffusionNum = 0 ;
@@ -96,6 +95,7 @@ int main( int argc, char * argv[] )
 			}
 		}//End iSpecies
 	}//End Drift-Diffusion
+ */
 
 	/*--- full equations solver ---*/
 		// boost::shared_ptr<CFluidModel> *fluid_model_solver ;
@@ -113,19 +113,22 @@ int main( int argc, char * argv[] )
 		// }
 
 	/*--- Energy density Eqn. w/ Drift-diffusion solver ---*/
+/*
 		boost::shared_ptr<CEnergyDensity> electron_energy_solver ;
 		electron_energy_solver = boost::shared_ptr<CEnergyDensity> ( new CEnergyDensity ) ;
 		electron_energy_solver->Init( mesh, Config, 0 ) ;
+ */
 	/*--- post-processing module ---*/
 		boost::shared_ptr<CPost> post ;
 		post = boost::shared_ptr<CPost> ( new CPost ) ;
 
-
  	/* first solve potential and electric field as initial. */
+/*
 		poisson_solver->Solve( mesh, Config, Var ) ;
  		Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
  		post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
+ */
 
 
  		/*--- Main Cycle ---*/
@@ -153,9 +156,9 @@ int main( int argc, char * argv[] )
  				if( mpi_rank == MASTER_NODE and MON_CYC and MON_INS ){
  					cout<<"MainCycle: "<<MainCycle<<"\t"<<"MainStep: "<<MainStep<<"\t"<<"Voltage: "<<Var->Volt<<"  [V]"<<"\t"<<"PhysicalTime: "<<Var->PhysicalTime<<"  [s]"<<endl ; 
  					//cout<<"Poissn ksp iter : "<< plasma.get_convergence_reason( 0 ) <<endl ;
- 					for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
+ 					//for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
  						//cout<<"Continuity["<<iEqn<<"] ksp iter : "<<plasma.get_convergence_reason( iEqn+1 )<<endl ;
- 					}
+ 					//}
  				}
 
  				/* Update solution: Copy solution (n+1) step -> (n) step */ 
@@ -169,21 +172,22 @@ int main( int argc, char * argv[] )
 
 
 				/* Solve number density for next time step (n+1). */
-				for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
-					continuity_solver[ iEqn ]->Solve( mesh, Config, Var ) ;
-				}
+				//for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
+				//	continuity_solver[ iEqn ]->Solve( mesh, Config, Var ) ;
+				//}
 
 				/* Solve energy density for next time step (n+1). */
-				if ( Config->PFM_Assumption == "LMEA" ) {
-					//cout<<"A"<<endl;
-					electron_energy_solver->Solver( mesh, Config, Var ) ;
-				}
+				//if ( Config->PFM_Assumption == "LMEA" ) {
+				//	electron_energy_solver->Solver( mesh, Config, Var ) ;
+				//}
 
 				/* Output instantaneous flow field data */
- 				if( WRT_INS ) post->OutputFlow( mesh, Config, Var, MainCycle, MainStep ) ;
+ 				if( WRT_INS ) 
+ 					post->OutputFlow( mesh, Config, Var, MainCycle, MainStep ) ;
 
 				/* Calculate cycle average data. */
-				if( WRT_CYC_AVG ) Var->AddAverage( mesh, Config ) ;
+				if( WRT_CYC_AVG ) 
+					Var->AddAverage( mesh, Config ) ;
 
  				Var->PhysicalTime += Var->Dt ;
 
@@ -198,10 +202,6 @@ int main( int argc, char * argv[] )
 // 			Config->Cycle ++ ;
  		}//End Main Cycle
 
-	// PetscFinalize();
-	// MPI_Barrier(MPI_COMM_WORLD);
-	// MPI_Finalize() ;
-	//plasma.end_MPP() ;
 	return 0 ;
 }
 

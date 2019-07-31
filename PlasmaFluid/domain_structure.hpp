@@ -78,16 +78,10 @@ class CDomain
 	public:
 		CDomain();
 
-		ultraMPP *MPP ; 
-
 		CCell **PFM_CELL ;
 
 		void BulidCellStructure() ;
-		void SetupCellFaceType() ;
-		void link_ultraMPP() ;
 		
-		//void SetupCellFaceType_NS() ;
-		//int local_cell_number ;
 		/*--- Least-Square Granient Reconstruction ---*/
 		CLSQ *LSQ ;
 
