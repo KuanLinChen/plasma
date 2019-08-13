@@ -24,7 +24,7 @@ class CEnergyDensity
 	 * \brief Constructor of the class.
 	 */		
 	CEnergyDensity();
-
+	ultraMPP energy_density ;
 	/*!
 	 * \brief Allocate the solution variables with the configuration setup.
 	 * \param[in] domain - Grid information.
@@ -38,7 +38,6 @@ class CEnergyDensity
 	double C[ 5 ] ;
 
 	int iSpecies ; /*!< \brief Species index for this module */ 
-	int iMatrix ; /*!< \brief The i-th matrix solver in plasma container. */ 
 
 	/*--- Solver Control Parameter ---*/	
 	double GVarN[2], GVarP[2] ;

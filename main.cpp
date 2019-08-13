@@ -22,10 +22,16 @@ bool MON_CYC = false ; /*!< \brief Trigger for monitor cycle averaged data. */
 bool MON_INS = false ; /*!< \brief Trigger for monitor instantaneous averaged data. */
 ultraMPP plasma ; 
 
+int	gargc2 ;
+char **gargv2 ;
+
 int main( int argc, char * argv[] )
 {
 	/* the 'plasma' is global variable, it is define in the 'PFM.hpp' file */
-	plasma.initial( argc, argv, &mpi_rank, &mpi_size ) ;
+	gargc2	=	argc ;
+	gargv2	=	argv ;
+
+	plasma.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
 
 	/* read the case input file path */
 	if ( argv[1] == NULL ) {
@@ -67,8 +73,7 @@ int main( int argc, char * argv[] )
 	int DriftDiffusionNum=0, FullEqnNum=0 ;
 	int SpeciesType=0 ;
 	boost::shared_ptr<CDriftDiffusion> *continuity_solver ;
-/*2019/07/30
-*/
+
 
 	/* First: Count the number of D-D equation and full equation. */
 /*

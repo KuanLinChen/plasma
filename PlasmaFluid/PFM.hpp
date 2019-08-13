@@ -3,6 +3,9 @@
 #include "petscsys.h" 
 using namespace std;
 
+extern int gargc2 ;
+extern char **gargv2 ;
+
 extern int mpi_rank, mpi_size ;
 extern int nDim ;
 extern ultraMPP plasma ;

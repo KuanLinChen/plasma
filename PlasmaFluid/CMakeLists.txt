@@ -30,7 +30,7 @@ solver_poisson.cpp 			solver_poisson.hpp
 
 solver_drift_diffusion.cpp 	solver_drift_diffusion.hpp
 
-#solver_energy_density.cpp 	solver_energy_density.hpp
+solver_energy_density.cpp 	solver_energy_density.hpp
 
 post_structure.cpp 			post_structure.hpp
 
