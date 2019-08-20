@@ -6,8 +6,8 @@
 #include "solver_poisson.hpp"
 #include "solver_drift_diffusion.hpp"
 #include "post_structure.hpp"
-// #include "solver_energy_density.hpp"
-// #include "solver_fluid_model.hpp"
+#include "solver_energy_density.hpp"
+#include "solver_fluid_model.hpp"
 // #include "solver_navier_stokes.hpp"
 // #include "variable_structure_NS.hpp"
 // #include "PETSc_solver.h"
@@ -76,7 +76,6 @@ int main( int argc, char * argv[] )
 
 
 	/* First: Count the number of D-D equation and full equation. */
-/*
 	for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {
 		SpeciesType = Config->Species[ jSpecies ].Type ;
 		if ( Config->Equation[ SpeciesType ].Equation == 0 ){
@@ -85,9 +84,7 @@ int main( int argc, char * argv[] )
 			FullEqnNum++ ;
 		}
 	} if(mpi_rank==0) cout<<"Number of D-D eqn: "<< DriftDiffusionNum <<", Number of full eqn: "<<FullEqnNum<<endl;
-*/
 	/* Second: Create the D.-D. equation modules */
-/*
 	if( DriftDiffusionNum > 0 ){			
 		continuity_solver = new boost::shared_ptr<CDriftDiffusion> [ DriftDiffusionNum ] ;
 		DriftDiffusionNum = 0 ;
@@ -100,29 +97,27 @@ int main( int argc, char * argv[] )
 			}
 		}//End iSpecies
 	}//End Drift-Diffusion
- */
 
 	/*--- full equations solver ---*/
-		// boost::shared_ptr<CFluidModel> *fluid_model_solver ;
-		// if( FullEqnNum > 0 ){			
-		// 	fluid_model_solver = new boost::shared_ptr<CFluidModel> [ FullEqnNum ] ;
-		// 	FullEqnNum = 0 ;
-		// 	for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {
-		// 		SpeciesType = Config->Species[ jSpecies ].Type ;
-		// 		if ( Config->Equation[ SpeciesType ].Equation > 0 ){
-		// 			fluid_model_solver[ FullEqnNum ] = boost::shared_ptr<CFluidModel> ( new CFluidModel ) ;
-		// 			fluid_model_solver[ FullEqnNum ]->Init( mesh, Config, Config->Species[ jSpecies ].Index ) ;
-		// 			FullEqnNum++ ;
-		// 		}
-		// 	}
-		// }
+		boost::shared_ptr<CFluidModel> *fluid_model_solver ;
+		if( FullEqnNum > 0 ){			
+			fluid_model_solver = new boost::shared_ptr<CFluidModel> [ FullEqnNum ] ;
+			FullEqnNum = 0 ;
+			for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {
+				SpeciesType = Config->Species[ jSpecies ].Type ;
+				if ( Config->Equation[ SpeciesType ].Equation > 0 ){
+					fluid_model_solver[ FullEqnNum ] = boost::shared_ptr<CFluidModel> ( new CFluidModel ) ;
+					fluid_model_solver[ FullEqnNum ]->Init( mesh, Config, Config->Species[ jSpecies ].Index ) ;
+					FullEqnNum++ ;
+				}
+			}
+		}
 
 	/*--- Energy density Eqn. w/ Drift-diffusion solver ---*/
-/*
 		boost::shared_ptr<CEnergyDensity> electron_energy_solver ;
 		electron_energy_solver = boost::shared_ptr<CEnergyDensity> ( new CEnergyDensity ) ;
 		electron_energy_solver->Init( mesh, Config, 0 ) ;
- */
+
 	/*--- post-processing module ---*/
 		boost::shared_ptr<CPost> post ;
 		post = boost::shared_ptr<CPost> ( new CPost ) ;
@@ -172,19 +167,36 @@ int main( int argc, char * argv[] )
  				/* Update the rate constants & transport coefficients. */
  				Var->ChemistryUpdate( mesh, Config ) ; 
 
+				/*--- Predtic the ion number density for poisson eqn. (Only for full eqn.) ---*/
+				for ( int iEqn = 0 ; iEqn < FullEqnNum ; iEqn++ ) {
+					if ( fluid_model_solver[ iEqn ]->SpeciesType == ION ) {
+						Var->Alpha_Beta(  mesh, Config ) ;
+						fluid_model_solver[ iEqn ]->Solve_Continuity( mesh, Config, Var ) ;
+					}
+				}
 				/* Solve for potential and electric field. */
  				poisson_solver->Solve( mesh, Config, Var ) ;
 
 
 				/* Solve number density for next time step (n+1). */
-				//for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
-				//	continuity_solver[ iEqn ]->Solve( mesh, Config, Var ) ;
-				//}
+				for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
+					continuity_solver[ iEqn ]->Solve( mesh, Config, Var ) ;
+				}
+
+				/*--- Solve number density and flux for next time step (k+1). ---*/
+				for ( int iEqn = 0 ; iEqn < FullEqnNum ; iEqn++ ) {
+					if ( fluid_model_solver[ iEqn ]->SpeciesType != ION ) {
+						fluid_model_solver[ iEqn ]->Solve_Continuity( mesh, Config, Var ) ;
+					}
+
+					fluid_model_solver[ iEqn ]->Solve_Momentum( mesh, Config, Var ) ;
+				}
 
 				/* Solve energy density for next time step (n+1). */
-				//if ( Config->PFM_Assumption == "LMEA" ) {
-				//	electron_energy_solver->Solver( mesh, Config, Var ) ;
-				//}
+				if ( Config->PFM_Assumption == "LMEA" and DriftDiffusionNum > 0 ) {
+					electron_energy_solver->Solver( mesh, Config, Var ) ;
+				}
+
 
 				/* Output instantaneous flow field data */
  				if( WRT_INS ) 

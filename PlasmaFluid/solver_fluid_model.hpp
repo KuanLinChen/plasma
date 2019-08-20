@@ -4,24 +4,14 @@
 #include <iomanip>
 #include <sstream>
 #include <string.h>
-#include <metis.h>
 #include <algorithm>
 #include <fstream>
 #include <set>
-#include "json.hpp"
-#include "main.h"
 #include "PFM.hpp"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-
-#include "PETSc_solver.h"
-
-#include "domain.h"
 #include "domain_structure.hpp"
 #include "variable_structure.hpp"
 #include "config_structure.hpp"
-#include "scalar.h"
 
 using namespace std;
 class CFluidModel 
@@ -42,24 +32,16 @@ class CFluidModel
 	 */ 
 	void Init( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &config, int index ) ;
 
-
-	boost::shared_array <double> Flux ;/*!< \brief Convection Flux[iVar] @ cell interface. */ 
-
 	double **Res ;/*!< \brief Residue for each equation Res[iEqn][iCell] */ 
 	int iSpecies, SpeciesType ; /*!< \brief Species index for this module */ 
 
-	Scalar Pressure ; /*!< \brief Pressure of i ion species */ 
-	Scalar Thermal2 ; /*!< \brief Thermal velocity square. */
-	Scalar *CollisionFreq ;
-	//Scalar Kappa ;
+	CScalar Pressure ; /*!< \brief Pressure of i ion species */ 
+	CScalar Thermal2 ; /*!< \brief Thermal velocity square. */
+	CScalar *CollisionFreq ;
 	
 	double CrossSection ;
 	bool Grave ;
 	/*--- PETSc Solver ---*/	
-		PETScSolver s ;
-		int *d_nnz, *o_nnz ;
-		int row, col[ 5 ], ncol ;
-		double C[ 5 ] ;
 		double Omaga ;
 	/*--- Solver Control Parameter ---*/	
 		double GVarN[2], GVarP[2] ;

@@ -60,7 +60,7 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
 	int iFace=0, iCell=0, j=0 ;
-	int nCell = m->local_cell_number ;
+
 	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
@@ -68,7 +68,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	energy_density.before_matrix_construction() ;
 	energy_density.before_source_term_construction() ;
 
-	for( int i = 0 ; i < nCell ; i++ ) {
+	for( int i = 0 ; i < energy_density.Mesh.cell_number ; i++ ) {
 
 		Cell_i = energy_density.get_cell( i ) ;
 		iFace  = Cell_i->face_number ;
@@ -279,7 +279,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
 	int iFace=0, iCell=0, j=0 ;
-	int nCell = m->local_cell_number ;
+
 	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0, Source=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
@@ -287,17 +287,11 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 	energy_density.before_matrix_construction() ;
 	energy_density.before_source_term_construction() ;
 
-	for( int i = 0 ; i < nCell ; i++ ) {
+	for( int i = 0 ; i < energy_density.Mesh.cell_number ; i++ ) {
 
 		Cell_i = energy_density.get_cell( i ) ;
 		iFace  = Cell_i->face_number ;
 		iCell  = Cell_i->cell_number ;
-
-		#if Debug_EE_Bulid_A_B_1st_zero
-			ncol = 1 ;
-			Source = 0.0 ;
-			for( int k = 0 ; k < 5 ; k++ ) C[ k ] = 0.0 ;	
-		#endif
 
 		/*--- Loop over PLASMA cells ---*/
 		if (  energy_density.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
@@ -401,7 +395,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			if( energy_density.get_face_typename( Cell_i->face[ k ]->data_id)  == "NEUMANN" ){
+	 			if( energy_density.get_face_typename( Cell_i->face[ k ]->data_id )  == "NEUMANN" ){
 	 				//do nothing
 	 			}else{
 
@@ -482,13 +476,12 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 	}//Cell Loop
 	energy_density.finish_matrix_construction() ;
 	energy_density.finish_source_term_construction() ;
-
 	MPI_Barrier(MPI_COMM_WORLD) ;
 }
 void CEnergyDensity::Zero_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
 {
-	int nCell = m->local_cell_number ;
-	for ( int i = 0 ; i < nCell ; i++ ) {
+
+	for ( int i = 0 ; i < energy_density.Mesh.cell_number ; i++ ) {
 		var->GradU4[ iSpecies ][ 0 ][ i ] = 0.0 ;
 		var->GradU4[ iSpecies ][ 1 ][ i ] = 0.0 ;
 	}//Loop over all cells
@@ -497,12 +490,12 @@ void CEnergyDensity::Zero_Gradient( boost::shared_ptr<CDomain> &m, boost::shared
 }
 void CEnergyDensity::Calculate_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
 {
-	int nCell = m->local_cell_number ;
+
 	int iFace=0, iCell=0, j=0, NeighborCellIndex=0 ;
 	double dVar=0.0, Gx=0.0, Gy=0.0, BC_Value=0.0 ;
 	Cell *Cell_i, *Cell_j ;
 
-	for ( int i = 0 ; i < nCell ; i++ ) {
+	for ( int i = 0 ; i < energy_density.Mesh.cell_number ; i++ ) {
 
 		Cell_i = energy_density.get_cell( i ) ;
 		iFace 	 = Cell_i->face_number ;
@@ -562,12 +555,12 @@ void CEnergyDensity::Calculate_Gradient( boost::shared_ptr<CDomain> &m, boost::s
 }
 void CEnergyDensity::CalculateTemperature( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
 {
-	int nCell = m->local_cell_number  ;
+
 	double val=0.0, C23=2.0/3.0 ;
 
 	Cell *Cell_i ;
 
-	for ( int i = 0 ; i < nCell ; i++ ) {
+	for ( int i = 0 ; i < energy_density.Mesh.cell_number ; i++ ) {
 
 		Cell_i = energy_density.get_cell(i) ;
 
@@ -600,14 +593,14 @@ void CEnergyDensity::CalculateTemperature( boost::shared_ptr<CDomain> &m, boost:
 }
 void CEnergyDensity::CalculatePowerAbs( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
 {
-	int nCell = m->local_cell_number  ;
+
 	double val=0.0, C23=2.0/3.0 ;
 
 	Cell *Cell_i ;
 	double power_local=0.0 ;
 	var->PowerAbs = 0.0 ;
 
-	for ( int i = 0 ; i < nCell ; i++ ) {
+	for ( int i = 0 ; i < energy_density.Mesh.cell_number ; i++ ) {
 		Cell_i = energy_density.get_cell(i) ;
 		if (  energy_density.get_cell_typename( Cell_i->data_id ) != "PLASMA" ){
 			//no power

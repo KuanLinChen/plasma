@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <fstream>
 #include <set>
-//#include "json.hpp"
-
 #include "PFM.hpp"
 #include "domain_structure.hpp"
 #include "variable_structure.hpp"

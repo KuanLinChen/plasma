@@ -34,7 +34,7 @@ solver_energy_density.cpp 	solver_energy_density.hpp
 
 post_structure.cpp 			post_structure.hpp
 
-#solver_fluid_model.cpp 		solver_fluid_model.hpp
+solver_fluid_model.cpp 		solver_fluid_model.hpp
 #solver_navier_stokes.cpp 	solver_navier_stokes.hpp
 
 )
