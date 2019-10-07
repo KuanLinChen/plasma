@@ -1216,7 +1216,7 @@ void CVariable::ResetAvgZero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 		AvgU4[ iSpecies ].zero() ;
 		AvgJouleHeating[ iSpecies ].zero() ;
 	}
-	AvgPowerAbs = 0.0 ;
+	//AvgPowerAbs = 0.0 ;
 }
 void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {

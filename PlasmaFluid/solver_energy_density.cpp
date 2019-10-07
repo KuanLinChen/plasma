@@ -55,7 +55,7 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 
 	/*--- calculate electron temperature ---*/
 		CalculateTemperature( m, variable ) ;
-		if( iSpecies == ELECTRON )CalculatePowerAbs( m, variable  );
+		if( iSpecies == ELECTRON ) CalculatePowerAbs( m, variable  );
 }
 void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
