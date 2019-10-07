@@ -19,7 +19,6 @@ void CPoisson::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 	
 	Zero_Gradient( m, variable ) ;
 	UpdateElectricalMap( config, variable ) ;
-
 	/*--- Calculate the net charge density for poisson's source term ---*/
 	if ( config->Equation[ POISSON ].Equation < 3 ) {
 		Calculate_NetCharge( m, config, variable ) ;
@@ -53,12 +52,8 @@ void CPoisson::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 
 	/*--- 1st solve the equation w/o cross diffusion term ---*/
 		if ( Correction == -1 ){
-//cout<<"phi->A"<<endl;
 			Bulid_A_B_0th( m, config, variable ) ;
-//cout<<"phi->B"<<endl;
 		} else {
-			//cout<<"1st"<<endl;
-			//Bulid_A_B_1st( m, config, variable ) ;
 			Bulid_A_B_Orthogonal2( m, config, variable ) ;
 		}
 		plasma.get_solution( variable->Phi.data ) ;
@@ -268,8 +263,8 @@ void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 	double Ad_dPN=0.0, HarmonicMean=0.0, Source=0.0, electrode_voltage=0.0, ShapeFunction=0.0, CP=0.0, CN=0.0, BC_Value=0.0 ;
 
 	// 0 stand for poisson equation.
-	plasma.before_matrix_construction( 0 ) ;
-	plasma.before_source_term_construction( 0 ) ;
+	plasma.before_matrix_construction() ;
+	plasma.before_source_term_construction() ;
 
 	Cell *Cell_i, *Cell_j, *Cell_jj, *Cell_ii ;
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
@@ -280,7 +275,7 @@ void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 		/*--- Loop over electrode cells ---*/
 		if ( plasma.get_cell_typename( Cell_i->data_id ) == "POWER" or plasma.get_cell_typename( Cell_i->data_id ) == "GROUND" ){
 
-			plasma.add_entry_in_matrix     ( 0, i, Cell_i->id, 1.0 ) ;
+			plasma.add_entry_in_matrix     ( i, Cell_i->id, 1.0 ) ;
 			plasma.add_entry_in_source_term( i, SineVoltage( plasma.get_cell_typename( Cell_i->data_id ), config, var ) ) ;
 
 

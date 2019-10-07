@@ -41,10 +41,10 @@ link_directories( $ENV{ultraMPP_DIR}/lib $ENV{CGNS_LIB_PATH} $ENV{HDF5_LIB_PATH}
 	
 add_subdirectory ( PlasmaFluid )
 
-add_executable ( main main.cpp  )
+add_executable ( p3 main.cpp  )
 
 
-target_link_libraries( main LINK_PUBLIC ${PETSC_LIBRARIES} cgns hdf5 libultraMPP.a libmetis.a ${MPI_LIBRARIES} 
+target_link_libraries( p3 LINK_PUBLIC ${PETSC_LIBRARIES} cgns hdf5 libultraMPP.a libmetis.a ${MPI_LIBRARIES} 
 ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${PETSC_LIBRARIES} PlasmaFluid )
 
 

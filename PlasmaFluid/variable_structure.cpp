@@ -670,7 +670,7 @@ void CVariable::UpdateSolution( boost::shared_ptr<CDomain> &m )
 		for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 			PreEField[ nDim ][ i ] = EField[ nDim ][ i ] ;
 		}
-		//PreEField[ nDim ] = PreEField[ nDim ] ; may not need to update.
+		//PreEField[ nDim ] = PreEField[ nDim ] ; may not need to update processor boundary cell.
 	}
 	//cout<<"Module Variable: End Update Solution"<<endl;
 }
@@ -1333,7 +1333,7 @@ void CVariable::CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost:
 			for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
 
-				if ( Cell_i->face[ k ]->type == POWER ){
+				if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "POWER" ){
 
 					I_PowerElectrode_local  += ( TotalJD[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].Af[0]
 										 	 +   TotalJD[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].Af[1] ) ;
@@ -1374,8 +1374,9 @@ void CVariable::CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost:
 		MPI_Allreduce(&CondI_GroundElectrode_local[iSpecies], &CondI_GroundElectrode_global_sum[iSpecies], 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
 	}
-	//cout<<"I_PowerElectrode_global_sum : "<<I_PowerElectrode_global_sum<<endl;
-	//cout<<"I_GroundElectrode_global_sum: "<<I_GroundElectrode_global_sum<<endl;
+	// cout<<"I_PowerElectrode_global_sum : "<<I_PowerElectrode_global_sum<<endl;
+	// cout<<"I_GroundElectrode_global_sum: "<<I_GroundElectrode_global_sum<<endl;
+	// cout<<endl;
 }
 void CVariable::Alpha_Beta( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
