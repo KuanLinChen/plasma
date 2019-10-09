@@ -11,7 +11,7 @@
 // #include "solver_navier_stokes.hpp"
 // #include "variable_structure_NS.hpp"
 // #include "PETSc_solver.h"
-#define Debug false
+#define Debug true
 using namespace std ;
 int mpi_size, /*!< \brief The number of processes. */
 		mpi_rank ;/*!< \brief The rank(id) of the process. */
@@ -106,6 +106,7 @@ int main( int argc, char * argv[] )
 		if( FullEqnNum > 0 ){			
 			fluid_model_solver = new boost::shared_ptr<CFluidModel> [ FullEqnNum ] ;
 			FullEqnNum = 0 ;
+
 			for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {
 				SpeciesType = Config->Species[ jSpecies ].Type ;
 				if ( Config->Equation[ SpeciesType ].Equation > 0 ){
@@ -115,21 +116,22 @@ int main( int argc, char * argv[] )
 				}
 			}
 		}
-
+//cout<<"BBBB"<<endl;
 	/*--- Energy density Eqn. w/ Drift-diffusion solver ---*/
 		boost::shared_ptr<CEnergyDensity> electron_energy_solver ;
 		electron_energy_solver = boost::shared_ptr<CEnergyDensity> ( new CEnergyDensity ) ;
 		electron_energy_solver->Init( mesh, Config, 0 ) ;
-
+//cout<<"AA"<<endl;
 	/*--- post-processing module ---*/
 		boost::shared_ptr<CPost> post ;
 		post = boost::shared_ptr<CPost> ( new CPost ) ;
 
  	/* first solve potential and electric field as initial. */
-		poisson_solver->Solve( mesh, Config, Var ) ;
- 		Var->UpdateSolution( mesh ) ; 
+		// cout<<"A1"<<endl;
+		// poisson_solver->Solve( mesh, Config, Var ) ;
+ 	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
- 		post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
+	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
 
 		ofstream        FileOutput, PCB_FileOutput ;
 		map< int, CElectrical>::iterator Iter;
@@ -183,9 +185,16 @@ int main( int argc, char * argv[] )
  				if( MON_CYC and MainStep%(Config->StepPerCycle/Config->MON_Insta_Freq) == 0  ) MON_INS = true ;
  				else  MON_INS 	= false ;
 
- 				if( mpi_rank == MASTER_NODE and MON_CYC and MON_INS ){
- 					cout<<"MainCycle: "<<MainCycle<<"\t"<<"MainStep: "<<MainStep<<"\t"<<"Voltage: "<<Var->Volt<<"  [V]"<<"\t"<<"PhysicalTime: "<<Var->PhysicalTime<<"  [s]"<<endl ; 
- 				}
+
+				if( mpi_rank == MASTER_NODE and MON_CYC and MON_INS ){
+					cout<<"MainCycle: "<<MainCycle<<"\t"<<"MainStep: "<<MainStep<<"\t"<<"Voltage: "<<Var->Volt<<"  [V]"<<"\t"<<"PhysicalTime: "<<Var->PhysicalTime<<"  [s]"<<endl ; 
+					cout<<"Poissn ksp iter : "<<poisson_solver->its<<endl ;
+					for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
+						cout<<"Continuity["<<iEqn<<"] ksp iter : "<<continuity_solver[ iEqn ]->its<<endl ;
+						
+					}
+					cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;
+				} 
 
  				/* Update solution: Copy solution (n+1) step -> (n) step */ 
  				Var->UpdateSolution( mesh ) ; 
@@ -215,6 +224,7 @@ int main( int argc, char * argv[] )
 
 				/* Solve for potential and electric field. */
  				poisson_solver->Solve( mesh, Config, Var ) ;
+ 				
 	 				#if (Debug == true ) 
 	 					PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;
 	 				#endif
@@ -234,7 +244,6 @@ int main( int argc, char * argv[] )
 				}
 
 				Var->CalculateElectrodeCurrent( mesh, Config ) ;
-
 
 				/* Solve energy density for next time step (n+1). */
 				if ( Config->PFM_Assumption == "LMEA" and DriftDiffusionNum > 0 ) {
@@ -266,17 +275,20 @@ int main( int argc, char * argv[] )
  					post->OutputFlow( mesh, Config, Var, MainCycle, MainStep ) ;
 
 				/* Calculate cycle average data. */
-				if( WRT_CYC_AVG ) 
+				if( WRT_CYC_AVG ) {
 					Var->AddAverage( mesh, Config ) ;
-
+				}
+				Var->AddAverage_PowerAbs( mesh, Config ) ;
+				Var->AddAverage_Electrode( mesh, Config ) ;
  				Var->PhysicalTime += Var->Dt ;
 
 			}//End Main Step
+		//cout<<"A2"<<endl; exit(1) ;
 
 
 			if ( MainCycle % 50 == 0 ){
 				for ( Iter=Config->ElectricalMap.begin() ; Iter!=Config->ElectricalMap.end() ; ++Iter ) {
-    				if ( Iter->first == POWER and fabs(Var->I_AvgPowerElectrode) > 1.E-6 ) {
+    				if ( Iter->first == POWER and fabs(Var->I_AvgPowerElectrode) > 5.E-5 ) {
 	    				//Iter->second.BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
     					//BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
     				}

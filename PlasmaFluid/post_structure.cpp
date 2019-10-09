@@ -12,7 +12,9 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	plasma.set_output( "0Flow-"+to_string(Cycle)+"-"+to_string(Step) ) ;
 
 	plasma.set_output( var->Phi.data_id ) ;
+	plasma.set_output( var->Eps.data_id ) ;
 	plasma.set_output( var->NetQ.data_id ) ;
+	//plasma.set_output( var->E_Mag.data_id ) ;
 	for ( int dim = 0 ; dim < nDim ; dim ++ ) {
 		plasma.set_output( var->EField[dim].data_id ) ;
 	}

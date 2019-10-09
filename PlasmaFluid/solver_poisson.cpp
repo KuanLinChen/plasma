@@ -23,7 +23,7 @@ void CPoisson::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 	if ( config->Equation[ POISSON ].Equation < 3 ) {
 		Calculate_NetCharge( m, config, variable ) ;
 	}
-
+	//plasma.apply_linear_solver_setting();
 
 	/*--- Calculate the net charge density for poisson's source term ---*/
 		switch ( config->Equation[ POISSON ].Equation ) {
@@ -53,12 +53,16 @@ void CPoisson::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 	/*--- 1st solve the equation w/o cross diffusion term ---*/
 		if ( Correction == -1 ){
 			Bulid_A_B_0th( m, config, variable ) ;
+			//cout<<"FUCK ME"<<endl;
 		} else {
 			Bulid_A_B_Orthogonal2( m, config, variable ) ;
 		}
-		plasma.get_solution( variable->Phi.data ) ;
 
-		variable->Phi = variable->Phi ;
+		plasma.get_solution( variable->Phi.data ) ;
+		//plasma.print_mat();
+		its = plasma.get_iteration_number() ;
+		//for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) cout<<variable->Phi[i] <<endl ;
+
 
 	/*--- Minus ---*/
 		if ( Correction < 0 ){
@@ -80,6 +84,8 @@ void CPoisson::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 		variable->CalReducedElectricField( m ) ;
 	/*--- Displacement current density ---*/
 		CalculateDispCurrentDensity( m, config, variable ) ;
+
+		map<string,int> BCs;
 
 }
 void CPoisson::Bulid_A_B_Orthogonal( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
@@ -174,7 +180,7 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 {
 	int jFace=0, jCell=0, j=0 ;
 	
-	double Ad_dPN=0.0, HarmonicMean=0.0, electrode_voltage=0.0, ShapeFunction=0.0 ;
+	double Ad_dPN=0.0, HarmonicMean=0.0, electrode_voltage=0.0, Source=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
 
@@ -212,9 +218,14 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 
 				Ad_dPN = HarmonicMean * ( m->PFM_CELL[ i ][ k ].dArea )/var->Eps[ i ] ;
 
+				//if ( fabs(Ad_dPN) < 1.e-6 ) cout<<Ad_dPN<<endl;
+
 				plasma.add_entry_in_matrix( i, Cell_i->id, -Ad_dPN ) ;
 				plasma.add_entry_in_matrix( i, Cell_j->id,  Ad_dPN ) ;
+				Source = (-1.0)*(m->PFM_CELL[ i ][ k ].SurfaceCharge)*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf 
+				 		/ ( var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf ) * m->PFM_CELL[ i ][ k ].dArea ;				 		
 
+				plasma.add_entry_in_source_term( i, Source ) ;
 			}//Loop over neighbor cells
 
 		/*--------------------------------------------------------------*/
@@ -227,7 +238,7 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 				} else if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "GROUND" or plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "POWER" ){
 
 					electrode_voltage = SineVoltage( plasma.get_face_typename( Cell_i->face[ k ]->data_id), config, var ) ;
-
+					//cout<<electrode_voltage<<endl;
 					plasma.add_entry_in_matrix     ( i,  Cell_i->id, -Ad_dPN ) ;
 					plasma.add_entry_in_source_term( i, -(electrode_voltage)*Ad_dPN ) ;
 
@@ -246,10 +257,10 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 		plasma.add_entry_in_source_term( i, -var->NetQ[ i ]*Cell_i->volume/var->Eps[ i ] ) ;
 	//	cout<<-var->NetQ[ i ]*Cell_i->volume/var->Eps[ i ]<<endl;
 	}//Cell Loop
-//	if(mpi_rank ==1){
-//		cout<<"plasma.Mesh.cell_number: "<<plasma.Mesh.cell_number<<endl;
-//	}
-
+	//if(mpi_rank ==1){
+	//	cout<<"plasma.Mesh.cell_number: "<<plasma.Mesh.cell_number<<endl;
+	//}
+//exit(1) ;
 //	cout<<"rank: "<<mpi_rank<<"  before"<<endl;
 	plasma.finish_matrix_construction() ;
 	plasma.finish_source_term_construction() ;
@@ -270,7 +281,7 @@ void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
 		Cell_i = plasma.get_cell(i) ;
-
+		Source = 0.0 ;
 
 		/*--- Loop over electrode cells ---*/
 		if ( plasma.get_cell_typename( Cell_i->data_id ) == "POWER" or plasma.get_cell_typename( Cell_i->data_id ) == "GROUND" ){
@@ -294,13 +305,15 @@ void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 							/( var->Eps[ j ]*(m->PFM_CELL[ i ][ k ].dPPf) 
 							+  var->Eps[ i ]*(m->PFM_CELL[ i ][ k ].dNPf) ) ;
 
-				Ad_dPN = HarmonicMean * ( m->PFM_CELL[ i ][ k ].dArea ) ;
+				Ad_dPN = HarmonicMean * ( m->PFM_CELL[ i ][ k ].dArea )/var->Eps[ i ] ;
 
 				plasma.add_entry_in_matrix( i, Cell_i->id, -Ad_dPN ) ;
 				plasma.add_entry_in_matrix( i, Cell_j->id,  Ad_dPN ) ;
 
-				Source += (-1.0)*(m->PFM_CELL[ i ][ k ].SurfaceCharge)*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf 
+				Source = (-1.0)*(m->PFM_CELL[ i ][ k ].SurfaceCharge)*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf 
 				 		/ ( var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf ) * m->PFM_CELL[ i ][ k ].dArea ;				 		
+
+				plasma.add_entry_in_source_term( i, Source ) ;
 
 				/*--- Non-Orthogonal term 
 					For ∇P gradient term @ P point, dVar = V_jj - V_i		
@@ -451,7 +464,8 @@ void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 						plasma.add_entry_in_matrix( i, Cell_j->id, Ad_dPN*ShapeFunction*(-1.0) ) ;
 
 						//V_jj term
-						if ( plasma.get_cell_typename( Cell_j->data_id ) == "GROUND" or plasma.get_face_typename( Cell_j->face[ k ]->data_id) == "POWER" ){
+						if ( plasma.get_face_typename( Cell_j->face[ k ]->data_id)  == "GROUND" 
+							or plasma.get_face_typename( Cell_j->face[ k ]->data_id) == "POWER" ){
 
 							electrode_voltage = SineVoltage( plasma.get_face_typename( Cell_j->face[ k ]->data_id), config, var ) ;
 							//Source += (-1.0)*Ad_dPN*ShapeFunction*electrode_voltage ;
@@ -492,6 +506,7 @@ void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 				}else{
 
 					cout<<"error-\" solver_poisson.cpp-3\""<<endl;
+					exit(1) ;
 				}
 
 			}//Loop over boundary face cells
@@ -499,6 +514,8 @@ void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 		}
 		plasma.add_entry_in_source_term( i, -var->NetQ[ i ]*Cell_i->volume/var->Eps[ i ] ) ;
 	}//Cell Loop
+	plasma.finish_matrix_construction() ;
+	plasma.finish_source_term_construction() ;
 }
 void CPoisson::Bulid_A_B_1st( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
@@ -1172,3 +1189,91 @@ void CPoisson::CalculateDispCurrentDensity( boost::shared_ptr<CDomain> &m, boost
 
 	}//Cell Loop
 }
+// void CPoisson::ultraMPP( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
+// {
+// 	int jFace=0, jCell=0, j=0 ;
+	
+// 	double Ad_dPN=0.0, HarmonicMean=0.0, electrode_voltage=0.0, ShapeFunction=0.0 ;
+
+// 	Cell *Cell_i, *Cell_j ;
+
+// 	// 0 stand for poisson equation.
+// 	plasma.apply_linear_solver_setting();
+
+// 	plasma.before_matrix_construction() ;
+// 	plasma.before_source_term_construction() ;
+	
+
+// 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+
+// 		Cell_i = plasma.get_cell(i) ;
+
+// 		/*--- Loop over electrode cells ---*/
+// 		if ( plasma.get_cell_typename( Cell_i->data_id ) == "POWER" or plasma.get_cell_typename( Cell_i->data_id ) == "GROUND" ) {
+
+// 			plasma.add_entry_in_matrix     ( i, Cell_i->id, 1.0 ) ;
+// 			plasma.add_entry_in_source_term( i, SineVoltage( plasma.get_cell_typename( Cell_i->data_id ), config, var ) ) ;
+
+// 		} else {
+
+// 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
+
+// 				/*--- Orthogonal term ---*/
+// 				j = Cell_i->cell[ k ]->data_id ;
+
+// 				Cell_j = plasma.get_cell( j ) ;
+
+// 				jCell = Cell_j->cell_number ;
+// 				jFace = Cell_j->face_number ;
+
+
+// 				HarmonicMean = var->Eps[ i ]*var->Eps[ j ]
+// 							/( var->Eps[ j ]*(m->PFM_CELL[ i ][ k ].dPPf) 
+// 							+  var->Eps[ i ]*(m->PFM_CELL[ i ][ k ].dNPf) ) ;
+
+// 				Ad_dPN = HarmonicMean * ( m->PFM_CELL[ i ][ k ].dArea )/var->Eps[ i ] ;
+
+// 				plasma.add_entry_in_matrix( i, Cell_i->id, -Ad_dPN ) ;
+// 				plasma.add_entry_in_matrix( i, Cell_j->id,  Ad_dPN ) ;
+
+// 			}//Loop over neighbor cells
+
+// 		--------------------------------------------------------------
+// 			for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
+
+// 				Ad_dPN = var->Eps[ i ]/(m->PFM_CELL[ i ][ k ].dDist)*(m->PFM_CELL[ i ][ k ].dArea)/var->Eps[ i ] ;
+
+// 				if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "NEUMANN" ){
+
+// 				} else if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "GROUND" or plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "POWER" ){
+
+// 					electrode_voltage = SineVoltage( plasma.get_face_typename( Cell_i->face[ k ]->data_id), config, var ) ;
+
+// 					plasma.add_entry_in_matrix     ( i,  Cell_i->id, -Ad_dPN ) ;
+// 					plasma.add_entry_in_source_term( i, -(electrode_voltage)*Ad_dPN ) ;
+
+// 				}else if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id)  == "DIELECTRIC" ) {
+
+// 					cout<<"Boundary face don't have DIELECTRIC, pls check w/ K.-L. Chen-2"<<endl;
+// 					exit(1) ;
+
+// 				}else{
+// 					cout<<"error-\" solver_poisson.cpp-3\""<<endl;
+// 				}
+
+// 			}//Loop over boundary face cells
+// 		/*--------------------------------------------------------------*/
+// 		}
+// 		plasma.add_entry_in_source_term( i, -var->NetQ[ i ]*Cell_i->volume/var->Eps[ i ] ) ;
+// 	//	cout<<-var->NetQ[ i ]*Cell_i->volume/var->Eps[ i ]<<endl;
+// 	}//Cell Loop
+// //	if(mpi_rank ==1){
+// //		cout<<"plasma.Mesh.cell_number: "<<plasma.Mesh.cell_number<<endl;
+// //	}
+
+// //	cout<<"rank: "<<mpi_rank<<"  before"<<endl;
+// 	plasma.finish_matrix_construction() ;
+// 	plasma.finish_source_term_construction() ;
+// //	cout<<"rank: "<<mpi_rank<<"  after"<<endl;
+// //		MPI_Barrier(MPI_COMM_WORLD);
+// }

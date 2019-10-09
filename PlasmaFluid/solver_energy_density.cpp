@@ -52,7 +52,7 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 
 	energy_density.get_solution( variable->U4[iSpecies].data ) ;
 	variable->U4[iSpecies] = variable->U4[iSpecies] ;
-
+	its = energy_density.get_iteration_number() ;
 	/*--- calculate electron temperature ---*/
 		CalculateTemperature( m, variable ) ;
 		if( iSpecies == ELECTRON ) CalculatePowerAbs( m, variable  );

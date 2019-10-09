@@ -27,7 +27,7 @@ void CFluidModel::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	/*--- Allocate Residue ---*/
 		Res = new double*[ 5 ] ;/* N, Ux, Uy, Uz, E */
 		for ( int iEqn = 0 ; iEqn < 5 ; iEqn ++ ) {
-			Res[iEqn] = new double [ m->local_cell_number ] ;
+			Res[iEqn] = new double [ plasma.Mesh.cell_number ] ;
 		}
 
 	/*--- Momentum Transfer ---*/
@@ -37,10 +37,10 @@ void CFluidModel::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 		}
 
 	/*--- Momentum Transfer ---*/
-		CollisionIntegral = new double [ m->local_cell_number ] ;
-		Mx = new double [ m->local_cell_number ] ;
-		My = new double [ m->local_cell_number ] ;
-		Mz = new double [ m->local_cell_number ] ;
+		CollisionIntegral = new double [ plasma.Mesh.cell_number ] ;
+		Mx = new double [ plasma.Mesh.cell_number ] ;
+		My = new double [ plasma.Mesh.cell_number ] ;
+		Mz = new double [ plasma.Mesh.cell_number ] ;
 		Pressure.initial( "P_"+config->Species[ iSpecies ].Name ) ;	
 		Thermal2.initial( "Thermal2_"+config->Species[ iSpecies ].Name ) ;	
 

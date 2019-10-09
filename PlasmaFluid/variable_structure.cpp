@@ -478,11 +478,16 @@ void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_
 	/*---  Temperature ---*/
 	double Internal_E=0.0, Kinetic_E=0.0 ;
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
+		Cell_i  = plasma.get_cell( i ) ;
 		if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
 
 			for ( int jSpecies = 0; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 
 				T[ jSpecies ][ i ] = config->Species[jSpecies].InitialTemperature/Ref_Te ;
+				
+				//cout<< config->Species[jSpecies].InitialTemperature<<endl;
+
+				//cout<<Ref_Te<<endl;
 
 				if ( config->PFM_Assumption != "LFA" ) {
 					U4[ jSpecies ][ i ] = (3.0/2.0)*U0[ jSpecies ][ i ]*T[jSpecies][ i ] ;
@@ -495,6 +500,8 @@ void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_
 			Beta[ i ] = 1.0 ;
 		}	
 	}
+
+
 	/*--- Update overlap cell value ---*/
 	for ( int jSpecies = 0; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 		U0[ jSpecies ] = U0[ jSpecies ] ;
@@ -1242,7 +1249,7 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 			AvgJouleHeating[ iSpecies ][ i ] += JouleHeating[ iSpecies ][ i ]/config->StepPerCycle ;
 		}
 	}
-	AvgPowerAbs += PowerAbs/config->StepPerCycle  ;
+	//AvgPowerAbs += PowerAbs/config->StepPerCycle  ;
 }
 void CVariable::ResetAvgZero_PowerAbs( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {

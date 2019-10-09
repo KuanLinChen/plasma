@@ -57,7 +57,7 @@ void CDriftDiffusion::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 				break;
 		}
 		drift_diffusion.get_solution( variable->U0[iSpecies].data ) ;
-
+		its = drift_diffusion.get_iteration_number() ;
 		variable->U0[iSpecies] = variable->U0[iSpecies] ;
 
 	/*--- calculate drift-diffustion flux ---*/
