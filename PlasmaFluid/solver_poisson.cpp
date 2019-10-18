@@ -1079,6 +1079,7 @@ void CPoisson::Calculate_NetCharge_minus( boost::shared_ptr<CDomain> &m, boost::
 			}//end jSpecies
 		}//End Plasma
 
+		var->NetQ[ i ] = var->NetQ[ i ]/var->Eps0[ i ] ;
 	}
 	var->NetQ = var->NetQ ;
 }
@@ -1168,7 +1169,7 @@ void CPoisson::CalculateEffectivePermittEleOnly( boost::shared_ptr<CDomain> &m, 
 	/*
 		∇.(ε∇Φ) = -ρ = -e( Ni-Ne )
 	*/
-
+	//cout<<"Ad_dPN"<<endl;
 	double eps=0.0 ;
 
 	Cell *Cell_i ;
@@ -1186,7 +1187,7 @@ void CPoisson::CalculateEffectivePermittEleOnly( boost::shared_ptr<CDomain> &m, 
 			}//End jSpecies
 
 		}//End PLASMA
-		var->Eps[ i ] = (var->Eps0[ i ] + var->Qe*var->Dt*eps) ;
+		var->Eps[ i ] = (var->Eps0[ i ] + var->Qe*var->Dt*eps) /var->Eps0[ i ];
 		//cout<<var->Eps[ i ]<<endl;
 	}
 	var->Eps = var->Eps ;
@@ -1240,95 +1241,6 @@ void CPoisson::CalculateDispCurrentDensity( boost::shared_ptr<CDomain> &m, boost
 
 	}//Cell Loop
 }
-// void CPoisson::ultraMPP( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
-// {
-// 	int jFace=0, jCell=0, j=0 ;
-	
-// 	double Ad_dPN=0.0, HarmonicMean=0.0, electrode_voltage=0.0, ShapeFunction=0.0 ;
-
-// 	Cell *Cell_i, *Cell_j ;
-
-// 	// 0 stand for poisson equation.
-// 	plasma.apply_linear_solver_setting();
-
-// 	plasma.before_matrix_construction() ;
-// 	plasma.before_source_term_construction() ;
-	
-
-// 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
-
-// 		Cell_i = plasma.get_cell(i) ;
-
-// 		/*--- Loop over electrode cells ---*/
-// 		if ( plasma.get_cell_typename( Cell_i->data_id ) == "POWER" or plasma.get_cell_typename( Cell_i->data_id ) == "GROUND" ) {
-
-// 			plasma.add_entry_in_matrix     ( i, Cell_i->id, 1.0 ) ;
-// 			plasma.add_entry_in_source_term( i, SineVoltage( plasma.get_cell_typename( Cell_i->data_id ), config, var ) ) ;
-
-// 		} else {
-
-// 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
-
-// 				/*--- Orthogonal term ---*/
-// 				j = Cell_i->cell[ k ]->data_id ;
-
-// 				Cell_j = plasma.get_cell( j ) ;
-
-// 				jCell = Cell_j->cell_number ;
-// 				jFace = Cell_j->face_number ;
-
-
-// 				HarmonicMean = var->Eps[ i ]*var->Eps[ j ]
-// 							/( var->Eps[ j ]*(m->PFM_CELL[ i ][ k ].dPPf) 
-// 							+  var->Eps[ i ]*(m->PFM_CELL[ i ][ k ].dNPf) ) ;
-
-// 				Ad_dPN = HarmonicMean * ( m->PFM_CELL[ i ][ k ].dArea )/var->Eps[ i ] ;
-
-// 				plasma.add_entry_in_matrix( i, Cell_i->id, -Ad_dPN ) ;
-// 				plasma.add_entry_in_matrix( i, Cell_j->id,  Ad_dPN ) ;
-
-// 			}//Loop over neighbor cells
-
-// 		--------------------------------------------------------------
-// 			for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
-
-// 				Ad_dPN = var->Eps[ i ]/(m->PFM_CELL[ i ][ k ].dDist)*(m->PFM_CELL[ i ][ k ].dArea)/var->Eps[ i ] ;
-
-// 				if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "NEUMANN" ){
-
-// 				} else if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "GROUND" or plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "POWER" ){
-
-// 					electrode_voltage = SineVoltage( plasma.get_face_typename( Cell_i->face[ k ]->data_id), config, var ) ;
-
-// 					plasma.add_entry_in_matrix     ( i,  Cell_i->id, -Ad_dPN ) ;
-// 					plasma.add_entry_in_source_term( i, -(electrode_voltage)*Ad_dPN ) ;
-
-// 				}else if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id)  == "DIELECTRIC" ) {
-
-// 					cout<<"Boundary face don't have DIELECTRIC, pls check w/ K.-L. Chen-2"<<endl;
-// 					exit(1) ;
-
-// 				}else{
-// 					cout<<"error-\" solver_poisson.cpp-3\""<<endl;
-// 				}
-
-// 			}//Loop over boundary face cells
-// 		/*--------------------------------------------------------------*/
-// 		}
-// 		plasma.add_entry_in_source_term( i, -var->NetQ[ i ]*Cell_i->volume/var->Eps[ i ] ) ;
-// 	//	cout<<-var->NetQ[ i ]*Cell_i->volume/var->Eps[ i ]<<endl;
-// 	}//Cell Loop
-// //	if(mpi_rank ==1){
-// //		cout<<"plasma.Mesh.cell_number: "<<plasma.Mesh.cell_number<<endl;
-// //	}
-
-// //	cout<<"rank: "<<mpi_rank<<"  before"<<endl;
-// 	plasma.finish_matrix_construction() ;
-// 	plasma.finish_source_term_construction() ;
-// //	cout<<"rank: "<<mpi_rank<<"  after"<<endl;
-// //		MPI_Barrier(MPI_COMM_WORLD);
-// }
-// 
 void CPoisson::ultraMPP( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
 		face_data.zero() ;
@@ -1340,11 +1252,9 @@ void CPoisson::ultraMPP( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfi
 		/*--- ultraMPP laplacian operator procedures ---*/
 		/* Mat A */
 		plasma.set_cell_property_parameter( var->Eps.data ) ;
-
 		plasma.before_matrix_construction() ;
 		plasma.add_laplacian_matrix_form_op() ;
 		plasma.finish_matrix_construction() ;
-
 
 	/* Source B */
     plasma.before_source_term_construction();
