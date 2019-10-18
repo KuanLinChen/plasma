@@ -11,7 +11,7 @@
 // #include "solver_navier_stokes.hpp"
 // #include "variable_structure_NS.hpp"
 // #include "PETSc_solver.h"
-#define Debug true
+#define Debug false
 using namespace std ;
 int mpi_size, /*!< \brief The number of processes. */
 		mpi_rank ;/*!< \brief The rank(id) of the process. */

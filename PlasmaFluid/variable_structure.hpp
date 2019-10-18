@@ -11,6 +11,43 @@
 
 
 using namespace std;
+class CScalarFace
+{
+	public:
+	double *data ;
+	int data_id ;
+	string data_name ;
+	CScalarFace(){};
+	void initial(string name)
+	{
+	  data_name = name ;
+	  data_id = plasma.set_face_data(  &data, data_name ) ;
+	}
+	double & operator[] ( int i ) { return data[i] ;}
+	const double & operator[] ( int i ) const { return data[i] ;}
+
+	/*---*/
+	int get_data_id()
+	{
+	        return data_id ;
+	}
+	void zero()
+	{
+		for ( int i = 0 ; i < plasma.Mesh.face_number ; i++ )
+			data[ i ] = 0.0  ;
+	}
+	/*---*/
+	string get_data_name()
+	{
+		return data_name ;
+	}
+	/*---*/
+	inline CScalarFace & operator= ( const double value ) {
+		for ( int i = 0 ; i < plasma.Mesh.face_number ; i++ ) {
+			data[ i ] = value  ;
+		}
+	}
+};
 class CScalar
 {
 	public:

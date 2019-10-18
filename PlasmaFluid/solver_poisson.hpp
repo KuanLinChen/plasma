@@ -34,6 +34,10 @@ class CPoisson
 		CPoisson();
 
 	/*--- PETSc Solver ---*/	
+		map<string, int> BCs ;
+		CScalarFace face_data ;
+		void ultraMPP( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+		void Calculate_NetCharge_minus( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 		//PETScSolver s ;
 		//int *d_nnz, *o_nnz ;
 		//int row, col[ 5 ], ncol ;
