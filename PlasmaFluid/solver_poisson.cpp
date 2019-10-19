@@ -82,6 +82,7 @@ void CPoisson::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 		plasma.get_solution( variable->Phi.data ) ;
 		//plasma.print_mat();
 		its = plasma.get_iteration_number() ;
+		variable->Phi = variable->Phi ;
 		//for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) cout<<variable->Phi[i] <<endl ;
 
 
@@ -215,7 +216,7 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 		Cell_i = plasma.get_cell(i) ;
 
 		/*--- Loop over electrode cells ---*/
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "POWER" or plasma.get_cell_typename( Cell_i->data_id ) == "GROUND" ) {
+		if ( plasma.get_cell_typename( Cell_i->data_id ) == "SOLID_POWER" or plasma.get_cell_typename( Cell_i->data_id ) == "SOLID_GROUND" ) {
 
 			plasma.add_entry_in_matrix     ( i, Cell_i->id, 1.0 ) ;
 			plasma.add_entry_in_source_term( i, SineVoltage( plasma.get_cell_typename( Cell_i->data_id ), config, var ) ) ;
@@ -237,7 +238,7 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 							/( var->Eps[ j ]*(m->PFM_CELL[ i ][ k ].dPPf) 
 							+  var->Eps[ i ]*(m->PFM_CELL[ i ][ k ].dNPf) ) ;
 
-				Ad_dPN = HarmonicMean * ( m->PFM_CELL[ i ][ k ].dArea )/var->Eps[ i ] ;
+				Ad_dPN = HarmonicMean * ( m->PFM_CELL[ i ][ k ].dArea ) ;
 
 				//if ( fabs(Ad_dPN) < 1.e-6 ) cout<<Ad_dPN<<endl;
 
@@ -252,7 +253,7 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 		/*--------------------------------------------------------------*/
 			for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-				Ad_dPN = var->Eps[ i ]/(m->PFM_CELL[ i ][ k ].dDist)*(m->PFM_CELL[ i ][ k ].dArea)/var->Eps[ i ] ;
+				Ad_dPN = var->Eps[ i ]/(m->PFM_CELL[ i ][ k ].dDist)*(m->PFM_CELL[ i ][ k ].dArea) ;
 
 				if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "NEUMANN" ){
 
@@ -275,7 +276,7 @@ void CPoisson::Bulid_A_B_Orthogonal2( boost::shared_ptr<CDomain> &m, boost::shar
 			}//Loop over boundary face cells
 		/*--------------------------------------------------------------*/
 		}
-		plasma.add_entry_in_source_term( i, -var->NetQ[ i ]*Cell_i->volume/var->Eps[ i ] ) ;
+		plasma.add_entry_in_source_term( i, -var->NetQ[ i ]*Cell_i->volume ) ;
 	//	cout<<-var->NetQ[ i ]*Cell_i->volume/var->Eps[ i ]<<endl;
 	}//Cell Loop
 	//if(mpi_rank ==1){
@@ -423,7 +424,7 @@ void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 				/*--- Non-Orthogonal term 
 					For ∇N gradient term @ N point, dVar = V_jj - V_i		
 				*/		
-				if ( plasma.get_cell_typename( Cell_j->data_id ) == "POWER" or plasma.get_cell_typename( Cell_j->data_id ) == "GROUND" ){
+				if ( plasma.get_cell_typename( Cell_j->data_id ) == "SOLID_POWER" or plasma.get_cell_typename( Cell_j->data_id ) == "SOLID_GROUND" ){
 					//No gradient inside electrode
 				} else {
 
@@ -446,7 +447,7 @@ void CPoisson::Bulid_A_B_0th( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 
 						} else {
 
-							if ( plasma.get_cell_typename( Cell_jj->data_id ) == "POWER" or plasma.get_cell_typename( Cell_jj->data_id ) == "GROUND" ){
+							if ( plasma.get_cell_typename( Cell_jj->data_id ) == "SOLID_POWER" or plasma.get_cell_typename( Cell_jj->data_id ) == "SOLID_GROUND" ){
 
 								electrode_voltage = SineVoltage( plasma.get_cell_typename( Cell_jj->data_id ), config, var ) ;
 
@@ -1105,7 +1106,7 @@ void CPoisson::Calculate_NetCharge( boost::shared_ptr<CDomain> &m, boost::shared
 				}
 			}//end jSpecies
 		}//End Plasma
-
+		var->NetQ[ i ] = var->NetQ[ i ]/var->Eps0[ i ] ;
 	}
 	var->NetQ = var->NetQ ;
 }
