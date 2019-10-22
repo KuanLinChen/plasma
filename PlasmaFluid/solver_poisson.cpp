@@ -68,6 +68,7 @@ void CPoisson::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 				exit(1);
 			break;
 		}//End switch
+		//ScalePermitt( m, config, variable ) ;
 
 	/*--- 1st solve the equation w/o cross diffusion term ---*/
 		if ( Correction == -1 ){
@@ -84,9 +85,10 @@ void CPoisson::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 		its = plasma.get_iteration_number() ;
 		variable->Phi = variable->Phi ;
 		//for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) cout<<variable->Phi[i] <<endl ;
-
-
+		
 	/*--- Minus ---*/
+
+		ScalePermittBack( m, config, variable ) ;
 		if ( Correction < 0 ){
 			Calculate_Gradient_Neumann2( m, config, variable ) ;
 			//Calculate_Gradient( m, config, variable ) ;
@@ -1080,7 +1082,7 @@ void CPoisson::Calculate_NetCharge_minus( boost::shared_ptr<CDomain> &m, boost::
 			}//end jSpecies
 		}//End Plasma
 
-		var->NetQ[ i ] = var->NetQ[ i ]/var->Eps0[ i ] ;
+		var->NetQ[ i ] = var->NetQ[ i ] ;
 	}
 	var->NetQ = var->NetQ ;
 }
@@ -1106,7 +1108,7 @@ void CPoisson::Calculate_NetCharge( boost::shared_ptr<CDomain> &m, boost::shared
 				}
 			}//end jSpecies
 		}//End Plasma
-		var->NetQ[ i ] = var->NetQ[ i ]/var->Eps0[ i ] ;
+		var->NetQ[ i ] = var->NetQ[ i ] ;
 	}
 	var->NetQ = var->NetQ ;
 }
@@ -1188,11 +1190,33 @@ void CPoisson::CalculateEffectivePermittEleOnly( boost::shared_ptr<CDomain> &m, 
 			}//End jSpecies
 
 		}//End PLASMA
-		var->Eps[ i ] = (var->Eps0[ i ] + var->Qe*var->Dt*eps) /var->Eps0[ i ];
+		var->Eps[ i ] = (var->Eps0[ i ] + var->Qe*var->Dt*eps) ;
 		//cout<<var->Eps[ i ]<<endl;
 	}
 	var->Eps = var->Eps ;
 	//exit(1);
+}
+void CPoisson::ScalePermitt( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
+{
+	double eps=0.0 ;
+
+	Cell *Cell_i ;
+	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+
+		var->Eps[ i ] = var->Eps[ i ] / var->Eps0[ i ];
+	}
+	var->Eps = var->Eps ;
+}
+void CPoisson::ScalePermittBack( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
+{
+	double eps=0.0 ;
+
+	Cell *Cell_i ;
+	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+
+		var->Eps[ i ] = var->Eps[ i ] * var->Eps0[ i ];
+	}
+	var->Eps = var->Eps ;
 }
 void CPoisson::CalculatePermitt( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
@@ -1250,15 +1274,57 @@ void CPoisson::ultraMPP( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfi
 		plasma.set_bc_value( BCs["POWER" ],voltage, face_data.data ) ;
 		plasma.set_bc_value( BCs["GROUND"],    0.0, face_data.data ) ;
 
+
+    Cell *Cell_i, *Cell_j ; double Source=0.0 ; int j=0 ;
+    for(int i=0 ; i < plasma.Mesh.cell_number ; i++ ) {	
+    	Cell_i = plasma.get_cell( i ) ;
+
+			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
+//				cout<<"i: "<<i<<", k: "<<k<<endl;
+				j = Cell_i->cell[ k ]->data_id ;
+				Cell_j = plasma.get_cell( j ) ;
+				Source = (-1.0)*(m->PFM_CELL[ i ][ k ].SurfaceCharge)*var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf 
+				 		/ ( var->Eps[ j ]*m->PFM_CELL[ i ][ k ].dPPf + var->Eps[ i ]*m->PFM_CELL[ i ][ k ].dNPf ) * m->PFM_CELL[ i ][ k ].dArea ;
+//				cout<<Source<<endl;
+				var->NetQ[ i ] += Source ;///Cell_i->volume ;
+				//plasma.add_entry_in_source_term( i, Source ) ;
+			}
+    }
+		Scale_NetCharge( m, config, var ) ;
+		ScalePermitt( m, config, var ) ;
 		/*--- ultraMPP laplacian operator procedures ---*/
 		/* Mat A */
 		plasma.set_cell_property_parameter( var->Eps.data ) ;
+		//ScalePermittBack( m, config, variable ) ;
 		plasma.before_matrix_construction() ;
 		plasma.add_laplacian_matrix_form_op() ;
 		plasma.finish_matrix_construction() ;
 
 	/* Source B */
+
     plasma.before_source_term_construction();
+
+
+//cout<<"A"<<endl;
+
     plasma.add_laplacian_source_term_op( var->NetQ.data, face_data.data );
     plasma.finish_source_term_construction();
+}
+void CPoisson::Scale_NetCharge( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
+{
+	Cell *Cell_i ;
+	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+		Cell_i  = plasma.get_cell( i ) ;
+		var->NetQ[ i ] = var->NetQ[ i ]/var->Eps0[ i ] ;
+	}
+	var->NetQ = var->NetQ ;
+}
+void CPoisson::Scale_NetChargeBack( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
+{
+	Cell *Cell_i ;
+	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+		Cell_i  = plasma.get_cell( i ) ;
+		var->NetQ[ i ] = var->NetQ[ i ]*var->Eps0[ i ] ;
+	}
+	var->NetQ = var->NetQ ;
 }

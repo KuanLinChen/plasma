@@ -60,11 +60,11 @@ class CScalar
 	        data_name = name ;
 	        data_id = plasma.set_parallel_cell_data(  &data, data_name ) ;
 	}
-	double & operator[] ( int i ) { return data[i] ;}
-	const double & operator[] ( int i ) const { return data[i] ;}
+	inline double & operator[] ( int i ) { return data[i] ;}
+	inline const double & operator[] ( int i ) const { return data[i] ;}
 
 	/*---*/
-	int get_data_id()
+	inline int get_data_id()
 	{
 	        return data_id ;
 	}
@@ -74,7 +74,7 @@ class CScalar
 			data[ i ] = 0.0  ;
 	}
 	/*---*/
-	string get_data_name()
+	inline string get_data_name()
 	{
 		return data_name ;
 	}
