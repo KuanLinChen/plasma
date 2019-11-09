@@ -23,6 +23,7 @@ void CDriftDiffusion::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 	Reflec = config->ReflectionCoefficient ;
 	its=0 ;
 	drift_diffusion.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+	drift_diffusion.set_linear_solver_library("PETSC");
 	drift_diffusion.load_mesh( &plasma) ;
 }
 void CDriftDiffusion::Solve_Diffusion( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &variable  )

@@ -20,43 +20,63 @@ bool WRT_CYC_AVG = false ; /*!< \brief Trigger for write cycle averaged data. */
 bool WRT_INS = false ; /*!< \brief Trigger for write instantaneous averaged data. */
 bool MON_CYC = false ; /*!< \brief Trigger for monitor cycle averaged data. */
 bool MON_INS = false ; /*!< \brief Trigger for monitor instantaneous averaged data. */
-ultraMPP plasma ; 
+
+/* ultraMPP, these variables are global variable, it is define in the 'PFM.hpp' file  */
+ultraMPP plasma  ;/*!< \brief UltraMPP main object. */
+json &json_bc_setting ;/*!< \brief Boundary condition informations. */
+json &json_cell_setting;/*!< \brief Cell condition informations. */  
+
+map<string,double> cell_parameter ;
+map<string,double> face_parameter ;
+
+map<string,int>    MPP_face_tag ;
+map<string,int>    MPP_cell_tag ;
+
+map<int,int> face_type ;
+map<int,int> cell_type ;
+
+map<int, string>	type_typename ;
+map<string, int>	typename_type ;
 
 int	gargc2 ;
 char **gargv2 ;
 
 int main( int argc, char * argv[] )
 {
-	/* the 'plasma' is global variable, it is define in the 'PFM.hpp' file */
-	gargc2	=	argc ;
-	gargv2	=	argv ;
+	gargc2	=	argc ;	gargv2	=	argv ;
 
-	plasma.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+	/* Read the case input file path */
+		if ( argv[1] == NULL ) {
+			if( mpi_rank ==0 ) cout<<"Pls using ./main  case_path "<<endl; exit(1) ;
+		} 
 
-	/* read the case input file path */
-	if ( argv[1] == NULL ) {
-		if( mpi_rank ==0 ) cout<<"Pls using ./main  case_path "<<endl;
-		exit(1) ;
-	} 
+	/* Configuration */
+		cout<<"Configuration"<<endl;
+		boost::shared_ptr<CConfig> Config ;
+		Config = boost::shared_ptr<CConfig> ( new CConfig ) ;
+		Config->Init( argv[1] ) ;
 
-	/*--- Configuration ---*/
-	cout<<"Configuration"<<endl;
-	boost::shared_ptr<CConfig> Config ;
-	Config = boost::shared_ptr<CConfig> ( new CConfig ) ;
-	Config->Init( argv[1] ) ;
+	/* Initial the ultraMPP object. */
+		plasma.set_linear_solver_library("PETSC");
+		//plasma.apply_linear_solver_setting();
+		plasma.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+		Config->MeshFile = "input.json" ;
+		plasma.load_mesh( argv[1] + Config->MeshFile ) ;
+
+	/*--- This module will be delets after some modification --*/
+		boost::shared_ptr<CDomain> mesh ;
+		mesh = boost::shared_ptr<CDomain> ( new CDomain ) ;
+		mesh->BulidCellStructure() ;
+		mesh->Init();
+
+
 	//Note: the number of matrix solvers are poisson equation + number of total sepcies + electron energy.
 	//TODO: this part should be fix. becaeuse sometime you need solve the ion temperature.
 
-
 	//TODO: this part should be fix....
-	Config->MeshFile = "input.json" ;
-	plasma.load_mesh( argv[1] + Config->MeshFile ) ;
 	/* potential + numSpecies*Continuity + electron energy */
 	int numMatrixSolver = 1 + Config->TotalSpeciesNum  + 1  ;
-	/*--- This module will be delets after some modification --*/
-	boost::shared_ptr<CDomain> mesh ;
-	mesh = boost::shared_ptr<CDomain> ( new CDomain ) ;
-	mesh->BulidCellStructure() ;
+
 
 	/*--- Solution Variables ---*/
 	boost::shared_ptr<CVariable> Var ;
@@ -72,7 +92,6 @@ int main( int argc, char * argv[] )
 	/*--- Dirft-diffusion solver ---*/
 	int DriftDiffusionNum=0, FullEqnNum=0 ;
 	int SpeciesType=0 ;
-	boost::shared_ptr<CDriftDiffusion> *continuity_solver ;
 
 
 	/* First: Count the number of D-D equation and full equation. */
@@ -86,8 +105,10 @@ int main( int argc, char * argv[] )
 	} if(mpi_rank==0) cout<<"Number of D-D eqn: "<< DriftDiffusionNum <<", Number of full eqn: "<<FullEqnNum<<endl<<endl;
 
 
+
 	/* Second: Create the D.-D. equation modules */
-	if( DriftDiffusionNum > 0 ){			
+	boost::shared_ptr<CDriftDiffusion> *continuity_solver ;
+	if( DriftDiffusionNum > 0 ){		
 		continuity_solver = new boost::shared_ptr<CDriftDiffusion> [ DriftDiffusionNum ] ;
 		DriftDiffusionNum = 0 ;
 		for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {
@@ -131,8 +152,12 @@ int main( int argc, char * argv[] )
 		// poisson_solver->Solve( mesh, Config, Var ) ;
  	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
-	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
+ 		//cout<<"A1"<<endl;
+ 		poisson_solver->SOLVE( Config, Var ) ;
+ 		//cout<<"A2"<<endl;
 
+	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
+ 		//exit(0);
 		ofstream        FileOutput, PCB_FileOutput ;
 		map< int, CElectrical>::iterator Iter;
 
@@ -141,6 +166,7 @@ int main( int argc, char * argv[] )
 			PCB_FileOutput<<"VARIABLES=\"Time\", \"PowerAbs [W]\", \"Bias Voltage [V]\" , \"Residue\""<<endl ;
 		}
 		double BiasVoltage=0.0 ;
+	//exit(1);
 
  		/*--- Main Cycle ---*/
  		for ( int MainCycle = 1 ; MainCycle < Config->ExitCycle ; MainCycle ++  ) {
@@ -223,8 +249,8 @@ int main( int argc, char * argv[] )
 
 
 				/* Solve for potential and electric field. */
- 				poisson_solver->Solve( mesh, Config, Var ) ;
- 				
+ 				//poisson_solver->Solve( mesh, Config, Var ) ;
+ 				poisson_solver->SOLVE( Config, Var ) ;
 	 				#if (Debug == true ) 
 	 					PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;
 	 				#endif

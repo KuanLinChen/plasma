@@ -577,17 +577,17 @@ void CConfig::ReadSolverFile( string FileName )
 		if ( SubElectricalControl[ i ].find ("VoltageFileName") != SubElectricalControl[ i ].end() ) Electrical[ i ].VoltageFileName=  SubElectricalControl[ i ][ "VoltageFileName" ] ;
 
 		if 		( Electrical[ i ].Name == "POWER" 	) Electrical[ i ].Type = POWER ;
-		else if ( Electrical[ i ].Name == "POWER_1" ) Electrical[ i ].Type = POWER_1 ;
-		else if ( Electrical[ i ].Name == "POWER_2" ) Electrical[ i ].Type = POWER_2 ;
-		else if ( Electrical[ i ].Name == "POWER_3" ) Electrical[ i ].Type = POWER_3 ;
-		else if ( Electrical[ i ].Name == "POWER_4" ) Electrical[ i ].Type = POWER_4 ;
-		else if ( Electrical[ i ].Name == "POWER_5" ) Electrical[ i ].Type = POWER_5 ;
+		// else if ( Electrical[ i ].Name == "POWER_1" ) Electrical[ i ].Type = POWER_1 ;
+		// else if ( Electrical[ i ].Name == "POWER_2" ) Electrical[ i ].Type = POWER_2 ;
+		// else if ( Electrical[ i ].Name == "POWER_3" ) Electrical[ i ].Type = POWER_3 ;
+		// else if ( Electrical[ i ].Name == "POWER_4" ) Electrical[ i ].Type = POWER_4 ;
+		// else if ( Electrical[ i ].Name == "POWER_5" ) Electrical[ i ].Type = POWER_5 ;
 		else if ( Electrical[ i ].Name == "GROUND" 	) Electrical[ i ].Type = GROUND ;
-		else if ( Electrical[ i ].Name == "GROUND_1" ) Electrical[ i ].Type = GROUND_1 ;
-		else if ( Electrical[ i ].Name == "GROUND_2" ) Electrical[ i ].Type = GROUND_2 ;
-		else if ( Electrical[ i ].Name == "GROUND_3" ) Electrical[ i ].Type = GROUND_3 ;
-		else if ( Electrical[ i ].Name == "GROUND_4" ) Electrical[ i ].Type = GROUND_4 ;
-		else if ( Electrical[ i ].Name == "GROUND_5" ) Electrical[ i ].Type = GROUND_5 ;
+		// else if ( Electrical[ i ].Name == "GROUND_1" ) Electrical[ i ].Type = GROUND_1 ;
+		// else if ( Electrical[ i ].Name == "GROUND_2" ) Electrical[ i ].Type = GROUND_2 ;
+		// else if ( Electrical[ i ].Name == "GROUND_3" ) Electrical[ i ].Type = GROUND_3 ;
+		// else if ( Electrical[ i ].Name == "GROUND_4" ) Electrical[ i ].Type = GROUND_4 ;
+		// else if ( Electrical[ i ].Name == "GROUND_5" ) Electrical[ i ].Type = GROUND_5 ;
 		else if ( mpi_rank==0 ) cout<<"Too much power electrode pls contex K. L. Chen"<<endl;
 	}
 
@@ -617,17 +617,17 @@ void CConfig::ReadSolverFile( string FileName )
 		if ( SubElectricalControl[ i ].find ("VoltageFileName") != SubElectricalControl[ i ].end() ) container.VoltageFileName=  SubElectricalControl[ i ][ "VoltageFileName" ] ;
 
 		if 		( container.Name == "POWER"   ) container.Type = POWER ;
-		else if ( container.Name == "POWER_1" ) container.Type = POWER_1 ;
-		else if ( container.Name == "POWER_2" ) container.Type = POWER_2 ;
-		else if ( container.Name == "POWER_3" ) container.Type = POWER_3 ;
-		else if ( container.Name == "POWER_4" ) container.Type = POWER_4 ;
-		else if ( container.Name == "POWER_5" ) container.Type = POWER_5 ;
+		// else if ( container.Name == "POWER_1" ) container.Type = POWER_1 ;
+		// else if ( container.Name == "POWER_2" ) container.Type = POWER_2 ;
+		// else if ( container.Name == "POWER_3" ) container.Type = POWER_3 ;
+		// else if ( container.Name == "POWER_4" ) container.Type = POWER_4 ;
+		// else if ( container.Name == "POWER_5" ) container.Type = POWER_5 ;
 		else if ( container.Name == "GROUND"  ) container.Type = GROUND ;
-		else if ( container.Name == "GROUND_1" ) container.Type = GROUND_1 ;
-		else if ( container.Name == "GROUND_2" ) container.Type = GROUND_2 ;
-		else if ( container.Name == "GROUND_3" ) container.Type = GROUND_3 ;
-		else if ( container.Name == "GROUND_4" ) container.Type = GROUND_4 ;
-		else if ( container.Name == "GROUND_5" ) container.Type = GROUND_5 ;
+		// else if ( container.Name == "GROUND_1" ) container.Type = GROUND_1 ;
+		// else if ( container.Name == "GROUND_2" ) container.Type = GROUND_2 ;
+		// else if ( container.Name == "GROUND_3" ) container.Type = GROUND_3 ;
+		// else if ( container.Name == "GROUND_4" ) container.Type = GROUND_4 ;
+		// else if ( container.Name == "GROUND_5" ) container.Type = GROUND_5 ;
 		else if ( mpi_rank==0 ) cout<<"Too much power electrode pls contex K. L. Chen"<<endl;
 		ElectricalMap.insert( pair< int, CElectrical>( container.Type, container ) ) ;
 		ElectricalIter = ElectricalMap.find( container.Type ) ;

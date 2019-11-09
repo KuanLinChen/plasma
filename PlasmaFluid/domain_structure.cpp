@@ -2,6 +2,7 @@
 using namespace std ;
 CDomain::CDomain()
 {
+
 }
 void CDomain::BulidCellStructure()
 {
@@ -310,4 +311,90 @@ void CDomain::Calculate_LSQ_Coeff()
 	// 	}//End boundaty face
 	// }//End cell loop
 	// MPI_Barrier(MPI_COMM_WORLD);
+}
+void CDomain::Init()
+{
+	/* Face */
+	type_typename[  POWER  ] = "POWER" ;
+	typename_type[ "POWER" ] = 	POWER  ;
+
+	type_typename[  GROUND  ]	=	"GROUND" ;
+	typename_type[ "GROUND" ]	=	 GROUND  ;
+
+	type_typename[  SYMMETRIC  ]	=	"SYMMETRIC" ;
+	typename_type[ "SYMMETRIC" ]	=	 SYMMETRIC  ;
+
+
+	/* Cell */
+	type_typename[  SOLID_POWER  ]	=	"SOLID_POWER" ;
+	typename_type[ "SOLID_POWER" ]	=	 SOLID_POWER  ;
+
+	type_typename[  SOLID_GROUND  ]	=	"SOLID_GROUND" ;
+	typename_type[ "SOLID_GROUND" ]	=	 SOLID_GROUND  ;
+
+
+	type_typename[  PLASMA  ]	=	"PLASMA" ;
+	typename_type[ "PLASMA" ]	=	 PLASMA  ;
+
+	type_typename[  DIELECTRIC  ]	=	"DIELECTRIC";
+	typename_type[ "DIELECTRIC" ]	=	 DIELECTRIC ;
+
+	UltraMPPExtractFaceCellTag() ;
+
+	/* Face */
+	for ( auto mpp = MPP_face_tag.cbegin(); mpp != MPP_face_tag.cend(); ++mpp ) {
+		for ( auto pfm = typename_type.cbegin(); pfm != typename_type.cend(); ++pfm ){
+			if ( mpp->first == pfm-> first ) {
+				face_type[ mpp->second ] = pfm->second ;
+			}
+		}//PFM map
+	}//MPP map
+
+	/* Cell */
+	for ( auto mpp = MPP_cell_tag.cbegin(); mpp != MPP_cell_tag.cend(); ++mpp ) {
+		for ( auto pfm = typename_type.cbegin(); pfm != typename_type.cend(); ++pfm ){
+			if ( mpp->first == pfm-> first ) {
+				cell_type[ mpp->second ] = pfm->second ;
+			}
+		}//PFM map
+	}//MPP map
+
+	#define mpp_pfm_check false
+	#if( mpp_pfm_check == true )
+		for ( auto mpp_pfm = face_type.cbegin(); mpp_pfm != face_type.cend(); ++mpp_pfm ){
+			cout<< mpp_pfm->first << "\t" << mpp_pfm->second << endl;
+		}
+		for ( auto mpp_pfm = cell_type.cbegin(); mpp_pfm != cell_type.cend(); ++mpp_pfm ){
+			cout<< mpp_pfm->first << "\t" << mpp_pfm->second << endl;
+		}
+	#endif
+}
+void CDomain::UltraMPPExtractFaceCellTag()
+{
+	/* Extract the boundary & cell setting from input json file. */
+    json &json_bc_setting    = *(plasma.get_json_input_parameter("boundary_setting")) ;
+    json &json_cell_setting  = *(plasma.get_json_input_parameter("volume_setting"  )) ;
+
+    /* Face */
+		for ( int ibc = 0; ibc < json_bc_setting["name"].size(); ibc++){
+			face_parameter[ json_bc_setting["name"][ ibc ] ] = json_bc_setting["values"][ ibc ] ;
+			MPP_face_tag  [ json_bc_setting["name"][ ibc ] ] = plasma.set_bc_mapping(  json_bc_setting["name"][ ibc ],  json_bc_setting["boundary_type"][ ibc ]  );
+		}
+
+		/* Cell */
+	  for ( int icc = 0; icc < json_cell_setting["name"].size(); icc++ ) {
+	  	cell_parameter[ json_cell_setting["name"][ icc ] ] = json_cell_setting["permittivity"][ icc ] ;
+	  	MPP_cell_tag  [ json_cell_setting["name"][ icc ] ] = plasma.get_cell_type_mapping( json_cell_setting["name"][ icc ] ) ;
+	  }
+
+	  /* Debug */
+		#define face_cell_check false
+    #if( face_cell_check == true )
+	    for ( int ibc = 0; ibc < json_bc_setting["name"].size(); ibc++) {
+	      cout << json_bc_setting  ["name"][ ibc ] <<"\t" << json_bc_setting  ["boundary_type"][ ibc ] << "\t" << json_bc_setting  ["values"][ ibc ]<<endl ;
+	    }
+	    for ( int ibc = 0; ibc < json_cell_setting["name"].size(); ibc++){
+	      cout << json_cell_setting["name"][ ibc ] <<"\t" << json_cell_setting["volume_type"  ][ ibc ] << "\t" << json_cell_setting["permittivity"][ ibc ] <<endl ;
+	    }
+    #endif
 }

@@ -106,5 +106,7 @@ class CDomain
 			//cout<<"A"<<endl;
 			return A[0]*B[0] + A[1]*B[1] ;
 		};
+		void Init() ;
+		void UltraMPPExtractFaceCellTag() ;
 
 };

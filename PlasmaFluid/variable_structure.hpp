@@ -157,6 +157,27 @@ class CVariable
 		ReducedElectricField,/*!< \brief reduced electric field */ 
 		E_Mag ;
 
+	int NetQ_Tag ;
+
+	/*ultraMPP variables */
+	map<string,int> VarTag ;
+	variable_set Potential;
+	double *ChargeDen,/*!< \brief net charge density */ 
+				 *eps,      /*!< \brief Material permittivity */ 
+				 *eps_eff ; /*!< \brief Effective permittivity for semi-implicit poissiony */ 
+	double *Ex, *Ey, *Ez ;
+
+	void UltraMPPInitialCellParameter();
+
+
+
+
+
+
+
+
+
+
 	CScalar *DD_Convection ;/*!< \brief Drift-Diffusion Approximation convection term (for semi-implicit poisson's eqnuation). */ 
 
 	CScalar TotalNumberDensity ;
@@ -175,8 +196,8 @@ class CVariable
 
 	CScalar *LFASourceSink ; /*!< \brief  */
 	CScalar Kappa ;
-	CScalar Force_x, Force_y ;/*!< \brief  Force in x & y direction. */
-	void CalculateEHDForce( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config ) ;
+	//CScalar Force_x, Force_y ;/*!< \brief  Force in x & y direction. */
+	//void CalculateEHDForce( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config ) ;
 	CScalar ** GradT ;
 	CScalar **GradU0 ;/*!< \brief Number density gradient [x,y,z]. */ 
 	CScalar **GradU4 ;/*!< \brief Energy density gradient [x,y,z].*/ 
@@ -192,6 +213,9 @@ class CVariable
 
 	CScalar Eps,/*!< \brief Effective permittivity for semi-implicit poissiony */ 
 		   Eps0 ;/*!< \brief Material permittivity */ 
+
+
+
 
 	CScalar NetQ ; /*!< \brief Net charged density for poisson source term */ 
 
@@ -291,7 +315,7 @@ class CVariable
     
     void Alpha_Beta( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
     //void ComputeDebyeLengthRatio_CFL( boost::shared_ptr<CDomain> &m ) ;
-	void ComputeDebyeLengthRatio_CFL( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config  ) ;
+		//void ComputeDebyeLengthRatio_CFL( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config  ) ;
 	
     /*! 
 	 * \brief Calculate Least-square coeff store in scalar.

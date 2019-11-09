@@ -32,6 +32,47 @@ class CPoisson
 	public:
 		
 		CPoisson();
+		/*!
+		 * \brief Compute the net charged density sum_j( sgn(q)*e*n_j ). Note: e: elementary charge.
+		 */	
+		void UltraMPPComputeNetCharge               ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+
+		/*!
+		 * \brief Compute the  permittivity =  effective permittivity.
+		 */	
+		void UltraMPPCOmputePermitt                 ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+
+		/*!
+		 * \brief Compute the effective permittivity. Semi-Implicit accroding K. M. Lin et al. CPC 183 (2012) 1225–1236.
+		 */	
+		void UltraMPPCOmputeEffectivePermitt        ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+
+		/*!
+		 * \brief Compute the effective permittivity (electron only).
+		 */	
+		void UltraMPPCOmputeEffectivePermittEleOnly ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+
+		/*!
+		 * \brief Compute the surface charge for plasma-dielectric interface.
+		 */	
+		void UltraMPPCOmputeSurfaceCharge           ( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+
+		/*!
+		 * \brief Compute the effective permittivity (electron only).
+		 */	
+		void SOLVE                                  ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+
+
+
+
+
+
+
+
+
+
+
+
 
 	/*--- PETSc Solver ---*/	
 		map<string, int> BCs ;
@@ -99,7 +140,7 @@ class CPoisson
 	 * \param[in] config - Definition of the particular problem.
 	 * \param[in] var    - Variable.
 	 */		
-	void Calculate_Gradient_Neumann( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+	//void Calculate_Gradient_Neumann( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	void Calculate_Gradient_Neumann2( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	void Zero_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
 
@@ -110,7 +151,6 @@ class CPoisson
 	 * \param[in] var    - Variable.
 	 */	
 	void Calculate_NetCharge( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
-	void Calculate_NetCharge_2N_minus_N( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 
 		void CalculateEffectivePermitt( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 		void CalculateEffectivePermittEleOnly( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
@@ -122,4 +162,7 @@ class CPoisson
 		double DotProduct(double *A, double *B ){
 			return A[0]*B[0] + A[1]*B[1] ;
 		};
+
+
+
 };

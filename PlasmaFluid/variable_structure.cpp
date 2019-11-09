@@ -87,8 +87,8 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 	E_Mag.initial ( "Electric field magnitude" ) ;
 
 	/*------*/
-	Force_x.initial ( "fx [N/m]" ) ;
-	Force_y.initial ( "fy [N/m]" ) ;
+	//Force_x.initial ( "fx [N/m]" ) ;
+	//Force_y.initial ( "fy [N/m]" ) ;
 
 	/*------*/
 	Kappa.initial ( "kappa" ) ;
@@ -206,8 +206,34 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 
 		CFL.initial ( "CFL" ) ;
 		AvgCFL.initial ( "CFL" ) ;
-	/*--- Field Variables ---*/
+
+	/*--- Electrical Field Variables ---*/
 		Phi.initial ( "Φ [V]" ) ;
+
+
+	/* UltraMPP Variables */
+		plasma.set_parallel_variable( &Potential, "Potential" );
+		for ( int i = 0; i < plasma.Mesh.face_number; i++ ) {
+			Potential.face[i] = 0.0 ;
+		}
+		VarTag["permittivity"          ] = plasma.set_parallel_cell_data(&eps      , "permittivity"           ) ;
+		VarTag["effective_permittivity"] = plasma.set_parallel_cell_data(&eps_eff  , "effective_permittivity" ) ;
+		VarTag["ChargeDen"             ] = plasma.set_parallel_cell_data(&ChargeDen, "ChargeDen"              ) ;
+
+		VarTag["Ex"] = plasma.set_parallel_cell_data( &Ex, "Ex" ) ;
+		VarTag["Ey"] = plasma.set_parallel_cell_data( &Ey, "Ey" ) ;
+		VarTag["Ez"] = plasma.set_parallel_cell_data( &Ez, "Ez" ) ;
+
+
+	//	for ( auto mpp = VarTag.cbegin(); mpp != VarTag.cend(); ++mpp ) {
+		//	cout<<mpp->first<<"\t"<<mpp->second<<endl;
+		//}
+		//exit(0);
+
+
+	/* End UltraMPP Variables */
+
+
 
 		 //Scalar eEnergyLoss, eAvgEnergyLoss ;
 		eEnergyLoss.initial ( "ε_Loss" ) ;
@@ -355,66 +381,74 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 		if( mpi_rank == MASTER_NODE ) cout<<"End buliding variable module ... "<<endl;
 
 }
-void CVariable::ComputeDebyeLengthRatio_CFL( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config  )
+void CVariable::UltraMPPInitialCellParameter()
 {
+  for ( int cth=0 ; cth<plasma.Mesh.cell_number; cth++ ) {
+    Cell *cell = plasma.get_cell( cth ) ;
+    eps[ cth ] = cell_parameter[ cell->Typename ] * vacuum_permittivity ;
+  }
+  plasma.syn_parallel_cell_data( VarTag["permittivity"] );
+}
+// void CVariable::ComputeDebyeLengthRatio_CFL( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config  )
+// {
 
-	Cell *Cell_i ;
+// 	Cell *Cell_i ;
 
-	double L=0.0, VMag=0.0 ;
+// 	double L=0.0, VMag=0.0 ;
 
-	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
-		Cell_i = plasma.get_cell( i ) ;
-			if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+// 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+// 		Cell_i = plasma.get_cell( i ) ;
+// 			if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
 
-			if ( config->MeshType == "Axisymmetric_Y") {
+// 			if ( config->MeshType == "Axisymmetric_Y") {
 
-				L = pow( Cell_i->volume, 1.0/3.0 ) ; //axisymmetric
+// 				L = pow( Cell_i->volume, 1.0/3.0 ) ; //axisymmetric
 
-			} else {
+// 			} else {
 
-				L = pow( Cell_i->volume, 1.0/2.0 ) ; //axisymmetric
+// 				L = pow( Cell_i->volume, 1.0/2.0 ) ; //axisymmetric
 
-			}
+// 			}
 
-			DebyeLength[ i ] = 740.0*sqrt( T[0][i]/fabs(U0[0][i]*10.0E-6) )/100.0 ;
+// 			DebyeLength[ i ] = 740.0*sqrt( T[0][i]/fabs(U0[0][i]*10.0E-6) )/100.0 ;
 
-			DebyeLength[ i ] = DebyeLength[ i ] / L / Ref_L ;
+// 			DebyeLength[ i ] = DebyeLength[ i ] / L / Ref_L ;
 
-			VMag = sqrt( U1[ 0 ][ i ]*U1[ 0 ][ i ] + U2[ 0 ][ i ]*U2[ 0 ][ i ] + U3[ 0 ][ i ]*U3[ 0 ][ i ] )/fabs(U0[0][i]) ;
+// 			VMag = sqrt( U1[ 0 ][ i ]*U1[ 0 ][ i ] + U2[ 0 ][ i ]*U2[ 0 ][ i ] + U3[ 0 ][ i ]*U3[ 0 ][ i ] )/fabs(U0[0][i]) ;
 			
-			CFL[ i ] = VMag*Dt/L ;
+// 			CFL[ i ] = VMag*Dt/L ;
 
-		} else {
-			DebyeLength[ i ] = 0.0 ;
-		}
-	}//End cell loop
-}
-void CVariable::CalculateEHDForce( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config  )
-{
+// 		} else {
+// 			DebyeLength[ i ] = 0.0 ;
+// 		}
+// 	}//End cell loop
+// }
+// void CVariable::CalculateEHDForce( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config  )
+// {
 
-	Cell *Cell_i ;
-	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+// 	Cell *Cell_i ;
+// 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell_i = plasma.get_cell( i ) ;
+// 		Cell_i = plasma.get_cell( i ) ;
 
-		Force_x[i] = 0.0 ;
-		Force_y[i] = 0.0 ;
-		if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+// 		Force_x[i] = 0.0 ;
+// 		Force_y[i] = 0.0 ;
+// 		if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
 
-			for ( int jSpecies = 0; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
-				if (config->Species[ jSpecies ].Charge != 0.0 ) {
+// 			for ( int jSpecies = 0; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
+// 				if (config->Species[ jSpecies ].Charge != 0.0 ) {
 
-					Force_x[ i ] += Qe*config->Species[ jSpecies ].sgn*U1[jSpecies][i]/Mobi[jSpecies][ i ] ;
-					Force_y[ i ] += Qe*config->Species[ jSpecies ].sgn*U2[jSpecies][i]/Mobi[jSpecies][ i ] ;
-				}
-			}
+// 					Force_x[ i ] += Qe*config->Species[ jSpecies ].sgn*U1[jSpecies][i]/Mobi[jSpecies][ i ] ;
+// 					Force_y[ i ] += Qe*config->Species[ jSpecies ].sgn*U2[jSpecies][i]/Mobi[jSpecies][ i ] ;
+// 				}
+// 			}
 
-		} else {
-			Force_x[ i ] = 0.0 ;
-			Force_y[ i ] = 0.0 ;
-		}
-	}//End cell loop
-}
+// 		} else {
+// 			Force_x[ i ] = 0.0 ;
+// 			Force_y[ i ] = 0.0 ;
+// 		}
+// 	}//End cell loop
+// }
 void CVariable::CellProperties( boost::shared_ptr<CDomain> &m )
 {
 
@@ -437,6 +471,8 @@ void CVariable::CellProperties( boost::shared_ptr<CDomain> &m )
 void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
 
+	UltraMPPInitialCellParameter() ;
+	
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 		MPI_ID[ i ] = mpi_rank ;
 	}//End cell loop
