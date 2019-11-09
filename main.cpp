@@ -87,7 +87,7 @@ int main( int argc, char * argv[] )
 	/*--- Poisson solver ---*/
 	boost::shared_ptr<CPoisson> poisson_solver ;
 	poisson_solver = boost::shared_ptr<CPoisson> ( new CPoisson ) ;
-	poisson_solver->Init( mesh, Config ) ;
+	poisson_solver->Init( Config ) ;
 
 	/*--- Dirft-diffusion solver ---*/
 	int DriftDiffusionNum=0, FullEqnNum=0 ;
@@ -211,7 +211,7 @@ int main( int argc, char * argv[] )
  				if( MON_CYC and MainStep%(Config->StepPerCycle/Config->MON_Insta_Freq) == 0  ) MON_INS = true ;
  				else  MON_INS 	= false ;
 
-
+ 				//cout<<"MON_CYC: "<<MON_CYC<<"\t"<<"MON_INS"<<MON_INS<<endl;
 				if( mpi_rank == MASTER_NODE and MON_CYC and MON_INS ){
 					cout<<"MainCycle: "<<MainCycle<<"\t"<<"MainStep: "<<MainStep<<"\t"<<"Voltage: "<<Var->Volt<<"  [V]"<<"\t"<<"PhysicalTime: "<<Var->PhysicalTime<<"  [s]"<<endl ; 
 					cout<<"Poissn ksp iter : "<<poisson_solver->its<<endl ;

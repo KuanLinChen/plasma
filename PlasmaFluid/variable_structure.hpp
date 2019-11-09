@@ -139,7 +139,7 @@ class CVariable
 	 * \brief Calculate reduced electric field: E/N (unit: Td = 10^-21 V*m^2)
 	 * \param[in] domain - Name of the file with the grid information.
 	 */
-	void CalReducedElectricField ( boost::shared_ptr<CDomain> & ) ;
+	void UltraMPPComputeReducedElectricField() ;
 
 	/*! 
 	 * \brief Use reduced electric field to lookup the electron energy density tabe.
@@ -149,25 +149,34 @@ class CVariable
 	
 
 	int SolutionFieldNum ;
-	CScalar Phi, /*!< \brief Potential. */ 
-		AvgPhi, /*!< \brief Cycle averaged potential and electric fields[x,y,z]. */ 
-		EField[3],/*!< \brief Electric fields[x,y,z]. */ 
-		AvgEField[3],/*!< \brief cycle-averaged electric fields[x,y,z]. */ 
-		PreEField[3],/*!< \brief Previous time step Electric fields[x,y,z]. */ 
-		ReducedElectricField,/*!< \brief reduced electric field */ 
-		E_Mag ;
+	CScalar EField[3],/*!< \brief Electric fields[x,y,z]. */ 
+					//PreEField[3],/*!< \brief Previous time step Electric fields[x,y,z]. */ 
+		ReducedElectricField ;/*!< \brief reduced electric field */ 
 
 	int NetQ_Tag ;
 
-	/*ultraMPP variables */
-	map<string,int> VarTag ;
-	variable_set Potential;
-	double *ChargeDen,/*!< \brief net charge density */ 
-				 *eps,      /*!< \brief Material permittivity */ 
-				 *eps_eff ; /*!< \brief Effective permittivity for semi-implicit poissiony */ 
-	double *Ex, *Ey, *Ez ;
+	/*--- UltraMPP variables ---*/
+	void UltraMPPVarInit() ;
 
-	void UltraMPPInitialCellParameter();
+	map<string,int> VarTag ;
+
+	variable_set Potential ;/*!< \brief potential */
+	double *ChargeDen,      /*!< \brief net charge density */ 
+				 *eps,            /*!< \brief Material permittivity */ 
+				 *eps_eff ;       /*!< \brief Effective permittivity for semi-implicit poissiony */ 
+	double *Ex, *PreEx,     /*!< \brief current & previous Electric fields in X-dir. */ 
+	       *Ey, *PreEy,     /*!< \brief current & previous Electric fields in Y-dir. */ 
+	       *Ez, *PreEz,     /*!< \brief current & previous Electric fields in Z-dir. */ 
+				 *Etd,            /*!< \brief reduce Electric fields in unit: Td */ 
+				 *Emag ;          /*!< \brief Electric fields magnitude */ 
+
+	void UltraMPPAvgVarInit() ;
+	double *AvgPotential,   /*!< \brief cycle-averaged potential */
+				 *AvgEx,          /*!< \brief cycle-averaged electric fields in X-dir. */ 
+				 *AvgEy,          /*!< \brief cycle-averaged electric fields in Y-dir. */ 
+				 *AvgEz ;         /*!< \brief cycle-averaged electric fields in Z-dir. */ 
+
+	void UltraMPPInitialCellParameter() ;
 
 
 
@@ -197,7 +206,6 @@ class CVariable
 	CScalar *LFASourceSink ; /*!< \brief  */
 	CScalar Kappa ;
 	//CScalar Force_x, Force_y ;/*!< \brief  Force in x & y direction. */
-	//void CalculateEHDForce( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config ) ;
 	CScalar ** GradT ;
 	CScalar **GradU0 ;/*!< \brief Number density gradient [x,y,z]. */ 
 	CScalar **GradU4 ;/*!< \brief Energy density gradient [x,y,z].*/ 

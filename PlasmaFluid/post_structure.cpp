@@ -11,17 +11,17 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 
 	plasma.set_output( "0Flow-"+to_string(Cycle)+"-"+to_string(Step) ) ;
 
-	//plasma.set_output( var->Phi.data_id ) ;
 	plasma.set_output( var->Potential.tag_current ) ;
-
-	plasma.set_output( var->VarTag["permittivity"] ) ;
-	plasma.set_output( var->VarTag["effective_permittivity"] ) ;
+	//plasma.set_output( var->VarTag["permittivity"] ) ;
+	//plasma.set_output( var->VarTag["effective_permittivity"] ) ;
 	plasma.set_output( var->VarTag["ChargeDen"             ] ) ;
 
-	for ( int dim = 0 ; dim < nDim ; dim ++ ) {
-		plasma.set_output( var->EField[dim].data_id ) ;
-	}
-	plasma.set_output( var->E_Mag.data_id ) ;
+	plasma.set_output( var->VarTag["Ex"] ) ;
+	plasma.set_output( var->VarTag["Ey"] ) ;
+	if ( nDim == 3 )
+	plasma.set_output( var->VarTag["Ez"] ) ;
+
+	plasma.set_output( var->VarTag["Emag"] ) ;
 
 
 	/* Temperature */
@@ -67,22 +67,18 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	plasma.write_output(to_string(Step)) ;
 
 }
-void CPost::PlotDecomposition( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
-{
-	// IO Output ;
-	// Output.set_output_type ( config->OutputFormat ) ;
-	// Output.set_filename( "MPI_ID.dat" ) ;
-	// Output <<  var->MPI_ID ;
-	// Output<<endl;
-}
 void CPost::OutputAverageFlow( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var, int Cycle )
 {
 	plasma.set_output( "1AvgFlow-"+to_string(Cycle) ) ;
 
-	plasma.set_output( var->AvgPhi.data_id ) ;
-	for ( int dim = 0 ; dim < nDim ; dim ++ ) {
-		plasma.set_output( var->AvgEField[dim].data_id ) ;
-	}
+	plasma.set_output( var->VarTag["AvgPotential"] ) ;
+
+	plasma.set_output( var->VarTag["AvgEx"] ) ;
+	plasma.set_output( var->VarTag["AvgEy"] ) ;
+	if ( nDim == 3 )
+	plasma.set_output( var->VarTag["AvgEz"] ) ;
+
+
 	plasma.set_output( var->eAvgEnergyLoss.data_id ) ;
 	
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var-> AvgT[ iSpecies ].data_id ) ;
