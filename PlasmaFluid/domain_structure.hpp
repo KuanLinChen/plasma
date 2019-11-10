@@ -83,9 +83,8 @@ class CDomain
 		void BulidCellStructure() ;
 		
 		/*--- Least-Square Granient Reconstruction ---*/
-		CLSQ *LSQ ;
-
-		void Calculate_LSQ_Coeff() ;
+		//CLSQ *LSQ ;
+		//void Calculate_LSQ_Coeff() ;
 		
 		int local_cell_number ;
 

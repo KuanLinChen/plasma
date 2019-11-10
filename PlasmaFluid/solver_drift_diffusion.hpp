@@ -83,27 +83,6 @@ class CDriftDiffusion
 	void Semi_Empirical_Temperature( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 
 	/*!
-	 * \brief Reset the number density gradient to be zero.
-	 * \param[in] domain - Grid information.
-	 * \param[in] var    - Variable.
-	 */
-	void Zero_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
-
-	/*!
-	 * \brief Calculate number density gradient using LSQ.
-	 * \param[in] domain - Grid information.
-	 * \param[in] var    - Variable.
-	 */
-	void Calculate_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
-
-	/*!
-	 * \brief Calculate number density gradient using LSQ. Note: Using simple shapefunction in the boundary.
-	 * \param[in] domain - Grid information.
-	 * \param[in] var    - Variable.
-	 */
-	void Calculate_Gradient_Neumann( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
-
-	/*!
 	 * \brief Calculate reconstruction flux @ cell centered according to Raja JCP 228 (2009) 4435–4443.
 	 * \param[in] domain - Grid information.
 	 * \param[in] var    - Variable.

@@ -378,10 +378,10 @@ void CFluidModel::MomentumIntegral( boost::shared_ptr<CDomain> &m, boost::shared
 			//P = (config->Species[ iSpecies ].Gamma-1.0)*( U4 - 0.5*IonMass*( U1*U1+U2*U2+U3*U3 )/U0 ) ;
 
 			/*--- Force term { (1/m)qnE } ---*/
-        	Res[ 1 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->EField[ 0 ][ i ]/IonMass) * Cell_i->volume ;
-        	Res[ 2 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->EField[ 1 ][ i ]/IonMass) * Cell_i->volume ;
-        	Res[ 3 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->EField[ 2 ][ i ]/IonMass) * Cell_i->volume ;
-	 		var->Momentum_Term[1][ i ] = LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->EField[ 0 ][ i ]/IonMass) * Cell_i->volume ;
+        	Res[ 1 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ex[ i ]/IonMass) * Cell_i->volume ;
+        	Res[ 2 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ey[ i ]/IonMass) * Cell_i->volume ;
+        	//Res[ 3 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ez[ i ]/IonMass) * Cell_i->volume ;
+	 		var->Momentum_Term[1][ i ] = LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ex[ i ]/IonMass) * Cell_i->volume ;
 			/*--- Collision term ---*/  
 			U = U1/U0 ;
 			V = U2/U0 ;
@@ -476,7 +476,7 @@ void CFluidModel::EnergyDensityIntegral( boost::shared_ptr<CDomain> &m, boost::s
 
 			/*--- Joule Heating ---*/  
 			//UNSTEADY + CONVECTION - Joule Heating - collision = 0 
-			JHeating = var->Qe*config->Species[iSpecies].Charge*( var->EField[ 0 ][ i ]*U1 + var->EField[ 1 ][ i ]*U2 ) ;
+			JHeating = var->Qe*config->Species[iSpecies].Charge*( var->Ex[ i ]*U1 + var->Ey[ i ]*U2 ) ;
 			Res[ 4 ][ i ] +=  LogicalSwitch * (-JHeating) * Cell_i->volume ;
 			var->Energy_Term[ 2 ][ i ] =  LogicalSwitch*(-JHeating)*Cell_i->volume ;
 
@@ -558,156 +558,87 @@ void CFluidModel::CalculateTotalEnergy( boost::shared_ptr<CDomain> &m, boost::sh
 	var->U4[iSpecies] = var->U4[iSpecies] ;
 	//exit(1);
 }
-void CFluidModel::Calculate_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
-{
-	int j=0, NeighborCellIndex=0 ;
-	double dVar=0.0, Gx=0.0, Gy=0.0, BC_Value=0.0 ;
-	Cell *Cell_i, *Cell_j ;
-
-	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
-
-		Cell_i = plasma.get_cell(i) ;
-
-		Gx = 0.0 ; Gy = 0.0 ;
-
-		if ( plasma.get_cell_typename( Cell_i->data_id ) != "PLASMA" ){
-
-			var->GradU0[ iSpecies ][ 0 ][ i ] = 0.0 ;
-			var->GradU0[ iSpecies ][ 1 ][ i ] = 0.0 ;	
-
-		} else {
-
-			/*--- Loop over neighbor "faces" ---*/
-			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
-
-				j = Cell_i->cell[k]->local_id ; 
-				Cell_j = plasma.get_cell(j) ;
-				
-				if ( plasma.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//For discontinued face, apply neumann
-
-					GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-					GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-
-					BC_Value = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
-
-					dVar = BC_Value - var->U0[iSpecies][ i ] ;
-
-				}else{
-
-					dVar = var->U0[iSpecies][ j ] - var->U0[iSpecies][ i ] ;
-
-				}
-
-				Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
-	     		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
-
-			}//End iCell
-
-			/*--- Loop over boundary faces ---*/
-			for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
-
-				GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-				GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-
-				BC_Value = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
-
-				dVar = BC_Value - var->U0[ iSpecies ][ i ] ;
-
-				Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
-	      		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
-
-			}
-			var->GradU0[ iSpecies ][ 0 ][ i ] = Gx ;
-			var->GradU0[ iSpecies ][ 1 ][ i ] = Gy ;
-		}
-	}//Loop over all cells
-
-	/*--- Update ghost cells ---*/
-	var->GradU0[ iSpecies ][ 0 ] = var->GradU0[ iSpecies ][ 0 ] ;
-	var->GradU0[ iSpecies ][ 1 ] = var->GradU0[ iSpecies ][ 1 ] ;
-
-}
 void CFluidModel::Calculate_Gradient_T( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
 {
-	int j=0, NeighborCellIndex=0 ;
-	double dVar=0.0, Gx=0.0, Gy=0.0, BC_Value=0.0 ;
+	// int j=0, NeighborCellIndex=0 ;
+	// double dVar=0.0, Gx=0.0, Gy=0.0, BC_Value=0.0 ;
 
-	Cell *Cell_i, *Cell_j ;
+	// Cell *Cell_i, *Cell_j ;
 
-	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+	// for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell_i  = plasma.get_cell( i ) ;
+	// 	Cell_i  = plasma.get_cell( i ) ;
 
-		Gx = 0.0 ; Gy = 0.0 ;
+	// 	Gx = 0.0 ; Gy = 0.0 ;
 
 
-		if ( plasma.get_cell_typename( Cell_i->data_id ) != "PLASMA" ){
+	// 	if ( plasma.get_cell_typename( Cell_i->data_id ) != "PLASMA" ){
 
-			var->GradT[ iSpecies ][ 0 ][ i ] = 0.0 ;
-			var->GradT[ iSpecies ][ 1 ][ i ] = 0.0 ;	
+	// 		var->GradT[ iSpecies ][ 0 ][ i ] = 0.0 ;
+	// 		var->GradT[ iSpecies ][ 1 ][ i ] = 0.0 ;	
 
-		} else {
+	// 	} else {
 
-			/*--- Loop over neighbor "faces" ---*/
-			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
+	// 		/*--- Loop over neighbor "faces" ---*/
+	// 		for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
 
-				j = Cell_i->cell[k]->local_id ; 
-				Cell_j = plasma.get_cell(j) ;
+	// 			j = Cell_i->cell[k]->local_id ; 
+	// 			Cell_j = plasma.get_cell(j) ;
 				
-				if ( plasma.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//For discontinued face, apply neumann
+	// 			if ( plasma.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//For discontinued face, apply neumann
 
-					GVarP[ 0 ] = var->GradT[ iSpecies ][ 0 ][ i ] ;
-					GVarP[ 1 ] = var->GradT[ iSpecies ][ 1 ][ i ] ;
+	// 				GVarP[ 0 ] = var->GradT[ iSpecies ][ 0 ][ i ] ;
+	// 				GVarP[ 1 ] = var->GradT[ iSpecies ][ 1 ][ i ] ;
 
-					BC_Value = var->T[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
-					dVar = BC_Value - var->T[iSpecies][ i ] ;
+	// 				BC_Value = var->T[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
+	// 				dVar = BC_Value - var->T[iSpecies][ i ] ;
 
-				}else{
+	// 			}else{
 
-					dVar = var->T[iSpecies][ j ] - var->T[iSpecies][ i ] ;
+	// 				dVar = var->T[iSpecies][ j ] - var->T[iSpecies][ i ] ;
 
-				}
+	// 			}
 
-				Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
-	     		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
+	// 			Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
+	//      		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
 
-			}//End iCell
+	// 		}//End iCell
 
-			/*--- Loop over boundary faces ---*/
-			for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
+	// 		/*--- Loop over boundary faces ---*/
+	// 		for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-				GVarP[ 0 ] = var->GradT[ iSpecies ][ 0 ][ i ] ;
-				GVarP[ 1 ] = var->GradT[ iSpecies ][ 1 ][ i ] ;
+	// 			GVarP[ 0 ] = var->GradT[ iSpecies ][ 0 ][ i ] ;
+	// 			GVarP[ 1 ] = var->GradT[ iSpecies ][ 1 ][ i ] ;
 
-				BC_Value = var->T[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
+	// 			BC_Value = var->T[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
-				dVar = BC_Value - var->T[ iSpecies ][ i ] ;
+	// 			dVar = BC_Value - var->T[ iSpecies ][ i ] ;
 
-				Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
-	      		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
+	// 			Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
+	//       		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
 
-			}
-			var->GradT[ iSpecies ][ 0 ][ i ] = Gx ;
-			var->GradT[ iSpecies ][ 1 ][ i ] = Gy ;
-		}
-	}//Loop over all cells
+	// 		}
+	// 		var->GradT[ iSpecies ][ 0 ][ i ] = Gx ;
+	// 		var->GradT[ iSpecies ][ 1 ][ i ] = Gy ;
+	// 	}
+	// }//Loop over all cells
 
-	/*--- Update ghost cells ---*/
-	var->GradT[ iSpecies ][ 0 ] = var->GradT[ iSpecies ][ 0 ] ;
-	var->GradT[ iSpecies ][ 1 ] = var->GradT[ iSpecies ][ 1 ] ;
+	// /*--- Update ghost cells ---*/
+	// var->GradT[ iSpecies ][ 0 ] = var->GradT[ iSpecies ][ 0 ] ;
+	// var->GradT[ iSpecies ][ 1 ] = var->GradT[ iSpecies ][ 1 ] ;
 
 }
-void CFluidModel::Zero_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
-{
-	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
-		var->GradU0[ iSpecies ][ 0 ][ i ] = 0.0 ;
-		var->GradU0[ iSpecies ][ 1 ][ i ] = 0.0 ;
-	}//Loop over all cells
+// void CFluidModel::Zero_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
+// {
+// 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+// 		var->GradU0[ iSpecies ][ 0 ][ i ] = 0.0 ;
+// 		var->GradU0[ iSpecies ][ 1 ][ i ] = 0.0 ;
+// 	}//Loop over all cells
 
-	/*--- Update ghost cells ---*/
-	var->GradU0[ iSpecies ][ 0 ] = var->GradU0[ iSpecies ][ 0 ] ;
-	var->GradU0[ iSpecies ][ 1 ] = var->GradU0[ iSpecies ][ 1 ] ;
-}
+// 	/*--- Update ghost cells ---*/
+// 	var->GradU0[ iSpecies ][ 0 ] = var->GradU0[ iSpecies ][ 0 ] ;
+// 	var->GradU0[ iSpecies ][ 1 ] = var->GradU0[ iSpecies ][ 1 ] ;
+// }
 void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
 	int j=0 ;

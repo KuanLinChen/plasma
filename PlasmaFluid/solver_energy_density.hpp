@@ -54,21 +54,6 @@ class CEnergyDensity
 	void Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 	void Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 
-
-	/*!
-	 * \brief Reset the number density gradient to be zero.
-	 * \param[in] domain - Grid information.
-	 * \param[in] var    - Variable.
-	 */
-	void Zero_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
-
-	/*!
-	 * \brief Calculate number density gradient using LSQ.
-	 * \param[in] domain - Grid information.
-	 * \param[in] var    - Variable.
-	 */
-	void Calculate_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
-
 	/*!
 	 * \brief Calculate temperature.
 	 * \param[in] domain - Grid information.

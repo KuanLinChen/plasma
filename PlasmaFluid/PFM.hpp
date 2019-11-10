@@ -28,9 +28,9 @@ const double		vacuum_permittivity 	=  8.8541878176e-12 ; /* Unit in F/m */
 
 #define MASTER_NODE		0
 
-#define BULK			0
-#define PLASMA			0
-#define SOLID			9958
+#define BULK			  0
+#define PLASMA			9958
+//#define SOLID			9958
 
 #define Debug_MatCoeff_DD_Zero 1
 

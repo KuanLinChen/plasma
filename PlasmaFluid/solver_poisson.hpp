@@ -46,22 +46,22 @@ class CPoisson
 		/*!
 		 * \brief Compute the  permittivity =  effective permittivity.
 		 */	
-		void UltraMPPCOmputePermitt                 ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+		void UltraMPPComputePermitt                 ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 
 		/*!
 		 * \brief Compute the effective permittivity. Semi-Implicit accroding K. M. Lin et al. CPC 183 (2012) 1225–1236.
 		 */	
-		void UltraMPPCOmputeEffectivePermitt        ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+		void UltraMPPComputeEffectivePermitt        ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 
 		/*!
 		 * \brief Compute the effective permittivity (electron only).
 		 */	
-		void UltraMPPCOmputeEffectivePermittEleOnly ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+		void UltraMPPComputeEffectivePermittEleOnly ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 
 		/*!
 		 * \brief Compute the surface charge for plasma-dielectric interface.
 		 */	
-		void UltraMPPCOmputeSurfaceCharge           ( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+		void UltraMPPComputeSurfaceCharge           ( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 
 		/*!
 		 * \brief Compute the effective permittivity (electron only).
@@ -80,4 +80,8 @@ class CPoisson
 	void UpdateElectricalMap( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	double SineVoltage( string FaceType, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 
+	/* TEST FUNCTION */
+	void MatA_SourceB( boost::shared_ptr<CConfig> &config,boost::shared_ptr<CVariable> &var ) ;
+	void ComputeGradient( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+	void SOLVE_TEST( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  ) ;
 };

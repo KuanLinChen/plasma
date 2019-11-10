@@ -34,7 +34,6 @@ void CDriftDiffusion::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 {
 	if( config->Species[iSpecies].Activate ==0) return ; 
 
-		Zero_Gradient( m, variable ) ;
 	/*--- 1st solve the equation w/o cross diffusion term ---*/
 		switch( WallType ){
 			case 0: //default
@@ -100,7 +99,7 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 		Source 	 = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ){
 
 			/*--- Unsteady term ---*/
 			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -111,16 +110,16 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 				j = Cell_i->cell[k]->local_id ; 
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
+				if ( cell_type[ Cell_j->type ] == PLASMA ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
 
-					U = dL*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					U = dL*config->Species[ iSpecies ].Charge * var->Ex[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ex[ j ] * var->Mobi[iSpecies][ j ] ;
 
-					V = dL*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ j ] * var->Mobi[iSpecies][ j ]  ;
+					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
 
 					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -154,21 +153,21 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 						case 0:/*--- Electron ---*/
 
 	 						/*--- Drift term ---*/
-							U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-	 						V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+							U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+	 						V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 	 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] );
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ;	if ( fixTe ) Te = 0.5 ;
-	 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->EField[ 0 ][ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
+	 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
 
 	 						/*--- Secondary electron emission ---*/
 	 						SecondaryElectronEmission = 0.0 ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
+	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 							
@@ -182,8 +181,8 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 						case 1:/*--- Ion ---*/
 
 							/*--- Drift term ---*/
-							U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-	 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+							U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+	 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 	 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 							/*--- Thermal flux term ---*/
@@ -216,7 +215,7 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( plasma.get_face_typename( Cell_i->face[ k ]->data_id)  == "NEUMANN" ){
+	 			if( face_type[ Cell_i->face[ k ]->type ]  == NEUMANN ){
 	 				//do nothing
 	 			}else{
 
@@ -225,21 +224,21 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 						case 0:/*--- Electron ---*/
 
 	 						/*--- Drift term ---*/
-							U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-	 						V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+							U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+	 						V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 	 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] );
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ;	if ( fixTe ) Te = 0.5 ;
-	 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->EField[ 0 ][ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
+	 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
 
 	 						/*--- Secondary electron emission ---*/
 	 						SecondaryElectronEmission = 0.0 ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
+	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 							
@@ -254,8 +253,8 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 						case 1:/*--- Ion ---*/
 
 							/*--- Drift term ---*/
-							U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-	 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+							U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+	 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 	 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 							/*--- Thermal flux term ---*/
@@ -357,11 +356,11 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
 
-					U = dL*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					U = dL*config->Species[ iSpecies ].Charge * var->Ex[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ex[ j ] * var->Mobi[iSpecies][ j ] ;
 
-					V = dL*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ j ] * var->Mobi[iSpecies][ j ]  ;
+					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
 
 					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -509,11 +508,11 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
 
-					U = dL*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					U = dL*config->Species[ iSpecies ].Charge * var->Ex[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ex[ j ] * var->Mobi[iSpecies][ j ] ;
 
-					V = dL*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ j ] * var->Mobi[iSpecies][ j ]  ;
+					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
 
 					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -543,8 +542,8 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 	 			} else {/*--- For discontuity face ---*/
 
  					/*--- Drift term ---*/
-					U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
- 					V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+					U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+ 					V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
  					vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] );
  					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
 
@@ -562,8 +561,8 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 	 			} else {
 
 					/*--- Drift term ---*/
-					U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-					V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+					U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+					V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 					vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] );
 					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea  ) ;
 
@@ -645,149 +644,6 @@ void CDriftDiffusion::Bulid_A_B_1st_0D( boost::shared_ptr<CDomain> &m, boost::sh
 	drift_diffusion.finish_matrix_construction() ;
 	drift_diffusion.finish_source_term_construction() ;
 }
-
-void CDriftDiffusion::Calculate_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
-{
-	int j=0, NeighborCellIndex=0 ;
-	double dVar=0.0, Gx=0.0, Gy=0.0, BC_Value=0.0 ;
-
-	Cell *Cell_i, *Cell_j ;
-
-	for ( int i = 0 ; i < drift_diffusion.Mesh.cell_number ; i++ ) {
-
-		Gx = 0.0 ; Gy = 0.0 ;
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) != "PLASMA" ){
-
-			var->GradU0[ iSpecies ][ 0 ][ i ] = 0.0 ;
-			var->GradU0[ iSpecies ][ 1 ][ i ] = 0.0 ;	
-
-		} else {
-
-			/*--- Loop over neighbor "faces" ---*/
-			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
-
-				j = m->PFM_CELL[ i ][ k ].NeighborCellId ;
-				
-				if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//For discontinued face, apply neumann
-
-					GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-					GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-
-					BC_Value = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
-
-					dVar = BC_Value - var->U0[iSpecies][ i ] ;
-
-				}else{
-
-					dVar = var->U0[iSpecies][ j ] - var->U0[iSpecies][ i ] ;
-
-				}
-
-				Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
-	     		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
-
-			}//End iCell
-
-			/*--- Loop over boundary faces ---*/
-			for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
-
-				GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-				GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-
-				BC_Value = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
-
-				dVar = BC_Value - var->U0[ iSpecies ][ i ] ;
-
-				Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
-	      		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
-
-			}
-			var->GradU0[ iSpecies ][ 0 ][ i ] = Gx ;
-			var->GradU0[ iSpecies ][ 1 ][ i ] = Gy ;
-		}
-	}//Loop over all cells
-
-	/*--- Update ghost cells ---*/
-	var->GradU0[ iSpecies ][ 0 ] = var->GradU0[ iSpecies ][ 0 ] ;
-	var->GradU0[ iSpecies ][ 1 ] = var->GradU0[ iSpecies ][ 1 ] ;
-
-}
-void CDriftDiffusion::Calculate_Gradient_Neumann( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
-{
-	int j=0, NeighborCellIndex=0 ;
-	double dVar=0.0, Gx=0.0, Gy=0.0, BC_Value=0.0 ;
-	Cell *Cell_i, *Cell_j ;
-	for ( int i = 0 ; i < drift_diffusion.Mesh.cell_number ; i++ ) {
-		Cell_i = drift_diffusion.get_cell(i) ;
-		Gx = 0.0 ; Gy = 0.0 ;
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) != "PLASMA" ){
-
-			var->GradU0[ iSpecies ][ 0 ][ i ] = 0.0 ;
-			var->GradU0[ iSpecies ][ 1 ][ i ] = 0.0 ;	
-
-		} else {
-
-			/*--- Loop over neighbor "faces" ---*/
-			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
-
-				j = m->PFM_CELL[ i ][ k ].NeighborCellId ;
-				Cell_j = drift_diffusion.get_cell(j) ;
-				if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//For discontinued face, apply neumann
-
-					GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-					GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-
-					BC_Value = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
-
-					dVar = BC_Value - var->U0[iSpecies][ i ] ;
-
-				}else{
-
-					dVar = var->U0[iSpecies][ j ] - var->U0[iSpecies][ i ] ;
-
-				}
-
-				Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
-	     		Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
-
-			}//End iCell
-
-			/*--- Loop over boundary faces ---*/
-			for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
-
-				GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-				GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-
-				BC_Value = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
-
-				dVar = BC_Value - var->U0[ iSpecies ][ i ] ;
-
-				Gx = Gx + m->LSQ[ i ].Cx[ k ]*dVar ;
-	      Gy = Gy + m->LSQ[ i ].Cy[ k ]*dVar ;
-
-			}
-			var->GradU0[ iSpecies ][ 0 ][ i ] = Gx ;
-			var->GradU0[ iSpecies ][ 1 ][ i ] = Gy ;
-		}
-	}//Loop over all cells
-
-	/*--- Update ghost cells ---*/
-	var->GradU0[ iSpecies ][ 0 ] = var->GradU0[ iSpecies ][ 0 ] ;
-	var->GradU0[ iSpecies ][ 1 ] = var->GradU0[ iSpecies ][ 1 ] ;
-
-}
-void CDriftDiffusion::Zero_Gradient( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
-{
-	for ( int i = 0 ; i < drift_diffusion.Mesh.cell_number ; i++ ) {
-		var->GradU0[ iSpecies ][ 0 ][ i ] = 0.0 ;
-		var->GradU0[ iSpecies ][ 1 ][ i ] = 0.0 ;
-	}//Loop over all cells
-
-	/*--- Update ghost cells ---*/
-	var->GradU0[ iSpecies ][ 0 ] = var->GradU0[ iSpecies ][ 0 ] ;
-	var->GradU0[ iSpecies ][ 1 ] = var->GradU0[ iSpecies ][ 1 ] ;
-}
-
 void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
 	int j=0 ;
@@ -819,11 +675,11 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
 
 					/*--- S-G Scheme ---*/
-					U = dL*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					U = dL*config->Species[ iSpecies ].Charge * var->Ex[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ex[ j ] * var->Mobi[iSpecies][ j ] ;
 
-					V = dL*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ] ;
 
 					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
@@ -873,22 +729,22 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 							case 0:/*--- Electron ---*/
 
 		 						/*--- Drift term ---*/
-								U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-		 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+								U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+		 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 		 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 		 						/*--- Thermal flux term ---*/
 		 						Te = var->T[ 0 ][ i ] ;
 		 						if ( fixTe ) Te = 0.5 ;
-		 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->EField[ 0 ][ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
+		 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
 
 		 						/*--- Secondary electron emission ---*/
 		 						SecondaryElectronEmission = 0.0 ;
 		 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 
 		 							if (config->Species[ jSpecies ].Type == ION ){
-		 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-		 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
+		 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
+		 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
 		 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 		 							}
 		 							
@@ -911,8 +767,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 							case 1:/*--- Ion ---*/
 
 								/*--- Drift term ---*/
-								U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-		 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+								U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+		 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 		 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 								/*--- Thermal flux term ---*/
@@ -969,22 +825,22 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 						case 0:/*--- Electron ---*/
 
 	 						/*--- Drift term ---*/
-							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 	 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ;
 	 						if ( fixTe ) Te = 0.5 ;
-	 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->EField[ 0 ][ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
+	 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
 
 	 						/*--- Secondary electron emission ---*/
 	 						SecondaryElectronEmission = 0.0 ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
+	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 							
@@ -1009,8 +865,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 						case 1:/*--- Ion ---*/
 
 							/*--- Drift term ---*/
-							U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-	 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+							U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+	 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 	 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 							/*--- Thermal flux term ---*/
@@ -1100,11 +956,11 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
 
 					/*--- S-G Scheme ---*/
-					U = dL*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					U = dL*config->Species[ iSpecies ].Charge * var->Ex[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ex[ j ] * var->Mobi[iSpecies][ j ] ;
 
-					V = dL*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ] ;
 
 					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
@@ -1145,8 +1001,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 	 				} else {
 
  						/*--- Drift term ---*/
-						U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
- 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+						U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+ 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 
  						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 						PV = var->U0[iSpecies][ i ] ;
@@ -1168,8 +1024,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 	 			}else{
 
 					/*--- Drift term ---*/
-					U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-					V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+					U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+					V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 					vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 					PV = var->U0[iSpecies][ i ] ;
@@ -1227,11 +1083,11 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
 
 					/*--- S-G Scheme ---*/
-					U = dL*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					U = dL*config->Species[ iSpecies ].Charge * var->Ex[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ex[ j ] * var->Mobi[iSpecies][ j ] ;
 
-					V = dL*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ] ;
 
 					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
@@ -1363,11 +1219,11 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
 
 					/*--- Upwind ---*/
-					U = dL*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 0 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					U = dL*config->Species[ iSpecies ].Charge * var->Ex[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ex[ j ] * var->Mobi[iSpecies][ j ] ;
 
-					V = dL*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->EField[ 1 ][ j ] * var->Mobi[iSpecies][ j ] ;
+					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ] ;
 
 					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
@@ -1401,8 +1257,8 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 							case 0:/*--- Electron ---*/
 
 		 						/*--- Drift term ---*/
-								U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-		 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+								U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+		 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 		 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 		 						/*--- Thermal flux term ---*/
@@ -1415,8 +1271,8 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 		 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 
 		 							if (config->Species[ jSpecies ].Type == ION ){
-		 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-		 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
+		 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
+		 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
 		 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 		 							}
 		 							
@@ -1433,8 +1289,8 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 							case 1:/*--- Ion ---*/
 
 								/*--- Drift term ---*/
-								U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-		 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+								U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+		 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 		 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 								/*--- Thermal flux term ---*/
@@ -1473,8 +1329,8 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 						case 0:/*--- Electron ---*/
 
 	 						/*--- Drift term ---*/
-							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 	 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
@@ -1487,8 +1343,8 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->EField[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
+	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 							
@@ -1506,8 +1362,8 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 						case 1:/*--- Ion ---*/
 
 							/*--- Drift term ---*/
-							U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-	 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+							U = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+	 						V = config->Species[ iSpecies ].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 	 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 							/*--- Thermal flux term ---*/
@@ -1639,8 +1495,8 @@ void CDriftDiffusion::Semi_Empirical_Temperature( boost::shared_ptr<CDomain> &m,
 		/*--- Loop over PLASMA cells ---*/
 		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
 
-			U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 0 ][ i ] ;
-	 		V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->EField[ 1 ][ i ] ;
+			U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
+	 		V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 
 			VTOT = ( U*U + V*V ) ;
 

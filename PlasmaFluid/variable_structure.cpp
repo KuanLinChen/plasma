@@ -224,7 +224,7 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 		TotalNumberDensity.initial ( "Total Number Density" ) ;
 
 		for ( int nDim = 0 ; nDim < 3 ; nDim++ ) {
-			   EField[ nDim ].initial( "E_"+to_string(nDim) ) ;
+			  // EField[ nDim ].initial( "E_"+to_string(nDim) ) ;
 			//PreEField[ nDim ].initial( "PreE_"+to_string(nDim) ) ;
 		}
 
@@ -614,7 +614,7 @@ void CVariable::UltraMPPComputeReducedElectricField()
 		Cell *cell = plasma.get_cell( i ) ;
 
 		if ( cell_type[ cell->type ] == PLASMA ) {
-			Emag[ i ] = sqrt ( EField[ 0 ][ i ]*EField[ 0 ][ i ] + EField[ 1 ][ i ]*EField[ 1 ][ i ] )*Ref_EField+ZERO ;
+			Emag[ i ] = sqrt ( Ex[ i ]*Ex[ i ] + Ey[ i ]*Ey[ i ] )*Ref_EField+ZERO ;
 			ReducedElectricField[ i ] = Emag[ i ]/TotalNumberDensity[ i ]/(1.0E-21) ;
 		}
 	}
@@ -1025,7 +1025,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 
 	            if (plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
 	             		P_torr = TotalGasPressure[ i ] ;
-		             	E = sqrt ( EField[0][i]*EField[0][i] + EField[1][i]*EField[1][i] + EField[2][i]*EField[2][i] )*0.01 ;
+		             	E = sqrt ( Ex[i]*Ex[i] + Ey[i]*Ey[i] + Ez[i]*Ez[i] )*0.01 ;
 		              EoverP = E/P_torr ; // unit: cm
 		          	if ( E/P_torr <=  60.0 ){
 									Mobi[ iSpecies ][ i ] = 1.0E3*(1.0-2.22E-3*EoverP )/P_torr/1.0E4  ;

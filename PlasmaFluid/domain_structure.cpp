@@ -195,8 +195,8 @@ void CDomain::BulidCellStructure()
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
-void CDomain::Calculate_LSQ_Coeff()
-{
+//void CDomain::Calculate_LSQ_Coeff()
+//{
  
 	// double dx=0.0, dy=0.0, a11=0.0, a12=0.0, a21=0.0, a22=0.0, det=0.0 ;
 	// double ia11=0.0, ia12=0.0, ia21=0.0, ia22=0.0 ;
@@ -311,7 +311,7 @@ void CDomain::Calculate_LSQ_Coeff()
 	// 	}//End boundaty face
 	// }//End cell loop
 	// MPI_Barrier(MPI_COMM_WORLD);
-}
+//}
 void CDomain::Init()
 {
 	/* Face */
@@ -324,6 +324,8 @@ void CDomain::Init()
 	type_typename[  SYMMETRIC  ]	=	"SYMMETRIC" ;
 	typename_type[ "SYMMETRIC" ]	=	 SYMMETRIC  ;
 
+	type_typename[  NEUMANN  ]	=	"NEUMANN" ;
+	typename_type[ "NEUMANN" ]	=	 NEUMANN  ;
 
 	/* Cell */
 	type_typename[  SOLID_POWER  ]	=	"SOLID_POWER" ;

@@ -158,7 +158,7 @@ int main( int argc, char * argv[] )
 
 	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
  		//exit(0);
-		ofstream        FileOutput, PCB_FileOutput ;
+		ofstream FileOutput, PCB_FileOutput ;
 		map< int, CElectrical>::iterator Iter;
 
 		if ( mpi_rank == MASTER_NODE ){
@@ -249,7 +249,6 @@ int main( int argc, char * argv[] )
 
 
 				/* Solve for potential and electric field. */
- 				//poisson_solver->Solve( mesh, Config, Var ) ;
  				poisson_solver->SOLVE( Config, Var ) ;
 	 				#if (Debug == true ) 
 	 					PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;

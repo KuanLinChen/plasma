@@ -149,7 +149,7 @@ class CVariable
 	
 
 	int SolutionFieldNum ;
-	CScalar EField[3],/*!< \brief Electric fields[x,y,z]. */ 
+	CScalar //EField[3],/*!< \brief Electric fields[x,y,z]. */ 
 					//PreEField[3],/*!< \brief Previous time step Electric fields[x,y,z]. */ 
 		ReducedElectricField ;/*!< \brief reduced electric field */ 
 
