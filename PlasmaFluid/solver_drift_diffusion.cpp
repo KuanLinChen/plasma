@@ -315,164 +315,166 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 }
 void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
-	int j=0 ;
-	double Source=0.0, vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0 ;
-	double Diff=0.0, Mobi=0.0, SourceSink=0.0, TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
-	Cell *Cell_i, *Cell_j ;
+	// int j=0 ;
+	// double Source=0.0, vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0 ;
+	// double Diff=0.0, Mobi=0.0, SourceSink=0.0, TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
+	// Cell *Cell_i, *Cell_j ;
 
 
-	drift_diffusion.before_matrix_construction() ;
-	drift_diffusion.before_source_term_construction() ;
+	// drift_diffusion.before_matrix_construction() ;
+	// drift_diffusion.before_source_term_construction() ;
 
-	for( int i = 0 ; i < drift_diffusion.Mesh.cell_number ; i++ ) {
+	// for( int i = 0 ; i < drift_diffusion.Mesh.cell_number ; i++ ) {
 
-		Cell_i = drift_diffusion.get_cell(i);
+	// 	Cell_i = drift_diffusion.get_cell(i);
 
-		#if Debug_Bulid_A_B_1st_zero
-			ncol = 1 ;
-			Source = 0.0 ;
-			for( int k = 0 ; k < 5 ; k++ ) C[ k ] = 0.0 ;	
-		#endif
+	// 	#if Debug_Bulid_A_B_1st_zero
+	// 		ncol = 1 ;
+	// 		Source = 0.0 ;
+	// 		for( int k = 0 ; k < 5 ; k++ ) C[ k ] = 0.0 ;	
+	// 	#endif
 
-		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+	// 	/*--- Loop over PLASMA cells ---*/
+	// 	if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
 
-			/*--- Unsteady term ---*/
-			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
+	// 		/*--- Unsteady term ---*/
+	// 		drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
 
-			#if Debug_Bulid_A_B_1st_zero
-				C[ 0 ] = Cell_i->volume/var->Dt ;
-			#endif
+	// 		#if Debug_Bulid_A_B_1st_zero
+	// 			C[ 0 ] = Cell_i->volume/var->Dt ;
+	// 		#endif
 
-			/*--- Loop over bulk faces ---*/
-			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
+	// 		/*--- Loop over bulk faces ---*/
+	// 		for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
-				j = Cell_i->cell[k]->local_id ;
+	// 			j = Cell_i->cell[k]->local_id ;
 
-				Cell_j = drift_diffusion.get_cell(j) ;
+	// 			Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
+	// 			if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
 
-					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
-					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
+	// 				dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
+	// 				dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
 
-					U = dL*config->Species[ iSpecies ].Charge * var->Ex[ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->Ex[ j ] * var->Mobi[iSpecies][ j ] ;
+	// 				U = dL*config->Species[ iSpecies ].Charge * var->Ex[ i ] * var->Mobi[iSpecies][ i ] 
+	// 				  + dR*config->Species[ iSpecies ].Charge * var->Ex[ j ] * var->Mobi[iSpecies][ j ] ;
 
-					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
-					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
-
-
-					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
-					Diff = ( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-					Pe = vn*m->PFM_CELL[ i ][ k ].dDist/Diff ;
+	// 				V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
+	// 				  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
 
-					if ( Pe < -ZERO ) {
+	// 				vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+	// 				Diff = ( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
+	// 				Pe = vn*m->PFM_CELL[ i ][ k ].dDist/Diff ;
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 
-						#if Debug_Bulid_A_B_1st_zero
-							C[ 0 ] += vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-							C[ncol] = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						#endif
+	// 				if ( Pe < -ZERO ) {
 
-					} else if ( Pe > ZERO ) {
+	// 					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+	// 					drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+	// 					#if Debug_Bulid_A_B_1st_zero
+	// 						C[ 0 ] += vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+	// 						C[ncol] = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+	// 					#endif
 
-						#if Debug_Bulid_A_B_1st_zero
-							C[ 0 ] += vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-							C[ncol] = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						#endif
+	// 				} else if ( Pe > ZERO ) {
 
-					} else {
+	// 					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+	// 					drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
 
-						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;	
-						#if Debug_Bulid_A_B_1st_zero
-							C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
-							C[ncol] =  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
-						#endif
+	// 					#if Debug_Bulid_A_B_1st_zero
+	// 						C[ 0 ] += vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+	// 						C[ncol] = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+	// 					#endif
 
-					}
-					ncol ++ ;
+	// 				} else {
 
-	 			} else {/*--- For discontuity face ---*/
+	// 					Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
+	// 					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+	// 					drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;	
+	// 					#if Debug_Bulid_A_B_1st_zero
+	// 						C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+	// 						C[ncol] =  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+	// 					#endif
 
-					Diff 	= -var->Diff[iSpecies][ i ] ;
-	  			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-	  			#if Debug_Bulid_A_B_1st_zero
-	  				C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;
-	  			#endif
-	 			}
-	 		}//End bulk face
+	// 				}
+	// 				ncol ++ ;
+
+	//  			} else {/*--- For discontuity face ---*/
+
+	// 				Diff 	= -var->Diff[iSpecies][ i ] ;
+	//   			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+	//   			#if Debug_Bulid_A_B_1st_zero
+	//   				C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;
+	//   			#endif
+	//  			}
+	//  		}//End bulk face
 
 	 		
-			/*--- Loop over boundary faces ---*/
-	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
+	// 		/*--- Loop over boundary faces ---*/
+	//  		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( plasma.get_face_typename( Cell_i->face[ k ]->data_id)  == "NEUMANN" ){
-	 				//do nothing
-	 			}else{
+	//  			if( plasma.get_face_typename( Cell_i->face[ k ]->data_id)  == "NEUMANN" ){
+	//  				//do nothing
+	//  			}else{
 
-					Diff = -var->Diff[iSpecies][ i ] ;
-					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-					#if Debug_Bulid_A_B_1st_zero
-						C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
-					#endif
-	 			}
-	 		}
+	// 				Diff = -var->Diff[iSpecies][ i ] ;
+	// 				drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+	// 				#if Debug_Bulid_A_B_1st_zero
+	// 					C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+	// 				#endif
+	//  			}
+	//  		}
 
-	 		/*--- Previous solution ---*/
-	 		drift_diffusion.add_entry_in_source_term( i, var->PreU0[iSpecies][ i ]*Cell_i->volume/var->Dt ) ;
-	 		// Source += var->PreU0[iSpecies][ i ]*Cell_i->volume/var->Dt ;
+	//  		/*--- Previous solution ---*/
+	//  		drift_diffusion.add_entry_in_source_term( i, var->PreU0[iSpecies][ i ]*Cell_i->volume/var->Dt ) ;
+	//  		// Source += var->PreU0[iSpecies][ i ]*Cell_i->volume/var->Dt ;
 
-	 		/*--- Source/Sink term ---*/
-	 		if ( config->PFM_Assumption == "LFA" ) {
+	//  		/*--- Source/Sink term ---*/
+	//  		if ( config->PFM_Assumption == "LFA" ) {
 
-	 			SourceSink = var->LFASourceSink[ iSpecies ][ i ]/var->Ref_SS ;
+	//  			SourceSink = var->LFASourceSink[ iSpecies ][ i ]/var->Ref_SS ;
 
-	 		} else {
+	//  		} else {
 
-	 			SourceSink = (double)*( var->ReactionRatePoint[iSpecies] + i  )/var->Ref_SS ;
+	//  			SourceSink = (double)*( var->ReactionRatePoint[iSpecies] + i  )/var->Ref_SS ;
 
-	 		}
-	 		var->ProductionRate[iSpecies][ i ] = SourceSink ;
-	 		drift_diffusion.add_entry_in_source_term( i, SourceSink*Cell_i->volume ) ;
-	 		#if Debug_Bulid_A_B_1st_zero
-	 			Source += SourceSink*Cell_i->volume ;
-	 		#endif
+	//  		}
+	//  		var->ProductionRate[iSpecies][ i ] = SourceSink ;
+	//  		drift_diffusion.add_entry_in_source_term( i, SourceSink*Cell_i->volume ) ;
+	//  		#if Debug_Bulid_A_B_1st_zero
+	//  			Source += SourceSink*Cell_i->volume ;
+	//  		#endif
 
-	 	/*--- Loop over SOLID cells ---*/
-	 	} else {
+	//  	/*--- Loop over SOLID cells ---*/
+	//  	} else {
 
-	 		drift_diffusion.add_entry_in_matrix( i, Cell_i->id, 1.0 ) ;
-	 		#if Debug_Bulid_A_B_1st_zero
-	 			C[0] = 1.0 ;
-	 		#endif
-	 		var->ProductionRate[iSpecies][ i ] = 0.0 ;	
-	 	}
+	//  		drift_diffusion.add_entry_in_matrix( i, Cell_i->id, 1.0 ) ;
+	//  		#if Debug_Bulid_A_B_1st_zero
+	//  			C[0] = 1.0 ;
+	//  		#endif
+	//  		var->ProductionRate[iSpecies][ i ] = 0.0 ;	
+	//  	}
 
-	 	#if Debug_Bulid_A_B_1st_zero
-			cout<<"i: "<<i<<endl;
-			for ( int icol = 0 ; icol < ncol ; icol++ ){
-				cout<<scientific<<"C["<<icol<<"]: "<<C[icol]<<endl;
-			}
-			cout<<Source<<endl;
-			cout<<endl;
-	 	#endif
+	//  	#if Debug_Bulid_A_B_1st_zero
+	// 		cout<<"i: "<<i<<endl;
+	// 		for ( int icol = 0 ; icol < ncol ; icol++ ){
+	// 			cout<<scientific<<"C["<<icol<<"]: "<<C[icol]<<endl;
+	// 		}
+	// 		cout<<Source<<endl;
+	// 		cout<<endl;
+	//  	#endif
 
-	}//Cell Loop
-	drift_diffusion.finish_matrix_construction() ;
-	drift_diffusion.finish_source_term_construction() ;
+	// }//Cell Loop
+	// drift_diffusion.finish_matrix_construction() ;
+	// drift_diffusion.finish_source_term_construction() ;
 
-	#if Debug_Bulid_A_B_1st_zero
-		exit(1) ;
-	#endif
+	// #if Debug_Bulid_A_B_1st_zero
+	// 	exit(1) ;
+	// #endif
+	cout<<"drift_diffusion error: this function should be delete"<<endl;
+	exit(0) ;
 }
 void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {

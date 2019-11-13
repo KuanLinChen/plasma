@@ -153,7 +153,7 @@ int main( int argc, char * argv[] )
  	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
  		//cout<<"A1"<<endl;
- 		poisson_solver->SOLVE( Config, Var ) ;
+ 		//poisson_solver->SOLVE( Config, Var ) ;
  		//cout<<"A2"<<endl;
 
 	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
