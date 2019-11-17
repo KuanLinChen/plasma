@@ -178,7 +178,19 @@ class CVariable
 
 	void UltraMPPInitialCellParameter() ;
 
-
+	//---------Variable definition of ICP simulation ---------------------------
+	double omega  ; // ICP coil freqency
+	double Coil_Current  ;
+	variable_set E_phi_Re, E_phi_Im ;
+	double *nu_m ; // mom_transfer_rate
+	double *sigma_p_Re 	; // Real 		part of plasma conductivity
+	double *sigma_p_Im 	; // Imaginary 	part of plasma conductivity
+	double *k_square_Re	; // Real 		part of square of helmholtz constant
+	double *k_square_Im	; // Imaginary 	part of square of helmholtz constant
+	double *CurrentDen	;
+	double *Re_eq_source; // Source term in Real 		part FD maxwell equation
+	double *Im_eq_source; // Source term in Imaginary 	part FD maxwell equation
+	//--------------------------------------------------------------------------
 
 
 
