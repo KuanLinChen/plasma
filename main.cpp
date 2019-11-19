@@ -201,7 +201,7 @@ int main( int argc, char * argv[] )
 
 				}
 			}
-
+			/* TEST */
 			/*--- Main step loop in eack cycle. ---*/
  			for ( int MainStep = 0 ; MainStep < Config->StepPerCycle ; MainStep++ ) {
 
