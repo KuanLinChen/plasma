@@ -91,7 +91,7 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 	//Force_y.initial ( "fy [N/m]" ) ;
 
 	/*------*/
-	Kappa.initial ( "kappa" ) ;
+	//Kappa.initial ( "kappa" ) ;
 
 	/*------*/
 	Qe = 1.602e-19/Ref_Qe ;
@@ -381,6 +381,8 @@ void CVariable::UltraMPPVarInit()
 		VarTag["Etd" ] = plasma.set_parallel_cell_data(  &Etd,  "Etd" ) ;
 		VarTag["Emag"] = plasma.set_parallel_cell_data( &Emag, "Emag" ) ;
 
+		VarTag["Kappa"] = plasma.set_parallel_cell_data( &Kappa, "kappa" ) ;
+
 }
 void CVariable::UltraMPPAvgVarInit()
 {
@@ -615,11 +617,13 @@ void CVariable::UltraMPPComputeReducedElectricField()
 
 		if ( cell_type[ cell->type ] == PLASMA ) {
 			Emag[ i ] = sqrt ( Ex[ i ]*Ex[ i ] + Ey[ i ]*Ey[ i ] )*Ref_EField+ZERO ;
+			Etd[ i ] = Emag[ i ]/TotalNumberDensity[ i ]/(1.0E-21) ; 
 			ReducedElectricField[ i ] = Emag[ i ]/TotalNumberDensity[ i ]/(1.0E-21) ;
 		}
 	}
 	ReducedElectricField = ReducedElectricField ;
 
+	plasma.syn_parallel_cell_data( VarTag["Etd"] );
 	plasma.syn_parallel_cell_data( VarTag["Emag"] );
 }
 void CVariable::CalMeanEnergy( boost::shared_ptr<CDomain> &m )

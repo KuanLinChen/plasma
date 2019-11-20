@@ -105,6 +105,8 @@ class CFluidModel
 	 * \param[in] var    - Variable.
 	 */
 	void CalculateTotalEnergy( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+	void CalculateTotalEnergyFromTemperature( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+
 	void Calculate_Gradient_T( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
 
 	/*!
@@ -117,7 +119,11 @@ class CFluidModel
 
 	void CalculateCondCurrentDensity( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 		//void CalculateTotalCurrentDensity( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
-	void CalculateKappa( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  ) ;
+
+
+	void UltraMPPCalculateKappa( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  ) ;
+
+
 	void CalculateIonNeutralCollisionFrequency( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	void CalculateThermal2( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	void CalculateCollisionIntegral( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  ) ;

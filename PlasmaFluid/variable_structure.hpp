@@ -169,6 +169,8 @@ class CVariable
 	       *Ez, *PreEz,     /*!< \brief current & previous Electric fields in Z-dir. */ 
 				 *Etd,            /*!< \brief reduce Electric fields in unit: Td */ 
 				 *Emag ;          /*!< \brief Electric fields magnitude */ 
+	double *Kappa ;				  /*!< \brief the variable for modified sound speed. See My IEEE paper. */
+
 
 	void UltraMPPAvgVarInit() ;
 	double *AvgPotential,   /*!< \brief cycle-averaged potential */
@@ -216,7 +218,7 @@ class CVariable
 
 
 	CScalar *LFASourceSink ; /*!< \brief  */
-	CScalar Kappa ;
+	//CScalar Kappa ;
 	//CScalar Force_x, Force_y ;/*!< \brief  Force in x & y direction. */
 	CScalar ** GradT ;
 	CScalar **GradU0 ;/*!< \brief Number density gradient [x,y,z]. */ 

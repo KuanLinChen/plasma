@@ -21,7 +21,7 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	if ( nDim == 3 )
 	plasma.set_output( var->VarTag["Ez"] ) ;
 
-	plasma.set_output( var->VarTag["Emag"] ) ;
+	plasma.set_output( var->VarTag["Etd"] ) ;
 
 
 	/* Temperature */

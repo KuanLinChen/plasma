@@ -51,6 +51,8 @@ void CFluidModel::Solve_Continuity( boost::shared_ptr<CDomain> &m, boost::shared
 {
 	if ( config->Equation[ SpeciesType ].Equation == 1 ){
 		CalculateTotalEnergy( m, config, variable ) ;
+	} else if( config->Equation[ SpeciesType ].Equation == 3 ){
+		CalculateTotalEnergyFromTemperature( m, config, variable ) ;
 	}
 
 	CalculateTemperature( m, config, variable ) ;
@@ -59,9 +61,9 @@ void CFluidModel::Solve_Continuity( boost::shared_ptr<CDomain> &m, boost::shared
 
 	CalculateIonNeutralCollisionFrequency( m, config, variable ) ;
 	//CalculateCollisionIntegral( m, config, variable ) ;
-	if ( config->Equation[ SpeciesType ].Equation == 2 ) {
-		CalculateKappa( m, config, variable ) ;
-	}
+	//if ( config->Equation[ SpeciesType ].Equation == 2 ) {
+		UltraMPPCalculateKappa( m, config, variable ) ;
+	//}
 	ComputeFlux_HLL( m, config, variable ) ;
 
 	ContinuityIntegral( m, config, variable ) ;
@@ -503,13 +505,12 @@ void CFluidModel::CalculateTemperature( boost::shared_ptr<CDomain> &m, boost::sh
 	double U0=0.0, U1=0.0, U2=0.0, U3=0.0, U4=0.0 ;
 	double IonMass = config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass ;
 
-	Cell *Cell_i ;
 
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell_i  = plasma.get_cell( i ) ;
+		Cell *Cell_i  = plasma.get_cell( i ) ;
 	
-		if ( plasma.get_cell_typename( Cell_i->data_id ) != "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] != PLASMA ){
 
 			var->T[iSpecies][ i ] = 0.0 ;
 			Pressure[ i ] = 0.0 ;
@@ -535,13 +536,11 @@ void CFluidModel::CalculateTotalEnergy( boost::shared_ptr<CDomain> &m, boost::sh
 	double P=0.0, U0=0.0, U1=0.0, U2=0.0, U3=0.0, U4=0.0 ;
 	double IonMass = config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass ;
 
-	Cell *Cell_i ;
-
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 		
-		Cell_i  = plasma.get_cell( i ) ;
+		Cell *Cell_i  = plasma.get_cell( i ) ;
 
-		if ( plasma.get_cell_typename( Cell_i->data_id ) != "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] != PLASMA ){
 
 			var->T[iSpecies][ i ] = 0.0 ;
 
@@ -558,6 +557,33 @@ void CFluidModel::CalculateTotalEnergy( boost::shared_ptr<CDomain> &m, boost::sh
 	var->U4[iSpecies] = var->U4[iSpecies] ;
 	//exit(1);
 }
+void CFluidModel::CalculateTotalEnergyFromTemperature( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
+{
+  double P=0.0, U0=0.0, U1=0.0, U2=0.0, U3=0.0, U4=0.0 ;
+  double IonMass = config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass ;
+
+  for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) { 
+    
+    Cell *Cell_i  = plasma.get_cell( i ) ; 
+
+    if ( cell_type[ Cell_i->type ] != PLASMA ){
+
+      var->T[iSpecies][ i ] = 0.0 ;
+
+    } else {
+
+      U0 = var->U0[iSpecies][ i ] ; 
+      U1 = var->U1[iSpecies][ i ] ; 
+      U2 = var->U2[iSpecies][ i ] ; 
+      U3 = var->U3[iSpecies][ i ] ; 
+      P = U0*var->Qe*var->T[iSpecies][ i ] ;
+      var->U4[iSpecies][ i ] = P/(config->Species[ iSpecies ].Gamma-1.0) + 0.5*IonMass*( U1*U1+U2*U2+U3*U3)/U0 ;
+    }   
+  }//Loop over all cells
+  var->U4[iSpecies] = var->U4[iSpecies] ;
+  //exit(1);
+}
+
 void CFluidModel::Calculate_Gradient_T( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var )
 {
 	// int j=0, NeighborCellIndex=0 ;
@@ -643,22 +669,21 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 {
 	int j=0 ;
 
-	Cell *Cell_i, *Cell_j ;
-
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell_i = plasma.get_cell(i) ;
+		Cell *Cell_i = plasma.get_cell(i) ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
-
+		//if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ){
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
 				j = Cell_i->cell[k]->local_id ; 
-				Cell_j = plasma.get_cell(j) ;
+				Cell * Cell_j = plasma.get_cell(j) ;
 
-				if ( plasma.get_cell_typename( Cell_j->data_id ) == "DIELECTRIC" ) {
+				//if ( plasma.get_cell_typename( Cell_j->data_id ) == "DIELECTRIC" ) {
+					if ( cell_type[ Cell_j->type ] == DIELECTRIC ){
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
 					*fabs( var->U1[ iSpecies ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
@@ -669,15 +694,15 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 	 		}//End bulk 
 
 	 	/*--- Loop over DIELECTRIC cells ---*/
-	 	} else if( plasma.get_cell_typename( Cell_i->data_id ) == "DIELECTRIC" ){
+	 	} else if( cell_type[ Cell_i->type ] == DIELECTRIC ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
 				j = Cell_i->cell[k]->local_id ; 
-				Cell_j = plasma.get_cell(j) ;
+				Cell *Cell_j = plasma.get_cell(j) ;
 
-				if ( plasma.get_cell_typename( Cell_j->data_id ) == "PLASMA" ) {
+				if ( cell_type[ Cell_j->type ] == PLASMA ) {
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
 					*fabs( var->U1[ iSpecies ][ j ]*m->PFM_CELL[ i ][ k ].nf[ 0 ]*(-1.0) 
@@ -691,15 +716,14 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 }
 void CFluidModel::CalculateCondCurrentDensity( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
-	Cell *Cell_i ;
 
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell_i = plasma.get_cell(i) ;
+		Cell *Cell_i = plasma.get_cell(i) ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
-
+		//if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
 			var->CondJD[iSpecies][0][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U1[ iSpecies ][ i ] ;
 			var->CondJD[iSpecies][1][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U2[ iSpecies ][ i ] ;
 			var->CondJD[iSpecies][2][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U3[ iSpecies ][ i ] ;
@@ -724,14 +748,13 @@ void CFluidModel::CalculateThermal2( boost::shared_ptr<CDomain> &m, boost::share
 {
 	double IonMass = config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass ;
 
-	Cell *Cell_i ;
-
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell_i = plasma.get_cell(i) ;
+		Cell *Cell_i = plasma.get_cell(i) ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		//if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
         	Thermal2[ i ] = 8.0*var->Qe*var->T[iSpecies][ i ]/var->PI/IonMass ;
 	 	 
 		} else{
@@ -759,7 +782,8 @@ void CFluidModel::CalculateIonNeutralCollisionFrequency( boost::shared_ptr<CDoma
 
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		//if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
 
 			U0 = var->U0[iSpecies][ i ] ;
 			U1 = var->U1[iSpecies][ i ] ;
@@ -895,38 +919,40 @@ void CFluidModel::CalculateCollisionIntegral( boost::shared_ptr<CDomain> &m, boo
 
 
 }
-void CFluidModel::CalculateKappa( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  )
+void CFluidModel::UltraMPPCalculateKappa( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  )
 {
 
 	double TotalCollisionFreq=0.0 ;
 	double IonMass = config->Species[iSpecies].Mass_Kg/var->Ref_Mass ;
-	Cell *Cell_i ;
+
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
 		/*--- Loop over PLASMA cells ---*/
-		Cell_i  = plasma.get_cell( i ) ;
+		Cell *Cell_i  = plasma.get_cell( i ) ;
 
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
 
 			TotalCollisionFreq = 0.0 ;
-			
-	        for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 
-	            if ( config->Species[ jSpecies ].Type == NEUTRAL ){
-	            	TotalCollisionFreq += CollisionFreq[ jSpecies ][ i ] ;
-	            }else if( config->Species[ jSpecies ].Type == BACKGROUND ) {
-	            	TotalCollisionFreq += CollisionFreq[ jSpecies ][ i ] ;
-	            }
+			for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 
-	        }//End Species
-	        var->Kappa[ i ] = -2.5*Pressure[ i ]/IonMass/TotalCollisionFreq ;
-	        //cout<<var->Kappa[ i ]<<endl;
+				if ( config->Species[ jSpecies ].Type == NEUTRAL ) {
+
+					TotalCollisionFreq += CollisionFreq[ jSpecies ][ i ] ;
+
+				}else if( config->Species[ jSpecies ].Type == BACKGROUND ) {
+
+					TotalCollisionFreq += CollisionFreq[ jSpecies ][ i ] ;
+
+				}
+
+			}//End Species
+		var->Kappa[ i ] = -2.5*Pressure[ i ]/IonMass/TotalCollisionFreq ;
 	 	/*--- Loop over SOLID cells ---*/
 	 	} else {
 			var->Kappa[ i ] = 0.0 ;
 	 	}
-	 	//var->DUDT[ 0 ][ i ] = TotalCollisionFreq ;
 	}//Cell Loop
-	var->Kappa = var->Kappa ;
+	plasma.syn_parallel_cell_data( var->VarTag["Kappa"] );
 }
 

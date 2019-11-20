@@ -72,7 +72,7 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 		}
 		plasma.syn_parallel_cell_data( var->VarTag["Ez"] );
 	} 
-
+	var->UltraMPPComputeReducedElectricField();
 	UltraMPPComputeDispCurrentDensity( var ) ;
 
 }
