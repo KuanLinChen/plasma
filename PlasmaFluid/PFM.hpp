@@ -25,6 +25,7 @@ extern map<int, string>	type_typename ;
 extern map<string, int>	typename_type ;
 
 const double		vacuum_permittivity 	=  8.8541878176e-12 ; /* Unit in F/m */
+const double		vacuum_permeability 	=  4*PI*1e-7 ; /* Unit in H/m */
 
 #define MASTER_NODE		0
 
