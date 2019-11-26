@@ -39,13 +39,13 @@ class CFluidModel
 	CScalar Thermal2 ; /*!< \brief Thermal velocity square. */
 	CScalar *CollisionFreq ;
 	
-	double CrossSection ;
-	bool Grave ;
+	bool Grave, Donko ;
 	/*--- PETSc Solver ---*/	
 		double Omaga ;
 	/*--- Solver Control Parameter ---*/	
 		double GVarN[2], GVarP[2] ;
 		double *Mx, *My, *Mz, *CollisionIntegral ;
+		double *sigmaIonNeu ;
 		int Correction, its ;  /*!< \brief expilicit correction of the non-orthogonal effect & ksp iteration number */ 
 
 	/*!
@@ -108,6 +108,7 @@ class CFluidModel
 	void CalculateTotalEnergyFromTemperature( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 
 	void Calculate_Gradient_T( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
+	void UltraMPPCalculateArgonCrossSectionDonko( boost::shared_ptr<CVariable> &var) ;
 
 	/*!
 	 * \brief Calculate the surface charge on dielectric interface for charge species.
@@ -153,7 +154,7 @@ class CFluidModel
 		        return x/(exp(x) - 1.0 );
 		    }
 		}
-	bool fixTe ;
+	bool fixTe, CConst ;
 
 
 };

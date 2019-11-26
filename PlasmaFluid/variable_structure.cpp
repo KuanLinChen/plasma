@@ -1,4 +1,3 @@
-
 #include "variable_structure.hpp"
 using namespace std ;
 CVariable::CVariable()
@@ -81,17 +80,6 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 		eEnergyLossTable.Init( config->CasePath+"eEnergyLoss.inp" ) ;
 
 	}
-
-	/*------*/
-	ReducedElectricField.initial ( "Reduced Electric Field" ) ;
-	//Emag.initial ( "Electric field magnitude" ) ;
-
-	/*------*/
-	//Force_x.initial ( "fx [N/m]" ) ;
-	//Force_y.initial ( "fy [N/m]" ) ;
-
-	/*------*/
-	//Kappa.initial ( "kappa" ) ;
 
 	/*------*/
 	Qe = 1.602e-19/Ref_Qe ;
@@ -383,6 +371,8 @@ void CVariable::UltraMPPVarInit()
 
 		VarTag["Kappa"] = plasma.set_parallel_cell_data( &Kappa, "kappa" ) ;
 
+		VarTag["plot_var"] = plasma.set_parallel_cell_data( &plot_var, "plot_var" ) ;
+
 }
 void CVariable::UltraMPPAvgVarInit()
 {
@@ -390,6 +380,7 @@ void CVariable::UltraMPPAvgVarInit()
 	VarTag["AvgEx"  ] = plasma.set_parallel_cell_data(   &AvgEx, "Ex [V/m]" ) ;
 	VarTag["AvgEy"  ] = plasma.set_parallel_cell_data(   &AvgEy, "Ey [V/m]" ) ;
 	VarTag["AvgEz"  ] = plasma.set_parallel_cell_data(   &AvgEz, "Ez [V/m]" ) ;
+	VarTag["avg_plot_var"] = plasma.set_parallel_cell_data( &avg_plot_var, "avg_plot_var" ) ;
 }
 void CVariable::UltraMPPInitialCellParameter()
 {
@@ -618,11 +609,8 @@ void CVariable::UltraMPPComputeReducedElectricField()
 		if ( cell_type[ cell->type ] == PLASMA ) {
 			Emag[ i ] = sqrt ( Ex[ i ]*Ex[ i ] + Ey[ i ]*Ey[ i ] )*Ref_EField+ZERO ;
 			Etd[ i ] = Emag[ i ]/TotalNumberDensity[ i ]/(1.0E-21) ; 
-			ReducedElectricField[ i ] = Emag[ i ]/TotalNumberDensity[ i ]/(1.0E-21) ;
 		}
 	}
-	ReducedElectricField = ReducedElectricField ;
-
 	plasma.syn_parallel_cell_data( VarTag["Etd"] );
 	plasma.syn_parallel_cell_data( VarTag["Emag"] );
 }
@@ -631,7 +619,7 @@ void CVariable::CalMeanEnergy( boost::shared_ptr<CDomain> &m )
 	double C23 = 2.0/3.0 ;
 
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
-		//U4[ 0 ][ i ] = MeanEnergyTable.GetValueLog( ReducedElectricField[ i ] )/Ref_EN ;
+		//U4[ 0 ][ i ] = MeanEnergyTable.GetValueLog( Etd[ i ] )/Ref_EN ;
 		U4[ 0 ][ i ] = MeanEnergyTable.GetValue( Emag[ i ] ) ;
 		 T[ 0 ][ i ] = U4[ 0 ][ i ]*C23 ;
 	}
@@ -720,7 +708,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 				Cell_i  = plasma.get_cell( i ) ;
 				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) 
-					Mobi[ 0 ][ i ] = MobilityIter->second.GetValue( ReducedElectricField[ i ] )/TotalNumberDensity[i] ;
+					Mobi[ 0 ][ i ] = MobilityIter->second.GetValue( Etd[ i ] )/TotalNumberDensity[i] ;
 			}
 			break;
 		case 4:
@@ -728,7 +716,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
 				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
-					Mobi[ 0 ][ i ] = MobilityIter->second.GetValueLog( ReducedElectricField[ i ] ) ;
+					Mobi[ 0 ][ i ] = MobilityIter->second.GetValueLog( Etd[ i ] ) ;
 				}
 			}
 			break;
@@ -766,7 +754,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 				Cell_i  = plasma.get_cell( i ) ;
 				if (plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
 
-					E_Td = ReducedElectricField[ i ] ;
+					E_Td = Etd[ i ] ;
 					if ( E_Td < 1.0 ) E_Td = 1.0 ;
 					else if ( E_Td > 3000.0 ) E_Td = 3000.0 ;
 					ReduceMobi = exp( 56.84 + (-0.2917)*log(E_Td) + (2.864)/E_Td + (-5.498)/E_Td/E_Td + (3.265)/E_Td/E_Td/E_Td ) ;
@@ -791,7 +779,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 				Cell_i  = plasma.get_cell( i ) ;
 				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
 					Etd_Min = 2.4E+6/TotalNumberDensity[i]/1.E-21 ;
-					E_Td = ReducedElectricField[ i ] ;
+					E_Td = Etd[ i ] ;
 					if( E_Td < Etd_Min ) E_Td = Etd_Min ; 
 					DriftV = 4.2E+3*pow( E_Td, 0.74 ) ;
 					Mobi[ 0 ][ i ] = DriftV/Emag[ i ] ;
@@ -851,14 +839,14 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 				DiffusivityIter = DiffusivityMap.find( 0 ) ;
 				for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 					Cell_i  = plasma.get_cell( i ) ;
-					if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) Diff[ 0 ][ i ] = DiffusivityIter->second.GetValue( ReducedElectricField[ i ] )/TotalNumberDensity[i] ;
+					if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) Diff[ 0 ][ i ] = DiffusivityIter->second.GetValue( Etd[ i ] )/TotalNumberDensity[i] ;
 				}
 			break;
 		case 4:
 				DiffusivityIter = DiffusivityMap.find( 0 ) ;
 				for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 					Cell_i  = plasma.get_cell( i ) ;
-					if(plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" )Diff[ 0 ][ i ] = DiffusivityIter->second.GetValueLog( ReducedElectricField[ i ] ) ;
+					if(plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" )Diff[ 0 ][ i ] = DiffusivityIter->second.GetValueLog( Etd[ i ] ) ;
 				}
 			break;
 		case 5://this is for N*De = value ;
@@ -905,7 +893,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 				Cell_i  = plasma.get_cell( i ) ;
 				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
 					Etd_Min = 2.4E+6/TotalNumberDensity[i]/1.E-21 ;
-					E_Td = ReducedElectricField[ i ] ;
+					E_Td = Etd[ i ] ;
 					if( E_Td < Etd_Min ) E_Td = Etd_Min ; 
 					Diff[ 0 ][ i ] = 9.7E23*pow(E_Td,0.22)/TotalNumberDensity[i] ; 
 				}
@@ -978,7 +966,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
 						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
-						 Mobi[ iSpecies ][ i ] = MobilityIter->second.GetValueLog( ReducedElectricField[ i ] )/TotalNumberDensity[i] ;
+						 Mobi[ iSpecies ][ i ] = MobilityIter->second.GetValueLog( Etd[ i ] )/TotalNumberDensity[i] ;
 						}
 					}
 					break;
@@ -988,7 +976,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
 						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
-							Mobi[ iSpecies ][ i ] = MobilityIter->second.GetValueLog( ReducedElectricField[ i ] ) ;
+							Mobi[ iSpecies ][ i ] = MobilityIter->second.GetValueLog( Etd[ i ] ) ;
 						}
 					}
 					break;
@@ -1006,7 +994,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					MobilityIter = MobilityMap.find( iSpecies ) ;
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						value = MobilityIter->second.GetValueLog( ReducedElectricField[ i ] ) ;
+						value = MobilityIter->second.GetValueLog( Etd[ i ] ) ;
 						if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
 							Mobi[ iSpecies ][ i ] = value*(760.0/config->P_back)*(config->T_back/273.16) ;
 						}
@@ -1110,7 +1098,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
 						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
-							Diff[ iSpecies ][ i ] = DiffusivityIter->second.GetValueLog( ReducedElectricField[ i ] ) ;
+							Diff[ iSpecies ][ i ] = DiffusivityIter->second.GetValueLog( Etd[ i ] ) ;
 						}
 					}
 					break;
@@ -1187,6 +1175,7 @@ void CVariable::ResetAvgZero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 		       AvgEx[ i ] = 0.0 ;
 		       AvgEy[ i ] = 0.0 ;
 		       AvgEz[ i ] = 0.0 ;
+		avg_plot_var[i] = 0.0 ;
 	}
 
 	if ( plasma.Mesh.ndim == 3 ) {	
@@ -1213,8 +1202,8 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 		AvgEx[ i ]        +=                Ex[ i ] / config->StepPerCycle ;
 		AvgEy[ i ]        +=                Ey[ i ] / config->StepPerCycle ;
 		eAvgEnergyLoss[ i ] += eEnergyLoss[ i ]/config->StepPerCycle ;
+		avg_plot_var[ i ] += avg_plot_var[ i ]/config->StepPerCycle ;
 	}
-
 	if( plasma.Mesh.ndim == 3 ) {	
 		for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 			AvgEz[ i ]        +=                Ey[ i ] / config->StepPerCycle ;
@@ -1373,12 +1362,12 @@ void CVariable::Alpha_Beta( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 
 	double Alpha=0.0, T_Ratio=0.0 ;
 	double factor = 1.0 ;
-	Cell *Cell_i ;
+
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell_i  = plasma.get_cell( i ) ;
+		Cell *Cell_i  = plasma.get_cell( i ) ;
 
-		if ( plasma.get_cell_typename( Cell_i->data_id ) != "PLASMA" ) {
+		if ( cell_type[ Cell_i->type ] != PLASMA ) {
 
 			Beta[ i ] = 0.0 ;		
 
@@ -1580,15 +1569,14 @@ void CVariable::SourceSink_2Fluid( boost::shared_ptr<CDomain> &m, boost::shared_
 	double alpha=0.0, eta=0.0, Gamma_ep=2.E-13, Gamma_np=2.E-13, Flux2=0.0, E_Td=0.0 ;
 	double nu=0.0, nv=0.0 ;
 	double U0_e=0.0, U0_pi=0.0, U0_ni=0.0 ;
-	Cell *Cell_i ;
 
 	for ( int i = 0 ; i < plasma.Mesh.cell_number  ; i++ ) {
 
-		Cell_i  = plasma.get_cell( i ) ;
+		Cell *Cell_i  = plasma.get_cell( i ) ;
 
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
 
-			E_Td = ReducedElectricField[ i ] ;
+			E_Td = Etd[ i ] ;
 
 			alpha 	= AlphaTable.GetValue( Emag[ i ] )* TotalNumberDensity[ i ] ;
 			cout<<"alpha: "<<alpha<<endl;
@@ -1618,15 +1606,14 @@ void CVariable::SourceSink_3Fluid( boost::shared_ptr<CDomain> &m, boost::shared_
 	double nu=0.0, nv=0.0 ;
 	double U0_e=0.0, U0_pi=0.0, U0_ni=0.0 ;
 
-	Cell *Cell_i ;
 
 	for ( int i = 0 ; i < plasma.Mesh.cell_number  ; i++ ) {
 
-		Cell_i  = plasma.get_cell( i ) ;
+		Cell *Cell_i  = plasma.get_cell( i ) ;
 
-		if (plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
 
-			E_Td = ReducedElectricField[ i ] ;
+			E_Td = Etd[ i ] ;
 			alpha 	= AlphaTable.GetValue( Emag[ i ] );// * TotalNumberDensity[ i ] ;
 			eta 	=   EtaTable.GetValue( Emag[ i ] );// * TotalNumberDensity[ i ] ;
 
@@ -1672,17 +1659,15 @@ void CVariable::SourceSink_Cathode( boost::shared_ptr<CDomain> &m, boost::shared
 	}
 
 }
-void CVariable::CalculateEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
+void CVariable::UltraMPPComputeEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
 	double eLoss = 0.0, eTemp = 0.0 ;
 
-	Cell *Cell_i ;
-
 	for ( int i = 0 ; i < plasma.Mesh.cell_number  ; i++ ) {
 
-		Cell_i  = plasma.get_cell( i ) ;
+		Cell *Cell_i  = plasma.get_cell( i ) ;
 
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
 
 			eTemp = T[ 0 ][ i ] ;
 			eLoss 	= eEnergyLossTable.GetValueLog( eTemp ) * TotalNumberDensity[ i ]/(Qe*Ref_Qe) ;
@@ -1692,3 +1677,22 @@ void CVariable::CalculateEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boo
 	}
 
 }
+void CVariable::UltraMPPComputeArgonIonTemperaturePHELPS( int iSpecies )
+{
+
+  for ( int i = 0 ; i < plasma.Mesh.cell_number  ; i++ ) {
+
+    Cell *Cell_i  = plasma.get_cell( i ) ;
+
+    if ( cell_type[ Cell_i->type ] == PLASMA ) {
+
+      T[iSpecies][ i ]  = 1.9*pow( Etd[ i ]/1000.0, 1.1) + 0.026 ;
+
+    }//plasma cell
+
+  }//cell loop
+ // plasma.syn_parallel_cell_data( T[ iSpecies ].data_id );
+	T[iSpecies]=T[iSpecies] ;
+}
+
+

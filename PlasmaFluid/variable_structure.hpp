@@ -149,9 +149,6 @@ class CVariable
 	
 
 	int SolutionFieldNum ;
-	CScalar //EField[3],/*!< \brief Electric fields[x,y,z]. */ 
-					//PreEField[3],/*!< \brief Previous time step Electric fields[x,y,z]. */ 
-		ReducedElectricField ;/*!< \brief reduced electric field */ 
 
 	int NetQ_Tag ;
 
@@ -170,7 +167,7 @@ class CVariable
 				 *Etd,            /*!< \brief reduce Electric fields in unit: Td */ 
 				 *Emag ;          /*!< \brief Electric fields magnitude */ 
 	double *Kappa ;				  /*!< \brief the variable for modified sound speed. See My IEEE paper. */
-
+	double *plot_var, *avg_plot_var ;
 
 	void UltraMPPAvgVarInit() ;
 	double *AvgPotential,   /*!< \brief cycle-averaged potential */
@@ -371,8 +368,8 @@ class CVariable
 	
 	void SourceSink_Cathode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 
-	void CalculateEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
-
+	//	void CalculateEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
+	void UltraMPPComputeEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
     /*! 
 	 * \brief Initialize reference valut.
 	 */
@@ -381,7 +378,7 @@ class CVariable
 
 
 
-
+	void UltraMPPComputeArgonIonTemperaturePHELPS( int iSpecies ) ;
 	// CScalar dPhi, dEx, dEy ;
 	// CScalar dPrePhi, dPreEx, dPreEy ;
 
