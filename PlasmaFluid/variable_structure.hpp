@@ -364,9 +364,8 @@ class CVariable
 	 */
 	void SourceSink_3Fluid( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 
-	void SourceSink_Streamer( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
+	void SourceSink_PSST_2018( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 	
-	void SourceSink_Cathode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 
 	//	void CalculateEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 	void UltraMPPComputeEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;

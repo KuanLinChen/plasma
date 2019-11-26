@@ -399,10 +399,10 @@ void CVariable::CellProperties( boost::shared_ptr<CDomain> &m )
 
 		Cell_i  = plasma.get_cell( i ) ;
 
-		if 			( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA"     ) Eps0[ i ] = 1.0*vacuum_permittivity/Ref_Eps ;
-		else if ( plasma.get_cell_typename( Cell_i->data_id ) == "POWER"      ) Eps0[ i ] = 1.0E+10 /Ref_Eps ;
-		else if ( plasma.get_cell_typename( Cell_i->data_id ) == "GROUND"     ) Eps0[ i ] = 1.0E+10 /Ref_Eps ;
-		else if ( plasma.get_cell_typename( Cell_i->data_id ) == "DIELECTRIC" ) Eps0[ i ] = 4.0*vacuum_permittivity/Ref_Eps ;
+		if 			( cell_type[ cell->type ] == PLASMA     ) Eps0[ i ] = 1.0*vacuum_permittivity/Ref_Eps ;
+		else if ( cell_type[ cell->type ] == POWER      ) Eps0[ i ] = 1.0E+10 /Ref_Eps ;
+		else if ( cell_type[ cell->type ] == GROUND     ) Eps0[ i ] = 1.0E+10 /Ref_Eps ;
+		else if ( cell_type[ cell->type ] == DIELECTRIC ) Eps0[ i ] = 4.0*vacuum_permittivity/Ref_Eps ;
 		Eps[ i ] = Eps0[ i ] ;
 
 	}
@@ -587,7 +587,8 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 
 	} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ){
 
-		SourceSink_Streamer( m, config ) ;
+		//SourceSink_Streamer( m, config ) ;
+		SourceSink_PSST_2018( m, config ) ;
 
 	} else {
 
@@ -680,7 +681,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if(plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) 
+				if( cell_type[ Cell_i->type ] == PLASMA ) 
 					Mobi[ 0 ][ i ] = config->Species[ 0 ].MobilityValue ;
 			}
 			break;
@@ -689,7 +690,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
 				collision = TotalNumberDensity[i]*CollTable.GetValue( T[ 0 ][ i ] ) ; //unit
-				if(plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) 
+				if( cell_type[ Cell_i->type ] == PLASMA ) 
 					Mobi[ 0 ][ i ] = (Qe*Ref_Qe)/(Me*Ref_Mass)/collision ;
 			}
 			break;
@@ -698,7 +699,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			MobilityIter = MobilityMap.find( 0 ) ;
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if(plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) 
+				if( cell_type[ Cell_i->type ] == PLASMA ) 
 					Mobi[ 0 ][ i ] = MobilityIter->second.GetValue( T[ 0 ][ i ] )/TotalNumberDensity[i] ;
 			}
 			break;
@@ -707,7 +708,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			MobilityIter = MobilityMap.find( 0 ) ;
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) 
+				if( cell_type[ Cell_i->type ] == PLASMA ) 
 					Mobi[ 0 ][ i ] = MobilityIter->second.GetValue( Etd[ i ] )/TotalNumberDensity[i] ;
 			}
 			break;
@@ -715,7 +716,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			MobilityIter = MobilityMap.find( 0 ) ;
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if( cell_type[ Cell_i->type ] == PLASMA ) {
 					Mobi[ 0 ][ i ] = MobilityIter->second.GetValueLog( Etd[ i ] ) ;
 				}
 			}
@@ -788,17 +789,12 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			}
 			break;
 
-		case 11://JPL paper
-			
-
+		case 11://Bagheri et. al., “Comparison of six simulation codes for positive streamers in air,” Plasma Sources Science and Technology, vol. 27, no. 9, p. 095002, 2018.
+					
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
-					C1 = 6.6E-19*( 0.25*T[0][i] - 0.1 ) ;
-					C2 = 1.0+pow( 0.25*T[0][i], 1.6 ) ;
-					Thermal = sqrt( 8.0*Qe*Ref_Qe*T[0][i]/PI/config->Species[ 0 ].Mass_Kg ) ;
-			 		collision = TotalNumberDensity[i]*Thermal*0.6266570687*C1/C2 ;
-		 			Mobi[ 0 ][ i ] = (Qe*Ref_Qe)/(Me*Ref_Mass)/collision ;
+				if( cell_type[ Cell_i->type ] == PLASMA ) {
+		 			Mobi[ 0 ][ i ] = 2.3987*pow( Emag[i], -0.26 ) ;
 				}
 			}
 			break;
@@ -899,6 +895,16 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 				}
 			}
 			break;
+		case 11://Bagheri et. al., “Comparison of six simulation codes for positive streamers in air,” Plasma Sources Science and Technology, vol. 27, no. 9, p. 095002, 2018.
+      for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
+        Cell_i  = plasma.get_cell( i ) ;
+        if( cell_type[ Cell_i->type ] == PLASMA ) {
+          Diff[ 0 ][ i ] = (4.3628E-3)*pow( Emag[i], 0.22 ) ;
+        }
+      }
+		break;
+
+
 		default:
 			if ( mpi_rank == 0 ){
 				cout <<"The Diffusivity Type of species[0] you choose is illegal. Please check!!!!\n" << endl ;
@@ -1532,37 +1538,29 @@ void CVariable::Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m )
 	if ( mpi_rank==MASTER_NODE ) cout<<" Build least-square gradient coefficients finish ..."<<endl;
 	//exit(1) ;
 }
-void CVariable::SourceSink_Streamer( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
+void CVariable::SourceSink_PSST_2018( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
-	double alpha=0.0, eta=0.0 ;
-	double U0_e=0.0, E_Td=0.0 ;
-	double T0=273.0, T=300.0 ;
-	double Etd_Min = 0.0;
-	double C0=750.0*T0/T, C1=1.75E+3, C2=1.15E12, C3=-4.0E4,C4=T/T0, C5=(-1.0)*750.0*T0/587.0/T, C6=0.0, psi=0.0 ;
-	double R_stable=0.0;
-
-	Cell *Cell_i ;
+//Bagheri et. al., “Comparison of six simulation codes for positive streamers in air,” Plasma Sources Science and Technology, vol. 27, no. 9, p. 095002, 2018.
+	double alpha=0.0, alpha_eta=0.0, eta=0.0 ;
 
 	for ( int i = 0 ; i < plasma.Mesh.cell_number  ; i++ ) {
 
-		Cell_i  = plasma.get_cell( i ) ;
+		Cell *Cell_i  = plasma.get_cell( i ) ;
 
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
-
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
 		
-			U0_e = U0[0][i] ;
-			alpha 	= AlphaTable.GetValue( Emag[ i ] ) ;
-			//cout<<alpha<<endl;
-			//if ( alpha < 0.0 ) alpha=0.0 ;
-			*( ReactionRatePoint[ 0 ] + i  ) = (alpha)*Mobi[ 0 ][ i ]*Emag[ i ]*U0_e ;//+ R_stable ;
-			*( ReactionRatePoint[ 1 ] + i  ) = (alpha)*Mobi[ 0 ][ i ]*Emag[ i ]*U0_e ;//+ R_stable ;
-			LFASourceSink[ 0 ][ i ] 		 = (alpha)*Mobi[ 0 ][ i ]*Emag[ i ]*U0_e ;//+ R_stable ;
-			LFASourceSink[ 1 ][ i ] 		 = (alpha)*Mobi[ 0 ][ i ]*Emag[ i ]*U0_e ;//+ R_stable ;
+			alpha = (1.1944E6 + 4.3666E26/pow(Emag[i],3.0) )*exp( (-2.73E7)/Emag[i] ) ;
+			eta   = 340.75 ;
+			alpha_eta = alpha - eta ;
+
+			*( ReactionRatePoint[ 0 ] + i  ) = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;//+ R_stable ;
+			*( ReactionRatePoint[ 1 ] + i  ) = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;//+ R_stable ;
+			LFASourceSink[ 0 ][ i ] 		     = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;//+ R_stable ;
+			LFASourceSink[ 1 ][ i ] 		     = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;//+ R_stable ;
 		}
 	}
 	LFASourceSink[ 0 ] = LFASourceSink[ 0 ] ;
 	LFASourceSink[ 1 ] = LFASourceSink[ 1 ] ;
-	//exit(1) ;
 }
 void CVariable::SourceSink_2Fluid( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
@@ -1636,25 +1634,6 @@ void CVariable::SourceSink_3Fluid( boost::shared_ptr<CDomain> &m, boost::shared_
 			LFASourceSink[ 1 ][ i ] = (alpha    )*Flux2 - Gamma_ep*U0_e*U0_pi - Gamma_np*U0_pi*U0_ni ;
 			LFASourceSink[ 2 ][ i ] = (eta      )*Flux2 					  - Gamma_np*U0_pi*U0_ni ;
 
-		}
-	}
-
-}
-void CVariable::SourceSink_Cathode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
-{
-
-	double Thermal=0.0, U0_e=0.0, SS=0.0 ;
-	Cell *Cell_i ;
-
-	for ( int i = 0 ; i < plasma.Mesh.cell_number  ; i++ ) {
-
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
-
-			Thermal = sqrt( 8.0*Qe*Ref_Qe*T[0][i]/PI/config->Species[ 0 ].Mass_Kg ) ;
-			U0_e = U0[ 0 ][ i ]*Ref_N ;
-			SS = TotalNumberDensity[ i ]*Thermal*(10E-20)*( 3.97+0.63+T[0][i])*exp(-11.127/T[0][i] ) ;
-			*( ReactionRatePoint[ 0 ] + i  ) = 	SS ;
-			*( ReactionRatePoint[ 1 ] + i  ) =  SS ;
 		}
 	}
 

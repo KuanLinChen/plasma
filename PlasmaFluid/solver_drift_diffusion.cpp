@@ -493,7 +493,7 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 		Source 	 = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ){
 
 			/*--- Unsteady term ---*/
 			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -505,7 +505,7 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
+				if ( cell_type[ Cell_j->type ] == PLASMA  ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -613,10 +613,9 @@ void CDriftDiffusion::Bulid_A_B_1st_0D( boost::shared_ptr<CDomain> &m, boost::sh
 		Source 	 = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ){
 
 			/*--- Unsteady term ---*/
-			//C[ 0 ] = Cell_i->volume/var->Dt ;
 			drift_diffusion.add_entry_in_matrix( i, Cell_i->id, Cell_i->volume/var->Dt ) ;
 
 	 		/*--- Previous solution ---*/
@@ -663,7 +662,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 		yFlux = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
@@ -671,7 +670,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 				j = Cell_i->cell[k]->local_id ;
 				Cell_j = drift_diffusion.get_cell( j ) ;
 
-				if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if ( cell_type[ Cell_j->type ] == PLASMA ) {
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -706,11 +705,6 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
 
 					}
-					GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-					GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-
-					GVarN[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ j ] ;
-					GVarN[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ j ] ;
 
 					PV = var->U0[iSpecies][ i ] ;
 					NV = var->U0[iSpecies][ j ] ;
@@ -720,7 +714,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 					xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
-	 			} else if( drift_diffusion.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//Discontinue face
+	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
 
 	 				if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id)  == "NEUMANN" ) {
 	 					//do nothing
@@ -752,12 +746,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 		 							
 		 						}//if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) != DIELECTRIC ) SecondaryElectronEmission = 0.0 ;
 
-
-								GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-								GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-
-								PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
-
+								PV = var->U0[iSpecies][ i ] ;
 
 		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
 
@@ -775,10 +764,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 
 								/*--- Thermal flux term ---*/
 		 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[ iSpecies ][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-
-		 						GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-								GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-								PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
+								PV = var->U0[iSpecies][ i ] ;
 
 		 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
 
@@ -792,11 +778,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 								/*--- Diffusion flux ---*/
 								Diff = -var->Diff[iSpecies][ i ] ; 
 
-		  						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
-
-		  					GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-								GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-								PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
+		  					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+								PV = var->U0[iSpecies][ i ] ;
 
 		  					faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
 
@@ -834,7 +817,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ;
 	 						if ( fixTe ) Te = 0.5 ;
-	 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
+	 						vn += 0.25*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);
 
 	 						/*--- Secondary electron emission ---*/
 	 						SecondaryElectronEmission = 0.0 ;
@@ -848,19 +831,12 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 	 							
 	 						}//if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) != DIELECTRIC ) SecondaryElectronEmission = 0.0 ;
 
-							GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-							GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-
-							PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
-							//NV = var->U0[iSpecies][ j ] + DotProduct( GVarN, m->PFM_CELL[ i ][ k ].NNP ) ;
+							PV = var->U0[iSpecies][ i ] ;
 
 	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
-							// cout<<"i: "<<i<<endl;
-							// cout<<"xBc flux: "<<faceFlux <<endl ;//* m->PFM_CELL[ i ][ k ].nf[ 0 ]<<endl ;
-							// cout<<"yBc flux: "<<faceFlux <<endl ;//* m->PFM_CELL[ i ][ k ].nf[ 1 ]<<endl<<endl ;
 
 						break;
 
@@ -874,9 +850,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
 
-	 						GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-							GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
-							PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
+							PV = var->U0[iSpecies][ i ] ;
 
 	 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
 
@@ -890,14 +864,11 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 
 							/*--- Diffusion flux ---*/	
 							Diff = -var->Diff[iSpecies][ i ] ; 
+							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
 
-	  						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
-
-	  						GVarP[ 0 ] = var->GradU0[ iSpecies ][ 0 ][ i ] ;
-							GVarP[ 1 ] = var->GradU0[ iSpecies ][ 1 ][ i ] ;
 							PV = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
-	  						faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
+							faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -944,7 +915,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 		yFlux = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if (  cell_type[ Cell_i->type ] == PLASMA ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -952,7 +923,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 				j      = Cell_i->cell[ k ]->local_id ;
 				Cell_j = drift_diffusion.get_cell( j ) ;
 
-				if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
+				if ( cell_type[ Cell_j->type ] == PLASMA ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -996,7 +967,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 					xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
-	 			} else if( drift_diffusion.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//Discontinue face
+	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
 
 	 				if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id)  == "NEUMANN" ) {
 	 					//do nothing
@@ -1071,7 +1042,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 		yFlux = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -1079,7 +1050,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 				j = Cell_i->cell[k]->local_id ;
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if (  drift_diffusion.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
+				if (  cell_type[ Cell_j->type ] == PLASMA ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -1114,7 +1085,6 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
 
 					}
-					//if( m->PFM_CELL[ i ][ k ].nf[ 1 ] != 0.0 and iSpecies == 0 ) cout<<Pe<<endl;
 					PV = var->U0[iSpecies][ i ] ;
 					NV = var->U0[iSpecies][ j ] ;
 
@@ -1122,15 +1092,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 
 					xFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
-					// cout<<"faceFlux: "<<faceFlux<<endl;
-					// cout<<"dPPF:     "<<m->PFM_CELL[ i ][ k ].dPPf<<endl;
-					// cout<<"nf[0]: "<<m->PFM_CELL[ i ][ k ].nf[ 0 ]<<endl ;
-					// cout<<"nf[1]: "<<m->PFM_CELL[ i ][ k ].nf[ 1 ]<<endl ;
-					// cout<<"x0["<<k<<"]: "<< xFlux <<endl;
-	 			// 	cout<<"y0["<<k<<"]: "<< yFlux <<endl;
-					//if( iSpecies == 0 ) cout<<yFlux/Cell_i->volume<<endl;
 
-	 			} else if( drift_diffusion.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//Discontinue face
+	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
 
 					/*--- Diffusion flux ---*/
 					Diff = -var->Diff[iSpecies][ i ] ; 
@@ -1141,8 +1104,6 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 						
 					xFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
-					//cout<<"x1["<<k<<"]: "<< xFlux <<endl;
-	 				//cout<<"y1["<<k<<"]: "<< yFlux <<endl;
 
 	 			}//For discontuity face
 	 		}//End bulk face
@@ -1164,9 +1125,6 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 						
 					xFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
-					//cout<<"x2["<<k<<"]: "<< xFlux <<endl;
-	 				//cout<<"y2["<<k<<"]: "<< yFlux <<endl;
-					//if( iSpecies == 0 ) cout<<yFlux/Cell_i->volume<<endl;
 
 	 			}
 	 		}
@@ -1177,14 +1135,10 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 	 		xFlux = 0.0 ;
 	 		yFlux = 0.0 ;
 	 	}
-	 	// cout<<"xFlux: "<<xFlux<<endl;
-	 	// cout<<"yFlux: "<<yFlux<<endl<<endl;
-	 	//if( iSpecies == 0 ) cout<<yFlux/Cell_i->volume<<endl;
 	 	var->U1[ iSpecies ][ i ] = xFlux/Cell_i->volume ;
 		var->U2[ iSpecies ][ i ] = yFlux/Cell_i->volume ;
 
 	}//Cell Loop
-	// exit(1) ;
 
 	/*--- Update ghost cells ---*/
 	var->U1[ iSpecies ] = var->U1[ iSpecies ] ;
@@ -1206,7 +1160,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 		var->DD_Convection[iSpecies][ i ] = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -1215,7 +1169,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
+				if ( cell_type[ Cell_j->type ] == PLASMA ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -1248,7 +1202,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 
 					var->DD_Convection[iSpecies][ i ] += faceFlux ;
 
-	 			} else if( drift_diffusion.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//Discontinue face
+	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
 
 	 				if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id)  == "NEUMANN" ) {
 	 					//do nothing
@@ -1409,16 +1363,15 @@ void CDriftDiffusion::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boo
 		Cell_i = drift_diffusion.get_cell( i ) ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA  ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
 				j = Cell_i->cell[k]->local_id ;
-
 				Cell_j = drift_diffusion.get_cell(j) ; 
 
-				if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) == "DIELECTRIC" ) {
+				if ( cell_type[ Cell_j->type ] == DIELECTRIC ) {
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
 					*fabs( var->U1[ iSpecies ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
@@ -1429,14 +1382,15 @@ void CDriftDiffusion::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boo
 	 		}//End bulk 
 
 	 	/*--- Loop over DIELECTRIC cells ---*/
-	 	} else if( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "DIELECTRIC" ){
+	 	} else if( cell_type[ Cell_i->type ] == DIELECTRIC ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
 				j = m->PFM_CELL[ i ][ k ].NeighborCellId ;
+				Cell_j = drift_diffusion.get_cell(j) ; 
 
-				if ( drift_diffusion.get_cell_typename( Cell_j->data_id ) == "PLASMA" ) {
+				if ( cell_type[ Cell_j->type ] == PLASMA ) {
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
 					*fabs( var->U1[ iSpecies ][ j ]*m->PFM_CELL[ i ][ k ].nf[ 0 ]*(-1.0) 
@@ -1459,7 +1413,7 @@ void CDriftDiffusion::CalculateCondCurrentDensity( boost::shared_ptr<CDomain> &m
 		Cell_i = drift_diffusion.get_cell( i ) ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA  ){
 			var->CondJD[iSpecies][0][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U1[ iSpecies ][ i ] ;
 			var->CondJD[iSpecies][1][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U2[ iSpecies ][ i ] ;
 			var->CondJD[iSpecies][2][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U3[ iSpecies ][ i ] ;
@@ -1495,7 +1449,7 @@ void CDriftDiffusion::Semi_Empirical_Temperature( boost::shared_ptr<CDomain> &m,
 		mass =  (BackGroundMass+IonMass)/(5.0*IonMass + 3.0*BackGroundMass )*BackGroundMass ;
 		
 		/*--- Loop over PLASMA cells ---*/
-		if ( drift_diffusion.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
 
 			U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
 	 		V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
@@ -1503,7 +1457,6 @@ void CDriftDiffusion::Semi_Empirical_Temperature( boost::shared_ptr<CDomain> &m,
 			VTOT = ( U*U + V*V ) ;
 
 	 		var->T[iSpecies][ i ] = BackGroundTemp + (IonMass+BackGroundMass)/( 5.0*IonMass + 3.0*BackGroundMass )*BackGroundMass*VTOT/var->Kb ;
-	 		//var->T[iSpecies][ i ] /= var->Kb ;
 	 		var->T[iSpecies][ i ] /= var->K2eV ;
 
 	  	}
