@@ -95,6 +95,12 @@ int main( int argc, char * argv[] )
 	boost::shared_ptr<CPoisson> poisson_solver ;
 	poisson_solver = boost::shared_ptr<CPoisson> ( new CPoisson ) ;
 	poisson_solver->Init( Config ) ;
+	
+	/*--- Frequency domain Maxwell equation solver ---*/
+	/*
+	boost::shared_ptr<CFDMaxwell> FD_maxwell_solver ;
+	FD_maxwell_solver = boost::shared_ptr<CFDMaxwell> ( new CFDMaxwell ) ;
+	FD_maxwell_solver->Init( Config ) ;*/
 
 	/*--- Dirft-diffusion solver ---*/
 	int DriftDiffusionNum=0, FullEqnNum=0 ;
@@ -274,6 +280,13 @@ int main( int argc, char * argv[] )
 
 					fluid_model_solver[ iEqn ]->Solve_Momentum( mesh, Config, Var ) ;
 				}
+				
+				/* Solve for potential and electric field. */
+				/*
+ 				FD_maxwell_solver->SOLVE( Config, Var ) ;
+	 				#if (Debug == true ) 
+	 					PetscPrintf( PETSC_COMM_WORLD, "FD_maxwell_solver done...\n" ) ;
+	 				#endif */
 
 				Var->CalculateElectrodeCurrent( mesh, Config ) ;
 
