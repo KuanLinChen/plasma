@@ -23,6 +23,13 @@ bool MON_INS = false ; /*!< \brief Trigger for monitor instantaneous averaged da
 
 /* ultraMPP, these variables are global variable, it is define in the 'PFM.hpp' file  */
 ultraMPP plasma  ;/*!< \brief UltraMPP main object. */
+
+// ICP
+/*
+ultraMPP FDMaxwell_Re  ;
+ultraMPP FDMaxwell_Im  ;
+ultraMPP FDMaxwell_coupled_eqs  ;*/
+
 json &json_bc_setting ;/*!< \brief Boundary condition informations. */
 json &json_cell_setting;/*!< \brief Cell condition informations. */  
 
