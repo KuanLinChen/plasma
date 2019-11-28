@@ -372,6 +372,22 @@ void CVariable::UltraMPPVarInit()
 		VarTag["Kappa"] = plasma.set_parallel_cell_data( &Kappa, "kappa" ) ;
 
 		VarTag["plot_var"] = plasma.set_parallel_cell_data( &plot_var, "plot_var" ) ;
+	
+		//---------Variable definition of ICP simulation ---------------------------
+		/*
+		VarTag["sigma_p_Re_plasma"  	 ] = plasma.set_parallel_cell_data		(    &sigma_p_Re_plasma 		, "sigma_p_Re_plasma" 			) ;
+		VarTag["sigma_p_Im_plasma"  	 ] = plasma.set_parallel_cell_data		(    &sigma_p_Im_plasma 		, "sigma_p_Im_plasma" 			) ;
+		VarTag["sigma_p_Re_FVFD"  		 ] = FDMaxwell_Re.set_parallel_cell_data(    &sigma_p_Re_FVFD			, "sigma_p_Re_FVFD" 			) ;
+		VarTag["sigma_p_Im_FVFD"  		 ] = FDMaxwell_Re.set_parallel_cell_data(    &sigma_p_Im_FVFD			, "sigma_p_Im_FVFD" 			) ;
+		VarTag["Re_eq_source"  			 ] = FDMaxwell_Re.set_parallel_cell_data(    &Re_eq_source				, "Re_eq_source" 				) ;
+		VarTag["Im_eq_source"  			 ] = FDMaxwell_Re.set_parallel_cell_data(    &Im_eq_source				, "Im_eq_source" 				) ;
+		VarTag["permittivity_FVFD"       ] = FDMaxwell_Re.set_parallel_cell_data(	 &eps_FVFD      			, "permittivity_FVFD"           ) ;
+		VarTag["k_square_Re"  			 ] = FDMaxwell_Re.set_parallel_cell_data(    &k_square_Re			 	, "k_square_Re" 				) ;
+		VarTag["k_square_Im"  			 ] = FDMaxwell_Re.set_parallel_cell_data(    &k_square_Im			 	, "k_square_Im" 				) ;
+		VarTag["CurrentDen"  		 	 ] = FDMaxwell_Re.set_parallel_cell_data(    &CurrentDen			 	, "CurrentDen" 					) ;
+		VarTag["Power_Absorption_FVFD"   ] = FDMaxwell_Re.set_parallel_cell_data(    &Power_Absorption_FVFD	 	, "Power_Absorption_FVFD" 		) ;
+		VarTag["Power_Absorption_plasma" ] = plasma.set_parallel_cell_data		(    &Power_Absorption_plasma	,"Power_Absorption_plasma" 		) ;		
+		*/
 
 }
 void CVariable::UltraMPPAvgVarInit()
