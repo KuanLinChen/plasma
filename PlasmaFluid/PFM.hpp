@@ -26,7 +26,9 @@ extern map<string, int>	typename_type ;
 
 const double		vacuum_permittivity 	=  8.8541878176e-12 ; /* Unit in F/m */
 const double		vacuum_permeability 	=  1.256637061e-6 ; /* Unit in H/m */ //it is equal to 4*PI*10^-7
-const double		  unit_charge		 	=  1.602176634e-19 ; /* Unit in H/m */
+const double		unit_charge		 		    =  1.602176634e-19 ; /* Unit in H/m */
+const double		electron_mass			    =  9.10938356e-31 ; /* Unit in kg*/
+const double		vacuum_light_speed		=  299792458 ; /* Unit in m/s */
 
 #define MASTER_NODE		0
 
