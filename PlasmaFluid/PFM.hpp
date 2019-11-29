@@ -9,6 +9,12 @@ extern char **gargv2 ;
 extern int mpi_rank, mpi_size ;
 extern int nDim ;
 extern ultraMPP plasma ;
+
+//For ICP 
+/*extern ultraMPP FDMaxwell_Re ;
+extern ultraMPP FDMaxwell_Im ;
+extern ultraMPP FDMaxwell_coupled_eqs ;*/
+
 extern map<string,int> var_name ; 
 
 extern json &json_bc_setting    ;//= *(Surface_charge_test.get_json_input_parameter("boundary_setting") );
