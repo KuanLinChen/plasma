@@ -166,11 +166,11 @@ int main( int argc, char * argv[] )
  	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
  		//cout<<"A1"<<endl;
- 		//poisson_solver->SOLVE( Config, Var ) ;
+ 		poisson_solver->SOLVE( Config, Var ) ;
  		//cout<<"A2"<<endl;
 
 	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
- 		//exit(0);
+
 		ofstream FileOutput, PCB_FileOutput ;
 		map< int, CElectrical>::iterator Iter;
 
@@ -232,7 +232,8 @@ int main( int argc, char * argv[] )
 						cout<<"Continuity["<<iEqn<<"] ksp iter : "<<continuity_solver[ iEqn ]->its<<endl ;
 						
 					}
-					cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;
+					if(Config->PFM_Assumption == "LMEA") 
+						cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;
 				} 
 
  				/* Update solution: Copy solution (n+1) step -> (n) step */ 

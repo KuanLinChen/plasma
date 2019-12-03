@@ -75,7 +75,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 		iCell  = Cell_i->cell_number ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if (  energy_density.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if (  cell_type[ Cell_i->type ] == PLASMA ){
 
 			/*--- Unsteady term ---*/
 			energy_density.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume ) ;
@@ -87,7 +87,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 				Cell_j = energy_density.get_cell( j ) ;
 
 
-				if ( energy_density.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
+				if ( cell_type[ Cell_j->type ] == PLASMA ){
 
 					/*--- S-G ---*/
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -184,7 +184,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			if( energy_density.get_face_typename( Cell_i->face[ k ]->data_id)  == "NEUMANN" ){
+	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN  ){
 	 				//do nothing
 	 			}else{
 
@@ -298,7 +298,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 		iCell  = Cell_i->cell_number ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if (  energy_density.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if (  cell_type[ Cell_i->type ] == PLASMA ){
 
 			/*--- Unsteady term ---*/
 			energy_density.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -314,7 +314,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 				Cell_j = energy_density.get_cell( j ) ;
 
 
-				if ( energy_density.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
+				if ( cell_type[ Cell_j->type ] == PLASMA ){
 
 					/*--- S-G ---*/
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -399,7 +399,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			if( energy_density.get_face_typename( Cell_i->face[ k ]->data_id )  == "NEUMANN" ){
+	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
 	 				//do nothing
 	 			}else{
 
