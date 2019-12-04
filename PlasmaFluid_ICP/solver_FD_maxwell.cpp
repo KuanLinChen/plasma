@@ -12,7 +12,9 @@ void CFDMaxwell::Init( boost::shared_ptr<CConfig> &config )
 		cout<<"Correction: "<<config->Equation[ POISSON ].Correction<<endl;
 	}
 	its=0 ;
-		
+	
+	/* test */  
+	
 	FDMaxwell_Re.set_linear_solver_library("PETSC");
     FDMaxwell_Im.set_linear_solver_library("PETSC");
     FDMaxwell_coupled_eqs.set_linear_solver_library("PETSC");
