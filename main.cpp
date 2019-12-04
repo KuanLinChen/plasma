@@ -67,8 +67,8 @@ int main( int argc, char * argv[] )
 		plasma.set_linear_solver_library("PETSC");
 		//plasma.apply_linear_solver_setting();
 		plasma.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
-		Config->MeshFile = "input.json" ;
-		plasma.load_mesh( argv[1] + Config->MeshFile ) ;
+		string MPPFile = "input.json" ;
+		plasma.load_mesh( argv[1] + MPPFile ) ;
 
 	/*--- This module will be delets after some modification --*/
 		boost::shared_ptr<CDomain> mesh ;

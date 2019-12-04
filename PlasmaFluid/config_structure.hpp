@@ -135,18 +135,12 @@ class CConfig
 	 */	
 	void ReadSolverFile ( string ) ;
 
-	string 	Physics_Model,/*!< \brief Physics equations for particular solver: "PlasmaFluidModel", "ElectronMonteCarlo", HybridNavierStokes */
-			PFM_Assumption,/*!< \brief Plasma fluid model assumption: "LFA" for local field approximation, "LMEA" for local mean energy approximation*/
-			PFM_SubModel,/*!< \brief Submodel: "Beouf", "Nishida", "Cathode" ...etc */
-	
-			MeshFile,/*!< \brief  Mesh file name for plasma fluid model. */
-			MeshFile_NS,/*!< \brief  Mesh file name for navier-storkes equation. */
-			MeshType,/*!< \brief  Type of mesh, 2d, axisymmetric */
-			eMeanEnergyFile,
-			eEnergyLossFile,/*!< \brief elastic/inelastic power loss file name */
-			CasePath ;/*!< \brief Case input file path. */
+	string PFM_Assumption,/*!< \brief Plasma fluid model assumption: "LFA" for local field approximation, "LMEA" for local mean energy approximation*/
+				 PFM_SubModel,/*!< \brief Submodel: "Beouf", "Nishida", "Cathode" ...etc */
+				 eMeanEnergyFile,
+				 eEnergyLossFile,/*!< \brief elastic/inelastic power loss file name */
+				 CasePath ;/*!< \brief Case input file path. */
 			
-	double MeshScalar, MeshScalar_NS ;/*!< \brief  scalar of mesh, defual: 1.0 */
 	bool Normalize ; 
 			
 	double BGMass_Kg, BGTemperature_K ;/*!< \brief  Background  mass (most havey one) and background temperature */

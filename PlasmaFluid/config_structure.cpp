@@ -447,50 +447,6 @@ void CConfig::ReadSolverFile( string FileName )
 	}
 
 	/*------*/
-	if ( ModelAssumptions.find ("Physics_Model" ) != ModelAssumptions.end() )  Physics_Model = ModelAssumptions["Physics_Model"] ;
-
-	/*------*/
-	if ( ModelAssumptions.find ("MeshFile" ) != ModelAssumptions.end() ){
-		MeshFile = ModelAssumptions["MeshFile"] ;
-	} else {
-		if ( mpi_rank == 0 ) cout<<"Fatal error , can not find mesh file "<<endl; exit(1) ;
-	}
-
-	/*------*/
-	if ( Physics_Model == "HybridNS") {
-		if ( ModelAssumptions.find ("MeshFile_NS" ) != ModelAssumptions.end() ) {
-			MeshFile_NS = ModelAssumptions["MeshFile_NS"] ;
-		} else {
-			if ( mpi_rank == 0 ) cout<<"Fatal error , can not find navier-stokes mesh file ( Check enable hybrid N-S Solver ) "<<endl; exit(1) ;
-		}
-	}
-
-	/*------*/
-	if ( ModelAssumptions.find ("MeshScalar" ) != ModelAssumptions.end() ){
-		MeshScalar = ModelAssumptions["MeshScalar"] ;
-	} else {
-		if ( mpi_rank == 0 ) cout<<"Defual Mesh Scalar=1.0"<<endl;
-		MeshScalar = 1.0 ; 
-	}
-
-	/*------*/
-	if ( Physics_Model == "HybridNS") {
-		if ( ModelAssumptions.find ("MeshScalar_NS" ) != ModelAssumptions.end()){
-			MeshScalar_NS = ModelAssumptions["MeshScalar_NS"] ;
-		} else {
-			if ( mpi_rank == 0 ) cout<<"Defual Mesh Scalar=1.0"<<endl;
-			MeshScalar_NS = 1.0 ; 
-		}
-	}
-
-	/*------*/
-	if ( ModelAssumptions.find ("MeshType" ) != ModelAssumptions.end() ){
-		MeshType = ModelAssumptions["MeshType"] ;
-	} else {
-		if ( mpi_rank == 0 ) cout<<"Fatal error , can not find mesh type "<<endl; exit(1) ;
-	}
-
-	/*------*/
 	if ( ModelAssumptions.find ("PFM_Assumption") != ModelAssumptions.end() ) PFM_Assumption = ModelAssumptions["PFM_Assumption"] ;
 
 	/*------*/

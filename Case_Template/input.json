@@ -5,7 +5,7 @@
 		"-geometry": "Axisymmetric_Y",
 
 		"scale": 1.0,
-		"meshfile":"../Case_Templete/Q1D_3p8cm.msh"
+		"meshfile":"../Case_Template/Q1D_3p8cm.msh"
 	},
 	"boundary_setting":{
 		"name":["GROUND","POWER","NEUMANN"],

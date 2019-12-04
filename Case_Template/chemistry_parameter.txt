@@ -16,8 +16,8 @@ Table_gas_max = 1000
 # Gas temperature
 T_Gas = 400.0
 
-CHEMISTRY 	= ../Case_Templete/1channel.list
-SPECIES 		= ../Case_Templete/2species_name.list
+CHEMISTRY 	= ../Case_Template/1channel.list
+SPECIES 		= ../Case_Template/2species_name.list
 
 # The table for ion
 Ion_table_size = 1000
