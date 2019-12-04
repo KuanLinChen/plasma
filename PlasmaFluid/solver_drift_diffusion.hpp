@@ -50,7 +50,7 @@ class CDriftDiffusion
 	double C[ 5 ] ;
 	/*--- Solver Control Parameter ---*/	
 		double GVarN[2], GVarP[2] ;
-		int Correction, WallType, its ;  /*!< \brief expilicit correction of the non-orthogonal effect & ksp iteration number */ 
+		int WallType, its ;  /*!< \brief expilicit correction of the non-orthogonal effect & ksp iteration number */ 
 		
 	/*!
 	 * \brief Solver procedure.

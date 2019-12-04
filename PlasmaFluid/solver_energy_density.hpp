@@ -40,7 +40,7 @@ class CEnergyDensity
 	/*--- Solver Control Parameter ---*/	
 	double GVarN[2], GVarP[2] ;
 	double C53, C43, Reflec ;
-	int Correction, its ; /*!< \brief expilicit correction of the non-orthogonal effect & ksp iteration number */ 
+	int its ; /*!< \brief expilicit correction of the non-orthogonal effect & ksp iteration number */ 
 	bool fixTe, TG, Insert ;
 	int eLOSS, WallType ;
 	void Solver( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;

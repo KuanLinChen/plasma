@@ -11,10 +11,8 @@ void CFluidModel::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	SpeciesType = config->Species[ index ].Type ;
 
 	/*--- PETSc Solver ---*/	
-		Correction = config->Equation[ SpeciesType ].Correction ;
 		if ( mpi_rank == 0 ){
 			cout<<"Creat "<<config->Species[iSpecies].Name<<" fluid equation (w/o drift-diffusion), index: "<<index<<", charge: "<<config->Species[ index ].Charge<<", Speciec Type: "<<SpeciesType<<endl ;
-			cout<<"Correction: "<<Correction<<endl;
 			cout<<"Gamma: "<<config->Species[ iSpecies ].Gamma<<endl;
 		} 
 		fixTe = false ;

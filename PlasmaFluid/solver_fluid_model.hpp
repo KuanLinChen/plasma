@@ -46,7 +46,7 @@ class CFluidModel
 		double GVarN[2], GVarP[2] ;
 		double *Mx, *My, *Mz, *CollisionIntegral ;
 		double *sigmaIonNeu ;
-		int Correction, its ;  /*!< \brief expilicit correction of the non-orthogonal effect & ksp iteration number */ 
+		int its ;  /*!< \brief expilicit correction of the non-orthogonal effect & ksp iteration number */ 
 
 	/*!
 	 * \brief Continuity solver procedure.

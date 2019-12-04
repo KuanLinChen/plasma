@@ -13,7 +13,6 @@ void CEnergyDensity::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCon
 		cout<<"Creat "<<config->Species[iSpecies].Name<<" energy density solver, index: "<<index<<", charge: "<<config->Species[ index ].Charge<<endl;
 	} 
 	
-	Correction = config->Equation[ config->Species[ index ].Type ].Correction ;
 	WallType   = config->Equation[ config->Species[ index ].Type ].WallBoundaryType ;
 	
 	fixTe = false ;

@@ -106,14 +106,12 @@ class CEquation
 	 */	
 	CEquation(){} ;
 	int Equation 	 ;
-	int Correction 	 ;/*!< \brief Number of correction for non-orthogonal */
 	int WallBoundaryType ;/*!< \brief Boundary condition type, 0:default, 1: neumann, 2: zero */
 	/*! 
 	 * \brief Initialization module.
 	 */	
 	void Init(){
 		Equation   = -999 ;
-		Correction = -999 ;
 		WallBoundaryType = 0 ;
 	};
 };

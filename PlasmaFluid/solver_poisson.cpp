@@ -8,7 +8,6 @@ void CPoisson::Init( boost::shared_ptr<CConfig> &config )
 {
 	if ( mpi_rank == 0 ){
 		cout<<"Creat POISSON"<<endl;
-		cout<<"Correction: "<<config->Equation[ POISSON ].Correction<<endl;
 	}
 	its=0 ;
 }

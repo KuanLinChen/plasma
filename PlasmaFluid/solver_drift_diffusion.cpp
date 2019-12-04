@@ -10,12 +10,10 @@ void CDriftDiffusion::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 	iSpecies = index ;
 	SpeciesType = config->Species[ index ].Type ;
 
-	Correction 		 = config->Equation[ SpeciesType ].Correction ;
 	WallType 		 = config->Equation[ SpeciesType ].WallBoundaryType ;
 
 	if ( mpi_rank == 0 ){
 		cout<<"Creat "<<config->Species[iSpecies].Name<<" continuity solver, index: "<<index<<", charge: "<<config->Species[ index ].Charge<<", change sign: "<<config->Species[ index ].sgn<<", Speciec Type: "<<SpeciesType<<endl;
-		cout<<"Correction: "<<Correction<<endl;
 	} 
 	fixTe = false ;
 	TG = false ;

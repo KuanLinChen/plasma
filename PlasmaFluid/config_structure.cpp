@@ -645,9 +645,6 @@ void CConfig::ReadSolverFile( string FileName )
 
 		if ( PoissonEqnControl.find ("Equation") 	!= PoissonEqnControl.end() ) 
 			Equation[ POISSON ].Equation 	= PoissonEqnControl["Equation"] ;
-
-		if ( PoissonEqnControl.find ("Correction") 	!= PoissonEqnControl.end() ) 
-			Equation[ POISSON ].Correction 	= PoissonEqnControl["Correction"] ;
 	}
 
 	/*--- Electron equation control ---*/
@@ -657,9 +654,6 @@ void CConfig::ReadSolverFile( string FileName )
 
 		if ( ElectronEqnControl.find ("Equation") 	!= ElectronEqnControl.end() ) 
 			Equation[ ELECTRON ].Equation 	= ElectronEqnControl["Equation"] ;
-
-		if ( ElectronEqnControl.find ("Correction") != ElectronEqnControl.end() ) 
-			Equation[ ELECTRON ].Correction 	= ElectronEqnControl["Correction"] ;
 
 		if ( ElectronEqnControl.find ("WallBoundaryType") != ElectronEqnControl.end() ) 
 			Equation[ ELECTRON ].WallBoundaryType 	= ElectronEqnControl["WallBoundaryType"] ;
@@ -673,9 +667,6 @@ void CConfig::ReadSolverFile( string FileName )
 		if ( IonEqnControl.find ("Equation") 	!= IonEqnControl.end() ) 
 			Equation[ ION ].Equation 	= IonEqnControl["Equation"] ;
 
-		if ( IonEqnControl.find ("Correction")  != IonEqnControl.end() ) 
-			Equation[ ION ].Correction 	= IonEqnControl["Correction"] ;
-
 		if ( IonEqnControl.find ("WallBoundaryType")  != IonEqnControl.end() ) 
 			Equation[ ION ].WallBoundaryType 	= IonEqnControl["WallBoundaryType"] ;
 	}
@@ -687,9 +678,6 @@ void CConfig::ReadSolverFile( string FileName )
 
 		if ( NeutralEqnControl.find ("Equation") 	!= NeutralEqnControl.end() ) 
 			Equation[ NEUTRAL ].Equation 	= NeutralEqnControl["Equation"] ;
-
-		if ( NeutralEqnControl.find ("Correction")  != NeutralEqnControl.end() ) 
-			Equation[ NEUTRAL ].Correction 	= NeutralEqnControl["Correction"] ;	
 		
 		if ( NeutralEqnControl.find ("WallBoundaryType")  != NeutralEqnControl.end() ) 
 			Equation[ NEUTRAL ].WallBoundaryType 	= NeutralEqnControl["WallBoundaryType"] ;	
@@ -701,10 +689,7 @@ void CConfig::ReadSolverFile( string FileName )
 		BackgroundEqnControl = config[ "BackgroundEqnControl" ] ; 
 
 		if ( BackgroundEqnControl.find ("Equation") 	!= BackgroundEqnControl.end() ) 
-			Equation[ BACKGROUND ].Equation 	= BackgroundEqnControl["Equation"] ;
-
-		if ( BackgroundEqnControl.find ("Correction")  != BackgroundEqnControl.end() ) 
-			Equation[ BACKGROUND ].Correction 	= BackgroundEqnControl["Correction"] ;	
+			Equation[ BACKGROUND ].Equation 	= BackgroundEqnControl["Equation"] ;	
 	}
 
 
@@ -733,16 +718,5 @@ void CConfig::ReadSolverFile( string FileName )
 	} else {
 		OutputFormat 	= 0 ;
 	}
-	//cout<<WRT_Insta_Freq<<endl;
-	//cout<<WRT_Cycle_Freq<<endl;
-	//exit(1) ;
-	// for( int i = 0 ; i < 4 ; i++ ){
-	// 	if ( mpi_rank==0 ){
-	// 		cout<<"Type: "		<< Equation[ i ].Type 			<<endl;
-	// 		cout<<"Equation: "  << Equation[ i ].Equation 		<<endl;
-	// 		cout<<"correstion: "<< Equation[ i ].Correction 		<<endl;
-	// 	}
-	// }
-	//exit(1) ;
 
 }
