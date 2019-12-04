@@ -4,14 +4,14 @@
 		"Description"      : "local mean energy approximtaion (LMEA) or local field approximtaion (LFA).",
 		"PFM_Assumption"   : "LMEA",
 		
-		"Description"      : "Etd vs MeanEnergy table file name. This may be required when using LFA."
+		"Description"      : "Etd vs MeanEnergy table file name. This may be required when using LFA.",
 		"eMeanEnergyFile"  : "4MeanEnergy.inp",
 
-		"Description"      : "Calculate energy loss in energy density equation by lookup table"
+		"Description"      : "Calculate energy loss in energy density equation by lookup table",
 		"eEnergyLossFile"  : "eEnergyLoss.inp",
 		
 		"Description"      : "Time step per each cycle",
-		"StepPerCycle"     : 500,
+		"StepPerCycle"     : 400,
 		
 		"Description"      : "For dc case, if lower than 0-> ignore (Calculate form max. frequency) ",
 		"TimeStepSize"     : -1.0,
@@ -50,7 +50,7 @@
 	"PoissonEqnControl":
 	{
 		"Description"	: "0: orignal, 1: semi-implicit, 2: semi-implicit with ion prediction",
-		"Equation"		: 2,
+		"Equation"		: 2
 	},
 
 	"ElectronEqnControl":
@@ -91,10 +91,10 @@
 	"OutputControl":
 	{
 		"Description"	  : "Number of output for instantaneous data in a cycle",
-		"WRT_Insta_Freq": 500,
+		"WRT_Insta_Freq": 4,
 
 		"Description"	  : "Output cycle average data in every # cycle",
-		"WRT_Cycle_Freq": 1000,
+		"WRT_Cycle_Freq": 1,
 
 		"Description"	  : "Calculate cycle averaged data, 0: disable, 1: enable",
 		"AVERAGE_SW" 	: 1,
