@@ -1,0 +1,96 @@
+{
+	"ElectronGroup":
+	{
+		"SubGroup":
+		[
+			{
+				"Name"               : "Electron",
+				"Activate"           : 1,
+				
+				"MobilityType"       : 2,
+				"MobilityFile"       : "Mobility-electron.dat",
+				
+				"DiffusivityType"    : 2,
+				"DiffusivityFile"    : "Diffusivity-electron.dat", 
+				
+				"Charge"             : -1.0,
+				"Mass_Kg"            : 9.109500e-31,
+				"CollisionFreqFile"  : "5Collision.inp",
+				"InitialDensity"     : 1.0E14,
+				"InitialTemperature" : 2.0
+
+			}
+		]
+	},
+	"IonGroup":
+	{
+		"SubGroup":
+		[
+			{
+				"Name"                 : "Ar<sup>+</sup>",
+				"Activate"             : 1,
+				
+				"MobilityType"         : 6,
+				"MobilityFile"         : "Mobility-ion.dat",
+				"MobilityValue"        : 4.04138,
+				
+				"DiffusivityType"      : 5, 
+				"DiffusivityValue"     : 0.104478,
+				
+				"Charge"               : 1.0,
+				"Mass_AMU"             : 39.948,
+				"Gamma"                : 1.666666667, 
+				"InitialDensity"       : 1.0E+14,
+				"InitialTemperature_K" : 300.0
+
+			}
+		]
+	},
+	"NeutralGroup":
+	{
+		"SubGroup":
+		[
+      {   
+				"Name"                 : "Ar<sub>m</sub>",
+				"Activate"             : 1,
+						
+				"DiffusivityType"      : 0,  
+				"DiffusivityValue"     : 1.306036,
+				
+				"Charge"               : 0.0,
+				"Mass_AMU"             : 39.948, 
+				"InitialDensity"       : 1.0E+15,
+				"InitialTemperature_K" : 300.0
+
+      },
+      {   
+				"Name"                 : "Ar<sub>r</sub>",
+				"Activate"             : 1,
+				
+				"DiffusivityType"      : 0,  
+				"DiffusivityValue"     : 1.306036,
+				
+				"Charge"               : 0.0,
+				"Mass_AMU"             : 39.948, 
+				"InitialDensity"       : 1.0E+15,
+				"InitialTemperature_K" : 300.0
+
+      }    
+		]
+
+	},
+	"BackGroundGroup":
+	{
+		"SubGroup":
+		[
+			{
+				"Name"                 : "Ar",		
+				"Activate"             : 0,
+				"Charge"               : 0.0,
+				"Mass_AMU"             : 39.948, 
+				"InitialPressure"      : 0.02,
+				"InitialTemperature_K" : 400.0
+			}
+		]
+	}
+}

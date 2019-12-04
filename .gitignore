@@ -48,3 +48,7 @@ run_vpp800_vary_cross/
 run_vpp800_vary_cross_consTi/
 
 Run_Streamer/
+
+OPT_CASE_INPUT/
+
+run_case_folder/

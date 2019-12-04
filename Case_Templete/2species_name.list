@@ -1,0 +1,22 @@
+# kjdlkjl; kdjklj; kldjlk
+#Note1: diffusion type 0: The constant (except electron)1: The self-diffusion coefficient (parameter only depend on pressure and temperature); 2: Einstein relation from mobility 3: formula(Chapman-Enskog theory)
+#Note2: mobility type  0: The constant 1: parameter only depend on pressure and temperature 2: Einstein relation from diffusion 3: formula
+#Note3: self_diff_type  0:D = constant X pressure 1: constant / density
+#Note4: self_mob_type   0:mob = constant X pressure
+
+
+electron:
+Electron     diffusion_type: 0     mobility_type: 0     diff_constant: 0.0     mob_constant: 0.0     amu: 0.0     self_diff_constant: 0.0     self_mob_constant: 0.0 binary_diameter: 0.0   LJ_potential: 0.0   polarizability: 0.0   viscosity: 0.0     interpolation: y  table_contain: 200  table_lowestT: 0.3 table_highestT: 20.0  mob_file: aaa diff_file: bbb  thermal_file: none
+
+ion:
+Ar+          diffusion_type: 0     mobility_type: 0     diff_constant: 0.0     mob_constant: 0.0     amu: 39.948   self_diff_constant: 0.0   self_mob_constant: 0.0     binary_diameter: 0.0     LJ_potential: 0.0     polarizability: 0.0     viscosity: 0.0     interpolation: y  table_contain: 200  table_lowestT: 0.3 table_highestT: 20.0  mob_file: aaa     diff_file: bbb thermal_file: none
+
+
+neutral:
+Arm           diffusion_type: 0 mobility_type: 0 diff_constant: 1.1 mob_constant: 0.0    amu: 39.948   self_diff_constant: 1.306036  self_mob_constant: 0.0  binary_diameter: 0.0   LJ_potential: 0.0 polarizability: 1.641 viscosity: 0.0     interpolation: n  table_contain: 200  table_lowestT: 0.3 table_highestT: 20.0  mob_file: aaa     diff_file: bbb thermal_file: none
+
+Arr           diffusion_type: 0 mobility_type: 0 diff_constant: 1.1 mob_constant: 0.0    amu: 39.948   self_diff_constant: 1.306036  self_mob_constant: 0.0  binary_diameter: 0.0   LJ_potential: 0.0 polarizability: 1.641 viscosity: 0.0     interpolation: n  table_contain: 200  table_lowestT: 0.3 table_highestT: 20.0  mob_file: aaa     diff_file: bbb thermal_file: none
+
+
+Ar           diffusion_type: 0 mobility_type: 0 diff_constant: 1.1 mob_constant: 0.0    amu: 39.948   self_diff_constant: 1.306036  self_mob_constant: 0.0  binary_diameter: 0.0   LJ_potential: 0.0 polarizability: 1.641 viscosity: 0.0     interpolation: n  table_contain: 200  table_lowestT: 0.3 table_highestT: 20.0  mob_file: aaa             diff_file: bbb thermal_file: none
+

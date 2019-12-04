@@ -1,0 +1,28 @@
+
+#Elastic collisions
+1 Electron + 1 Ar  ->  1 Ar   + 1 Electron  type: t  ratefile: ../Case_Templete/Rate_Table/elastic.txt          AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 0.0    rateconstant: 0.0     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_00.dat  interpolation: y
+
+#Ground state excitation
+1 Electron + 1 Ar  ->  1 Arm  + 1 Electron  type: t  ratefile: ../Case_Templete/Rate_Table/excitation_Arm.txt   AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 11.55  rateconstant: 0.0     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_02.dat  interpolation: y
+
+#Ground state ionization
+1 Electron + 1 Ar  ->  1 Ar+  + 2 Electron  type: t  ratefile: ../Case_Templete/Rate_Table/ionization_Ar.txt   AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 11.55  rateconstant: 0.0     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_02.dat  interpolation: y
+
+#Superelastatic collision
+1 Electron + 1 Arm  ->  1 Ar  + 1 Electron  type: t  ratefile: ../Case_Templete/Rate_Table/superelastic_Arm.txt   AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 11.55  rateconstant: 0.0     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_02.dat  interpolation: y
+
+#Stepwise ionization
+1 Electron + 1 Arm  ->  1 Ar+  + 2 Electron  type: t  ratefile: ../Case_Templete/Rate_Table/ionization_Arm.txt   AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 11.55  rateconstant: 0.0     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_02.dat  interpolation: y
+
+
+#Quenching
+1 Electron + 1 Arm  ->  1 Arr  + 1 Electron  type: c  ratefile:  AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 0.0  rateconstant: 2E-13     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_05.dat  interpolation: y
+
+#MetaStable pooling
+1 Arm + 1 Arm  ->  1 Ar+  + 1 Ar + 1 Electron  type: c  ratefile:  AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 0.0  rateconstant: 6.2E-16     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_05.dat  interpolation: y
+
+#TWO
+1 Ar + 1 Arm  ->  2 Ar  type: c  ratefile:  AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 0.0  rateconstant: 3E-21     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_05.dat  interpolation: y
+
+#Three
+2 Ar + 1 Arm  ->  3 Ar  type: c  ratefile:  AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 0.0  rateconstant: 1.1E-33     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_05.dat  interpolation: y
