@@ -68,20 +68,20 @@ class CPoisson
 		 */	
 		void SOLVE                                  ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 
-
+		/*!
+		 * \brief Compute the displacement current.
+		 */	
 		void UltraMPPComputeDispCurrentDensity( boost::shared_ptr<CVariable> &var ) ;
 
-
-	/*--- Solver Control Parameter ---*/	
-	/*!
-	 * \brief Update the electrical component map. 
-	 * \param[in] var    - Variable.
-	 */	
-	void UpdateElectricalMap( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
-	double SineVoltage( string FaceType, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+		/*!
+		 * \brief Update the electrical component map. 
+		 * \param[in] var    - Variable.
+		 */	
+		void UpdateElectricalMap( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+		double SineVoltage( string FaceType, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 
 	/* TEST FUNCTION */
-	void MatA_SourceB( boost::shared_ptr<CConfig> &config,boost::shared_ptr<CVariable> &var ) ;
-	void ComputeGradient( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
-	void SOLVE_TEST( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  ) ;
+	// void MatA_SourceB( boost::shared_ptr<CConfig> &config,boost::shared_ptr<CVariable> &var ) ;
+	// void ComputeGradient( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+	// void SOLVE_TEST( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  ) ;
 };

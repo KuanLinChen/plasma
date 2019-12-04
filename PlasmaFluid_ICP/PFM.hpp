@@ -8,7 +8,14 @@ extern char **gargv2 ;
 
 extern int mpi_rank, mpi_size ;
 extern int nDim ;
+
 extern ultraMPP plasma ;
+
+// ICP
+extern ultraMPP FDMaxwell_Re  ;
+extern ultraMPP FDMaxwell_Im  ;
+extern ultraMPP FDMaxwell_coupled_eqs  ;
+
 extern map<string,int> var_name ; 
 
 extern json &json_bc_setting    ;//= *(Surface_charge_test.get_json_input_parameter("boundary_setting") );
@@ -25,6 +32,10 @@ extern map<int, string>	type_typename ;
 extern map<string, int>	typename_type ;
 
 const double		vacuum_permittivity 	=  8.8541878176e-12 ; /* Unit in F/m */
+const double		vacuum_permeability 	=  1.256637061e-6 ; /* Unit in H/m */ //it is equal to 4*PI*10^-7
+const double		unit_charge		 		    =  1.602176634e-19 ; /* Unit in H/m */
+const double		electron_mass			    =  9.10938356e-31 ; /* Unit in kg*/
+const double		vacuum_light_speed		=  299792458 ; /* Unit in m/s */
 
 #define MASTER_NODE		0
 
