@@ -264,7 +264,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 		var->JouleHeating[iSpecies][i] = JdotE*var->Qe ;
 			
 			//For ICP power absorption
-			//energy_density.add_entry_in_source_term( i, Power_Absorption_plasma[ i ] * Cell_i->volume) ;
+			//energy_density.add_entry_in_source_term( i, var->Power_Absorption_plasma[ i ] * Cell_i->volume) ;
 			
 	 	/*--- Loop over SOLID cells ---*/
 	 	} else {
