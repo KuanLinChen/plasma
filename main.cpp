@@ -69,6 +69,15 @@ int main( int argc, char * argv[] )
 		plasma.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
 		string MPPFile = "input.json" ;
 		plasma.load_mesh( argv[1] + MPPFile ) ;
+	
+	/* Initial the FVFD object. */
+	/*
+        FDMaxwell_Re.set_linear_solver_library("PETSC");
+        FDMaxwell_Im.set_linear_solver_library("PETSC");
+        FDMaxwell_coupled_eqs.set_linear_solver_library("PETSC");
+    	FDMaxwell_Re.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+    	FDMaxwell_Im.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+    	FDMaxwell_coupled_eqs.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;*/
 
 	/*--- This module will be delets after some modification --*/
 		boost::shared_ptr<CDomain> mesh ;

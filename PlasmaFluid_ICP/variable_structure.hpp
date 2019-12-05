@@ -149,9 +149,6 @@ class CVariable
 	
 
 	int SolutionFieldNum ;
-	CScalar //EField[3],/*!< \brief Electric fields[x,y,z]. */ 
-					//PreEField[3],/*!< \brief Previous time step Electric fields[x,y,z]. */ 
-		ReducedElectricField ;/*!< \brief reduced electric field */ 
 
 	int NetQ_Tag ;
 
@@ -169,6 +166,8 @@ class CVariable
 	       *Ez, *PreEz,     /*!< \brief current & previous Electric fields in Z-dir. */ 
 				 *Etd,            /*!< \brief reduce Electric fields in unit: Td */ 
 				 *Emag ;          /*!< \brief Electric fields magnitude */ 
+	double *Kappa ;				  /*!< \brief the variable for modified sound speed. See My IEEE paper. */
+	double *plot_var, *avg_plot_var ;
 
 	void UltraMPPAvgVarInit() ;
 	double *AvgPotential,   /*!< \brief cycle-averaged potential */
@@ -177,22 +176,26 @@ class CVariable
 				 *AvgEz ;         /*!< \brief cycle-averaged electric fields in Z-dir. */ 
 
 	void UltraMPPInitialCellParameter() ;
-	
+
 	//---------Variable definition of ICP simulation ---------------------------
-	double omega = 13.56e6 ; // ICP coil freqency
-	double Coil_Current = 20 ;
+	double Coil_frequency  ; // ICP coil freqency
+	double omega  ; // ICP coil angular freqency
+	double Coil_Current  ;
 	variable_set E_phi_Re, E_phi_Im ;
-	double *nu_m ; // mom_transfer_rate
-	double *sigma_p_Re 	; // Real 		part of plasma conductivity
-	double *sigma_p_Im 	; // Imaginary 	part of plasma conductivity
+	double *eps_FVFD ;
+	double collision_frequency ; // mom_transfer_rate
+	double *sigma_p_Re_plasma 	; // Real 		part of plasma conductivity in plasma mesh 
+	double *sigma_p_Im_plasma 	; // Imaginary 	part of plasma conductivity in plasma mesh
+	double *sigma_p_Re_FVFD 	; // Real 		part of plasma conductivity in FVFD   mesh 
+	double *sigma_p_Im_FVFD 	; // Imaginary 	part of plasma conductivity in FVFD   mesh 
 	double *k_square_Re	; // Real 		part of square of helmholtz constant
 	double *k_square_Im	; // Imaginary 	part of square of helmholtz constant
 	double *CurrentDen	;
 	double *Re_eq_source; // Source term in Real 		part FD maxwell equation
 	double *Im_eq_source; // Source term in Imaginary 	part FD maxwell equation
+	double *Power_Absorption_plasma ;
+	double *Power_Absorption_FVFD ;
 	//--------------------------------------------------------------------------
-
-
 
 
 
@@ -218,7 +221,7 @@ class CVariable
 
 
 	CScalar *LFASourceSink ; /*!< \brief  */
-	CScalar Kappa ;
+	//CScalar Kappa ;
 	//CScalar Force_x, Force_y ;/*!< \brief  Force in x & y direction. */
 	CScalar ** GradT ;
 	CScalar **GradU0 ;/*!< \brief Number density gradient [x,y,z]. */ 
@@ -367,12 +370,11 @@ class CVariable
 	 */
 	void SourceSink_3Fluid( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 
-	void SourceSink_Streamer( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
+	void SourceSink_PSST_2018( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 	
-	void SourceSink_Cathode( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 
-	void CalculateEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
-
+	//	void CalculateEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
+	void UltraMPPComputeEnergyLossFromTable( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
     /*! 
 	 * \brief Initialize reference valut.
 	 */
@@ -381,7 +383,7 @@ class CVariable
 
 
 
-
+	void UltraMPPComputeArgonIonTemperaturePHELPS( int iSpecies ) ;
 	// CScalar dPhi, dEx, dEy ;
 	// CScalar dPrePhi, dPreEx, dPreEy ;
 
