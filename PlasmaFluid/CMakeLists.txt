@@ -36,7 +36,7 @@ post_structure.cpp 			post_structure.hpp
 
 solver_fluid_model.cpp 		solver_fluid_model.hpp
 #solver_navier_stokes.cpp 	solver_navier_stokes.hpp
-
+solver_photoionization.cpp solver_photoionization.hpp
 )
 
 target_include_directories ( PlasmaFluid PUBLIC libultraMPP.a ${CMAKE_CURRENT_SOURCE_DIR} )

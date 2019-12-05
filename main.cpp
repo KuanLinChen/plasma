@@ -8,7 +8,7 @@
 #include "post_structure.hpp"
 #include "solver_energy_density.hpp"
 #include "solver_fluid_model.hpp"
-// #include "solver_navier_stokes.hpp"
+#include "solver_photoionization.hpp"
 // #include "variable_structure_NS.hpp"
 // #include "PETSc_solver.h"
 #define Debug false
@@ -62,6 +62,7 @@ int main( int argc, char * argv[] )
 		boost::shared_ptr<CConfig> Config ;
 		Config = boost::shared_ptr<CConfig> ( new CConfig ) ;
 		Config->Init( argv[1] ) ;
+
 
 	/* Initial the ultraMPP object. */
 		plasma.set_linear_solver_library("PETSC");
@@ -164,6 +165,12 @@ int main( int argc, char * argv[] )
 		boost::shared_ptr<CEnergyDensity> electron_energy_solver ;
 		electron_energy_solver = boost::shared_ptr<CEnergyDensity> ( new CEnergyDensity ) ;
 		electron_energy_solver->Init( mesh, Config, 0 ) ;
+
+		boost::shared_ptr<CHelmholtz> Helmholtz ;
+    Helmholtz = boost::shared_ptr<CHelmholtz> ( new CHelmholtz ) ;
+    Helmholtz->Init() ;
+
+		//exit(0);
 //cout<<"AA"<<endl;
 	/*--- post-processing module ---*/
 		boost::shared_ptr<CPost> post ;
