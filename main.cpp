@@ -62,6 +62,7 @@ int main( int argc, char * argv[] )
 		boost::shared_ptr<CConfig> Config ;
 		Config = boost::shared_ptr<CConfig> ( new CConfig ) ;
 		Config->Init( argv[1] ) ;
+		Config->CasePath = argv[1] ;
 
 
 	/* Initial the ultraMPP object. */
@@ -100,6 +101,14 @@ int main( int argc, char * argv[] )
 	Var = boost::shared_ptr<CVariable> ( new CVariable ) ;
 	Var->Init( mesh , Config ) ;
 	Var->Calculate_LSQ_Coeff_Scalar( mesh ) ;
+	
+		// boost::shared_ptr<CHelmholtz> Helmholtz ;
+  //   Helmholtz = boost::shared_ptr<CHelmholtz> ( new CHelmholtz ) ;
+  //   Helmholtz->Init( Config ) ;
+
+		// Helmholtz->SOLVE( Config, Var ) ;
+  //   exit(0);
+
 
 	/*--- Poisson solver ---*/
 	boost::shared_ptr<CPoisson> poisson_solver ;
@@ -166,12 +175,7 @@ int main( int argc, char * argv[] )
 		electron_energy_solver = boost::shared_ptr<CEnergyDensity> ( new CEnergyDensity ) ;
 		electron_energy_solver->Init( mesh, Config, 0 ) ;
 
-		boost::shared_ptr<CHelmholtz> Helmholtz ;
-    Helmholtz = boost::shared_ptr<CHelmholtz> ( new CHelmholtz ) ;
-    Helmholtz->Init() ;
 
-		//exit(0);
-//cout<<"AA"<<endl;
 	/*--- post-processing module ---*/
 		boost::shared_ptr<CPost> post ;
 		post = boost::shared_ptr<CPost> ( new CPost ) ;

@@ -4,24 +4,15 @@
 #include <iomanip>
 #include <sstream>
 #include <string.h>
-//#include <metis.h>
 #include <algorithm>
 #include <fstream>
-//#include <set>
-//#include "main.h"
 #include "PFM.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-
-//#include "PETSc_solver.h"
-
-//#include "domain.h"
 #include "domain_structure.hpp"
 #include "variable_structure.hpp"
 #include "config_structure.hpp"
-
-//#include "scalar.h"
 
 using namespace std;
 

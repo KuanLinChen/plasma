@@ -172,6 +172,10 @@ class CVariable
 	double *Kappa ;				  /*!< \brief the variable for ion energy. */
 	double *Beta ;          /*!< \brief For Correct Ion sound Speed */ 
 	double *plot_var, *avg_plot_var ;
+
+	double *Sph ;  /*!< \brief Photo ionization source term. */ 
+
+
 	void UltraMPPAvgVarInit() ;
 	double *AvgPotential,   /*!< \brief cycle-averaged potential */
 				 *AvgEx,          /*!< \brief cycle-averaged electric fields in X-dir. */ 

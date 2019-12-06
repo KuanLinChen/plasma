@@ -372,6 +372,8 @@ void CVariable::UltraMPPVarInit()
 
 		VarTag["plot_var"] = plasma.set_parallel_cell_data( &plot_var, "plot_var" ) ;
 		VarTag["MPI_ID"  ] = plasma.set_parallel_cell_data(   &MPI_ID,   "MPI_ID" ) ;
+		
+		VarTag["Sph"  ] = plasma.set_parallel_cell_data(   &Sph,   "Sph" ) ;
 	
 		//---------Variable definition of ICP simulation ---------------------------
 		/*
