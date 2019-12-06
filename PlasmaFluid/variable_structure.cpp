@@ -76,9 +76,7 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 
 	// /*--- If electron energy loss term is calculate from file ---*/
 	// if ( config->eEnergyLossFile.size() > 0 ) {
-
 	// 	eEnergyLossTable.Init( config->CasePath+"eEnergyLoss.inp" ) ;
-
 	// }
 
 	/*------*/
@@ -180,7 +178,7 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
     	}
 		//cout<<"Variable: Mobi. & Diff. mpa initialzation"<<endl ; exit(1) ;
 
-		MPI_ID.initial ( "MPI_ID" ) ;
+		// MPI_ID.initial ( "MPI_ID" ) ;
 		DebyeLength.initial ( "λ<sub>D</sub>/L" ) ;
 		AvgDebyeLength.initial ( "λ<sub>D</sub>/L" ) ;
 
@@ -310,7 +308,7 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 				GradT[iSpecies][ i ].initial( "GradT["+to_string(i)+"]_"+config->Species[ iSpecies ].Name ) ;			
 			}
 		} 
-		Beta.initial( "β" ) ;
+		//Beta.initial( "β" ) ;
 
 		/*--- Current density ---*/	
 		CondJD 	= new CScalar *[ config->ChargeSpeciesNum ] ;
@@ -370,8 +368,10 @@ void CVariable::UltraMPPVarInit()
 		VarTag["Emag"] = plasma.set_parallel_cell_data( &Emag, "Emag" ) ;
 
 		VarTag["Kappa"] = plasma.set_parallel_cell_data( &Kappa, "kappa" ) ;
+		VarTag["Beta" ] = plasma.set_parallel_cell_data(  &Beta,  "Beta" ) ;
 
 		VarTag["plot_var"] = plasma.set_parallel_cell_data( &plot_var, "plot_var" ) ;
+		VarTag["MPI_ID"  ] = plasma.set_parallel_cell_data(   &MPI_ID,   "MPI_ID" ) ;
 	
 		//---------Variable definition of ICP simulation ---------------------------
 		/*
@@ -444,7 +444,7 @@ void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_
 
 		TotalNumberDensity[ i ] = 0.0 ;
 
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA  ){
 
 			for ( int jSpecies = 0; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 
@@ -472,7 +472,7 @@ void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_
 	double Internal_E=0.0, Kinetic_E=0.0 ;
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 		Cell_i  = plasma.get_cell( i ) ;
-		if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+		if( cell_type[ Cell_i->type ] == PLASMA  ) {
 
 			for ( int jSpecies = 0; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 
@@ -504,8 +504,7 @@ void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_
 		U4[ jSpecies ] = U4[ jSpecies ] ;
 		 T[ jSpecies ] =  T[ jSpecies ] ;
 	}
-	Beta = Beta ;
-	//cout<<"UpdateSolution"<<endl;
+	plasma.syn_parallel_cell_data( VarTag["Beta"] );
 	UpdateSolution( m ) ;
 }
 void CVariable::CalTotalPressure( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
@@ -530,7 +529,7 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 
 		Cell_i  = plasma.get_cell( i ) ;
 
-		if (plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA ){
 
 			TotalNumberDensity[ i ] = 0.0 ;
 
@@ -547,7 +546,7 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 
 		Cell_i  = plasma.get_cell( i ) ;
 
-		if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+		if( cell_type[ Cell_i->type ] == PLASMA  ) {
 			for ( int iSpecies = 0 ; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) {
 
 				if( iSpecies == 0 )	{
@@ -621,9 +620,9 @@ void CVariable::UltraMPPComputeReducedElectricField()
 	double E=0.0 ;
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell *cell = plasma.get_cell( i ) ;
+		Cell *Cell_i = plasma.get_cell( i ) ;
 
-		if ( cell_type[ cell->type ] == PLASMA ) {
+		if ( cell_type[ Cell_i->type ] == PLASMA ) {
 			Emag[ i ] = sqrt ( Ex[ i ]*Ex[ i ] + Ey[ i ]*Ey[ i ] )*Ref_EField+ZERO ;
 			Etd[ i ] = Emag[ i ]/TotalNumberDensity[ i ]/(1.0E-21) ; 
 		}
@@ -741,7 +740,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 		case 5:// This is for N*De = value ;
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if( cell_type[ Cell_i->type ] == PLASMA ) {
 					Mobi[ 0 ][ i ] = config->Species[ 0 ].MobilityValue/TotalNumberDensity[i] ;
 					//cout<<"NTot: "<<TotalNumberDensity[i]<<endl<<endl;
 					//cout<<config->Species[ 0 ].MobilityValue<<endl;
@@ -752,7 +751,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			MobilityIter = MobilityMap.find( 0 ) ;
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if( cell_type[ Cell_i->type ] == PLASMA ) {
 					Mobi[ 0 ][ i ] = MobilityIter->second.GetValueLog( Emag[ i ] ) ;
 				}
 			}
@@ -769,7 +768,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if (plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if (cell_type[ Cell_i->type ] == PLASMA ) {
 
 					E_Td = Etd[ i ] ;
 					if ( E_Td < 1.0 ) E_Td = 1.0 ;
@@ -784,7 +783,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if( cell_type[ Cell_i->type ] == PLASMA ) {
 					P_torr = TotalGasPressure[ i ] ;
 					Mobi[ 0 ][ i ] = 30.0/P_torr ;
 				}
@@ -794,7 +793,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 		case 10://Air
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if( cell_type[ Cell_i->type ] == PLASMA ) {
 					Etd_Min = 2.4E+6/TotalNumberDensity[i]/1.E-21 ;
 					E_Td = Etd[ i ] ;
 					if( E_Td < Etd_Min ) E_Td = Etd_Min ; 
@@ -828,21 +827,21 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 		case 0:
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) 
+				if( cell_type[ Cell_i->type ] == PLASMA ) 
 					Diff[ 0 ][ i ] = config->Species[ 0 ].DiffusivityValue ;
 			}
 			break;
 		case 1://Einstein relation
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) Diff[ 0 ][ i ] = T[ 0 ][ i ]*Mobi[ 0 ][ i ] ;
+				if( cell_type[ Cell_i->type ] == PLASMA ) Diff[ 0 ][ i ] = T[ 0 ][ i ]*Mobi[ 0 ][ i ] ;
 			}
 			break;
 		case 2://Diffusion calculate from electron temperature table.
 				DiffusivityIter = DiffusivityMap.find( 0 ) ;
 				for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 					Cell_i  = plasma.get_cell( i ) ;
-					if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) Diff[ 0 ][ i ] = DiffusivityIter->second.GetValue( T[ 0 ][ i ] )/TotalNumberDensity[i] ;
+					if( cell_type[ Cell_i->type ] == PLASMA ) Diff[ 0 ][ i ] = DiffusivityIter->second.GetValue( T[ 0 ][ i ] )/TotalNumberDensity[i] ;
 					//cout<<"Diff: "<<Diff[ 0 ][ i ]<<endl;
 				}
 				//exit(1) ;
@@ -851,20 +850,20 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 				DiffusivityIter = DiffusivityMap.find( 0 ) ;
 				for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 					Cell_i  = plasma.get_cell( i ) ;
-					if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) Diff[ 0 ][ i ] = DiffusivityIter->second.GetValue( Etd[ i ] )/TotalNumberDensity[i] ;
+					if( cell_type[ Cell_i->type ] == PLASMA ) Diff[ 0 ][ i ] = DiffusivityIter->second.GetValue( Etd[ i ] )/TotalNumberDensity[i] ;
 				}
 			break;
 		case 4:
 				DiffusivityIter = DiffusivityMap.find( 0 ) ;
 				for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 					Cell_i  = plasma.get_cell( i ) ;
-					if(plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" )Diff[ 0 ][ i ] = DiffusivityIter->second.GetValueLog( Etd[ i ] ) ;
+					if(cell_type[ Cell_i->type ] == PLASMA )Diff[ 0 ][ i ] = DiffusivityIter->second.GetValueLog( Etd[ i ] ) ;
 				}
 			break;
 		case 5://this is for N*De = value ;
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if( cell_type[ Cell_i->type ] == PLASMA ) {
 					Diff[ 0 ][ i ] = config->Species[ 0 ].DiffusivityValue/TotalNumberDensity[i] ;
 				}
 			}
@@ -873,7 +872,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 				DiffusivityIter = DiffusivityMap.find( 0 ) ;
 				for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 					Cell_i  = plasma.get_cell( i ) ;
-					if(plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" )
+					if(cell_type[ Cell_i->type ] == PLASMA )
 						Diff[ 0 ][ i ] = DiffusivityIter->second.GetValueLog( Emag[ i ] ) ;
 				}
 			break;
@@ -884,7 +883,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 		case 8://Nishida: Einstein relation
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if(plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+				if(cell_type[ Cell_i->type ] == PLASMA ){
 					Diff[ 0 ][ i ] = T[ 0 ][ i ]*Mobi[ 0 ][ i ] ;
 					//cout<<Diff[0][i]<<endl;
 				}
@@ -894,7 +893,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 		case 9://Ward: Einstein relation
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if(plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+				if(cell_type[ Cell_i->type ] == PLASMA ){
 					Diff[ 0 ][ i ] = T[ 0 ][ i ]*Mobi[ 0 ][ i ] ;
 				}
 			}
@@ -903,7 +902,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 		case 10:
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
-				if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if( cell_type[ Cell_i->type ] == PLASMA ) {
 					Etd_Min = 2.4E+6/TotalNumberDensity[i]/1.E-21 ;
 					E_Td = Etd[ i ] ;
 					if( E_Td < Etd_Min ) E_Td = Etd_Min ; 
@@ -933,7 +932,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 	/*--- Normalize ---*/
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 		Cell_i  = plasma.get_cell( i ) ;
-		if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+		if( cell_type[ Cell_i->type ] == PLASMA ) {
 			// cout<<"Mu: "<<Mobi[ 0 ][ i ]<<endl ;
 			// cout<<" D: "<<Diff[ 0 ][ i ]<<endl ;
 			Diff[ 0 ][ i ] /= Ref_Diff ;
@@ -962,7 +961,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					if( config->Species[ iSpecies ].ConstantMobilityUpdate == false ) {
 						for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 							Cell_i  = plasma.get_cell( i ) ;
-							if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+							if( cell_type[ Cell_i->type ] == PLASMA ) {
 								Mobi[ iSpecies ][ i ] = config->Species[ iSpecies ].MobilityValue ;
 							}
 						}
@@ -977,7 +976,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					MobilityIter = MobilityMap.find( iSpecies ) ;
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {
 							Mobi[ iSpecies ][ i ] = MobilityIter->second.GetValueLog( Emag[ i ] ) ;
 						}
 					}
@@ -987,7 +986,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					MobilityIter = MobilityMap.find( iSpecies ) ;
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {
 						 Mobi[ iSpecies ][ i ] = MobilityIter->second.GetValueLog( Etd[ i ] )/TotalNumberDensity[i] ;
 						}
 					}
@@ -997,7 +996,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					MobilityIter = MobilityMap.find( iSpecies ) ;
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {
 							Mobi[ iSpecies ][ i ] = MobilityIter->second.GetValueLog( Etd[ i ] ) ;
 						}
 					}
@@ -1005,7 +1004,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 				case 5:
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {
 							Mobi[ iSpecies ][ i ] = config->Species[ iSpecies ].MobilityValue/TotalNumberDensity[i] ;
 							//cout<<"NTot: "<<TotalNumberDensity[i]<<endl<<endl;
 						}
@@ -1017,7 +1016,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
 						value = MobilityIter->second.GetValueLog( Etd[ i ] ) ;
-						if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if( cell_type[ Cell_i->type ] == PLASMA ) {
 							Mobi[ iSpecies ][ i ] = value*(760.0/config->P_back)*(config->T_back/273.16) ;
 						}
 					}
@@ -1037,7 +1036,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 	          for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 	          	Cell_i  = plasma.get_cell( i ) ;
 
-	            if (plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+	            if (cell_type[ Cell_i->type ] == PLASMA ) {
 	             		P_torr = TotalGasPressure[ i ] ;
 		             	E = sqrt ( Ex[i]*Ex[i] + Ey[i]*Ey[i] + Ez[i]*Ez[i] )*0.01 ;
 		              EoverP = E/P_torr ; // unit: cm
@@ -1057,7 +1056,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 						Cell_i  = plasma.get_cell( i ) ;
-						if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if( cell_type[ Cell_i->type ] == PLASMA ) {
 							C1 = 6.6E-19*( 0.25*T[0][i] - 0.1 ) ;
 							//C2 = 1.0+pow( 0.25*T[0][i], 1.6 ) ;
 							Thermal = sqrt( 2.0*Qe*Ref_Qe*T[1][i]/PI/config->Species[ 1 ].Mass_Kg ) ;
@@ -1088,7 +1087,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					if( config->Species[ iSpecies ].ConstantDiffusivityUpdate == false ){
 						for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 							Cell_i  = plasma.get_cell( i ) ;
-							if (plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+							if (cell_type[ Cell_i->type ] == PLASMA ) {
 								Diff[ iSpecies ][ i ] = config->Species[ iSpecies ].DiffusivityValue ;
 							}
 						}
@@ -1098,7 +1097,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 				case 1:
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {
 							Diff[ iSpecies ][ i ] = Mobi[ iSpecies ][ i ]*T[iSpecies][i] ;
 						}
 					}
@@ -1110,7 +1109,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					DiffusivityIter = DiffusivityMap.find( iSpecies ) ;
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {
 							Diff[ iSpecies ][ i ] = DiffusivityIter->second.GetValueLog( T[ 0 ][ i ] )/TotalNumberDensity[i] ;
 						}
 					}
@@ -1119,7 +1118,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					DiffusivityIter = DiffusivityMap.find( iSpecies ) ;
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {
 							Diff[ iSpecies ][ i ] = DiffusivityIter->second.GetValueLog( Etd[ i ] ) ;
 						}
 					}
@@ -1127,7 +1126,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 				case 5:
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {
 							Diff[ iSpecies ][ i ] = config->Species[ iSpecies ].DiffusivityValue/TotalNumberDensity[i] ;
 						}
 					}
@@ -1144,7 +1143,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 				case 9:
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {//@ 1Torr, 300 k
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {//@ 1Torr, 300 k
 							P_torr = TotalGasPressure[ i ] ;
 							Diff[ iSpecies ][ i ] = (2.0E2/P_torr)*(1.E-4) ;
 						}
@@ -1153,7 +1152,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 				case 10:
 					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 						Cell_i  = plasma.get_cell( i ) ;
-						if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {//@ 1Torr, 300 k
+						if ( cell_type[ Cell_i->type ] == PLASMA ) {//@ 1Torr, 300 k
 							P_torr = TotalGasPressure[ i ] ;
 							//cout<<P_torr<<endl;
 							Diff[ iSpecies ][ i ] = (82.992/P_torr)*(1.E-4) ;
@@ -1173,7 +1172,7 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 
 			/*--- Normalize ---*/
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
-				if (plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+				if (cell_type[ Cell_i->type ] == PLASMA ) {
 					// cout<<"Mu: "<<Mobi[ iSpecies ][ i ]<<endl ;
 					// cout<<" D: "<<Diff[ iSpecies ][ i ]<<endl ;
 					Diff[ iSpecies ][ i ] /= Ref_Diff ;
@@ -1294,14 +1293,14 @@ void CVariable::CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost:
 		Cell_i->face_number 	 = Cell_i->face_number ;
 	
 		/*--- Loop over electrode cells ---*/
-		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" or  plasma.get_cell_typename( Cell_i->data_id ) == "DIELECTRIC" ){
+		if ( cell_type[ Cell_i->type ] == PLASMA or  cell_type[ Cell_i->type ] == DIELECTRIC ){
 
 			/*--- Loop over bulk faces ---*/
 			for( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
 				j = m->PFM_CELL[ i ][ k ].NeighborCellId ;
 
-				if ( plasma.get_cell_typename( Cell_i->data_id ) == "POWER" ){
+				if ( cell_type[ Cell_i->type ] == POWER ){
 
 					I_PowerElectrode_local  += ( TotalJD[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].Af[ 0 ]
 										 	+ 	 TotalJD[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].Af[ 1 ] ) ;
@@ -1314,7 +1313,7 @@ void CVariable::CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost:
 										 			 	 				+  CondJD[iSpecies][1][ i ]*m->PFM_CELL[ i ][ k ].Af[1] ) ;
 					}
 
-				} else if ( plasma.get_cell_typename( Cell_i->data_id ) == "GROUND" ){
+				} else if ( cell_type[ Cell_i->type ] == GROUND ){
 
 					I_GroundElectrode_local += ( TotalJD[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].Af[0]
 										 	+  	 TotalJD[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].Af[1] ) ;
@@ -1334,7 +1333,7 @@ void CVariable::CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost:
 			for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
 
-				if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "POWER" ){
+				if ( cell_type[ Cell_i->type ] == POWER ){
 
 					I_PowerElectrode_local  += ( TotalJD[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].Af[0]
 										 	 +   TotalJD[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].Af[1] ) ;
@@ -1347,7 +1346,7 @@ void CVariable::CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost:
 										 					   +   CondJD[iSpecies][ 1 ][ i ]*m->PFM_CELL[ i ][ k ].Af[1] ) ;
 					}
 
-				}else if( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "GROUND" ){
+				}else if( cell_type[ Cell_i->type ] == GROUND ){
 
 					I_GroundElectrode_local += ( TotalJD[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].Af[0]
 										 		+TotalJD[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].Af[1] ) ;
@@ -1411,8 +1410,7 @@ void CVariable::Alpha_Beta( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 
 		}
 	}//Loop over all cells
-
-	Beta = Beta ;
+	plasma.syn_parallel_cell_data( VarTag["Beta"] );
 }
 void CVariable::Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m )
 {

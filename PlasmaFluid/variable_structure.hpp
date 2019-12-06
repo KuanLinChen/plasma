@@ -158,17 +158,20 @@ class CVariable
 	map<string,int> VarTag ;
 
 	variable_set Potential ;/*!< \brief potential */
+
 	double *ChargeDen,      /*!< \brief net charge density */ 
 				 *eps,            /*!< \brief Material permittivity */ 
 				 *eps_eff ;       /*!< \brief Effective permittivity for semi-implicit poissiony */ 
+
 	double *Ex, *PreEx,     /*!< \brief current & previous Electric fields in X-dir. */ 
 	       *Ey, *PreEy,     /*!< \brief current & previous Electric fields in Y-dir. */ 
 	       *Ez, *PreEz,     /*!< \brief current & previous Electric fields in Z-dir. */ 
 				 *Etd,            /*!< \brief reduce Electric fields in unit: Td */ 
 				 *Emag ;          /*!< \brief Electric fields magnitude */ 
-	double *Kappa ;				  /*!< \brief the variable for modified sound speed. See My IEEE paper. */
+	double *MPI_ID ;
+	double *Kappa ;				  /*!< \brief the variable for ion energy. */
+	double *Beta ;          /*!< \brief For Correct Ion sound Speed */ 
 	double *plot_var, *avg_plot_var ;
-
 	void UltraMPPAvgVarInit() ;
 	double *AvgPotential,   /*!< \brief cycle-averaged potential */
 				 *AvgEx,          /*!< \brief cycle-averaged electric fields in X-dir. */ 
@@ -207,9 +210,8 @@ class CVariable
 	CScalar *DD_Convection ;/*!< \brief Drift-Diffusion Approximation convection term (for semi-implicit poisson's eqnuation). */ 
 
 	CScalar TotalNumberDensity ;
-	CScalar MPI_ID ;
 	CScalar *Debug ;
-	CScalar Beta ;/*!< \brief For Correct Ion sound Speed */ 
+	//CScalar Beta ;/*!< \brief For Correct Ion sound Speed */ 
 	double Ramp_factor ;
 	CScalar  *T,  *AvgT,  *PreT ;/*!< \brief Present, cycle-averaged and Previoud time temperature. */ 
 	CScalar *U0, *AvgU0, *PreU0 ;/*!< \brief Present, cycle-averaged and Previoud time number density. */ 
