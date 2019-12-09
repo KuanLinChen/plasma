@@ -12,6 +12,7 @@
 // #include "variable_structure_NS.hpp"
 // #include "PETSc_solver.h"
 #define Debug false
+#define Helmholtz_Module false
 using namespace std ;
 int mpi_size, /*!< \brief The number of processes. */
 		mpi_rank ;/*!< \brief The rank(id) of the process. */
@@ -101,13 +102,14 @@ int main( int argc, char * argv[] )
 	Var = boost::shared_ptr<CVariable> ( new CVariable ) ;
 	Var->Init( mesh , Config ) ;
 	Var->Calculate_LSQ_Coeff_Scalar( mesh ) ;
-	
-		// boost::shared_ptr<CHelmholtz> Helmholtz ;
-  //   Helmholtz = boost::shared_ptr<CHelmholtz> ( new CHelmholtz ) ;
-  //   Helmholtz->Init( Config ) ;
 
-		// Helmholtz->SOLVE( Config, Var ) ;
-  //   exit(0);
+	#if ( Helmholtz_Module == true ) 		
+		boost::shared_ptr<CHelmholtz> Helmholtz ;
+    Helmholtz = boost::shared_ptr<CHelmholtz> ( new CHelmholtz ) ;
+    Helmholtz->Init( Config ) ;
+		Helmholtz->SOLVE( Config, Var ) ;
+    //exit(0);
+  #endif
 
 
 	/*--- Poisson solver ---*/

@@ -186,17 +186,10 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 		AvgCFL.initial ( "CFL" ) ;
 
 	/*--- Electrical Field Variables ---*/
-		//Phi.initial ( "Φ [V]" ) ;
-
 
 		UltraMPPVarInit()	;
 
 		UltraMPPAvgVarInit() ;
-
-	//	for ( auto mpp = VarTag.cbegin(); mpp != VarTag.cend(); ++mpp ) {
-		//	cout<<mpp->first<<"\t"<<mpp->second<<endl;
-		//}
-		//exit(0);
 
 
 	/* End UltraMPP Variables */
@@ -339,10 +332,6 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 
 
 	/*--- Material Properties ---*/
-		Eps .initial( "Effective ε" ) ;
-		Eps0.initial( "ε" ) ;
-		NetQ.initial( "NetQ" ) ;
-		CellProperties( m ) ; Eps0 =Eps0 ;
 		if( mpi_rank == MASTER_NODE ) cout<<"End buliding variable module ... "<<endl;
 
 }
@@ -407,25 +396,6 @@ void CVariable::UltraMPPInitialCellParameter()
     eps[ cth ] = cell_parameter[ cell->Typename ] * vacuum_permittivity ;
   }
   plasma.syn_parallel_cell_data( VarTag["permittivity"] );
-}
-void CVariable::CellProperties( boost::shared_ptr<CDomain> &m )
-{
-
-	Cell *Cell_i ;
-
-	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
-
-		Cell_i  = plasma.get_cell( i ) ;
-
-		if 			( cell_type[ Cell_i->type ] == PLASMA     ) Eps0[ i ] = 1.0*vacuum_permittivity/Ref_Eps ;
-		else if ( cell_type[ Cell_i->type ] == POWER      ) Eps0[ i ] = 1.0E+10 /Ref_Eps ;
-		else if ( cell_type[ Cell_i->type ] == GROUND     ) Eps0[ i ] = 1.0E+10 /Ref_Eps ;
-		else if ( cell_type[ Cell_i->type ] == DIELECTRIC ) Eps0[ i ] = 4.0*vacuum_permittivity/Ref_Eps ;
-		Eps[ i ] = Eps0[ i ] ;
-
-	}
-	Eps0 = Eps0 ;
-	Eps  = Eps  ;
 }
 void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {

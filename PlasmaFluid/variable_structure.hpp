@@ -110,12 +110,6 @@ class CVariable
 	void Init( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> & ) ;
 
 	/*! 
-	 * \brief Bulid the cell perperties.
-	 * \param[in] domain - Name of the file with the grid information.
-	 */
-	void CellProperties	( boost::shared_ptr<CDomain> & ) ;
-
-	/*! 
 	 * \brief Initial the solution variable array.
 	 * \param[in] domain - Name of the file with the grid information.
 	 * \param[in] config - Definition of the particular problem.
@@ -240,15 +234,6 @@ class CVariable
 
 	CScalar DebyeLength, AvgDebyeLength ;/*!< \brief DebyeLength. */ 
 	CScalar CFL, AvgCFL ;/*!< \brief DebyeLength. */ 
-
-
-	CScalar Eps,/*!< \brief Effective permittivity for semi-implicit poissiony */ 
-		   Eps0 ;/*!< \brief Material permittivity */ 
-
-
-
-
-	CScalar NetQ ; /*!< \brief Net charged density for poisson source term */ 
 
 	/*--- Chemistry Module ---*/
 	chemistry Chemistry ;
