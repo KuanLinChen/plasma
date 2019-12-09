@@ -13,6 +13,7 @@
 // #include "PETSc_solver.h"
 #define Debug false
 #define Helmholtz_Module false
+#define POISSON_KL true
 using namespace std ;
 int mpi_size, /*!< \brief The number of processes. */
 		mpi_rank ;/*!< \brief The rank(id) of the process. */
@@ -188,7 +189,11 @@ int main( int argc, char * argv[] )
  	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
  		//cout<<"A1"<<endl;
- 		poisson_solver->SOLVE( Config, Var ) ;
+ 		#if( POISSON_KL == true )
+ 			poisson_solver->SOLVE_TEST( Config, Var ) ;
+ 		#else
+ 			poisson_solver->SOLVE( Config, Var ) ;
+ 		#endif
  		//cout<<"A2"<<endl;
 
 	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
@@ -279,16 +284,20 @@ int main( int argc, char * argv[] )
 						fluid_model_solver[ iEqn ]->Solve_Continuity( mesh, Config, Var ) ;
 					}
 				}
-	 				#if (Debug == true ) 
-	 					PetscPrintf( PETSC_COMM_WORLD, " Predtic the ion number density...\n" ) ;
-	 				#endif				
+					#if (Debug == true ) 
+						PetscPrintf( PETSC_COMM_WORLD, " Predtic the ion number density...\n" ) ;
+					#endif				
 
 
 				/* Solve for potential and electric field. */
- 				poisson_solver->SOLVE( Config, Var ) ;
-	 				#if (Debug == true ) 
-	 					PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;
-	 				#endif
+				#if( POISSON_KL == true )
+					poisson_solver->SOLVE_TEST( Config, Var ) ;
+				#else
+					poisson_solver->SOLVE( Config, Var ) ;
+				#endif
+					#if (Debug == true ) 
+						PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;
+					#endif
 
 				/* Solve number density using D-D approximation for next time step (n+1). */
 				for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
@@ -306,10 +315,10 @@ int main( int argc, char * argv[] )
 				
 				/* Solve for potential and electric field. */
 				/*
- 				FD_maxwell_solver->SOLVE( Config, Var ) ;
-	 				#if (Debug == true ) 
-	 					PetscPrintf( PETSC_COMM_WORLD, "FD_maxwell_solver done...\n" ) ;
-	 				#endif */
+				FD_maxwell_solver->SOLVE( Config, Var ) ;
+					#if (Debug == true ) 
+						PetscPrintf( PETSC_COMM_WORLD, "FD_maxwell_solver done...\n" ) ;
+					#endif */
 
 				Var->CalculateElectrodeCurrent( mesh, Config ) ;
 
@@ -339,8 +348,8 @@ int main( int argc, char * argv[] )
 				}
 
 				/* Output instantaneous flow field data */
- 				if( WRT_INS ) 
- 					post->OutputFlow( mesh, Config, Var, MainCycle, MainStep ) ;
+				if( WRT_INS ) 
+					post->OutputFlow( mesh, Config, Var, MainCycle, MainStep ) ;
 
 				/* Calculate cycle average data. */
 				if( WRT_CYC_AVG ) {
@@ -348,7 +357,7 @@ int main( int argc, char * argv[] )
 				}
 				Var->AddAverage_PowerAbs( mesh, Config ) ;
 				Var->AddAverage_Electrode( mesh, Config ) ;
- 				Var->PhysicalTime += Var->Dt ;
+				Var->PhysicalTime += Var->Dt ;
 
 			}//End Main Step
 		//cout<<"A2"<<endl; exit(1) ;
@@ -356,10 +365,10 @@ int main( int argc, char * argv[] )
 
 			if ( MainCycle % 50 == 0 ){
 				for ( Iter=Config->ElectricalMap.begin() ; Iter!=Config->ElectricalMap.end() ; ++Iter ) {
-    				if ( Iter->first == POWER and fabs(Var->I_AvgPowerElectrode) > 5.E-5 ) {
-	    				//Iter->second.BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
-    					//BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
-    				}
+					if ( Iter->first == POWER and fabs(Var->I_AvgPowerElectrode) > 5.E-5 ) {
+						//Iter->second.BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
+						//BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
+					}
 				}
 			}
 

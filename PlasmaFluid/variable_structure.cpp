@@ -194,12 +194,6 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 
 	/* End UltraMPP Variables */
 
-
-
-		 //Scalar eEnergyLoss, eAvgEnergyLoss ;
-		eEnergyLoss.initial ( "ε_Loss" ) ;
-		eAvgEnergyLoss.initial ( "ε_Loss" ) ;
-
 		TotalNumberDensity.initial ( "Total Number Density" ) ;
 
 		for ( int nDim = 0 ; nDim < 3 ; nDim++ ) {
@@ -361,8 +355,10 @@ void CVariable::UltraMPPVarInit()
 
 		VarTag["plot_var"] = plasma.set_parallel_cell_data( &plot_var, "plot_var" ) ;
 		VarTag["MPI_ID"  ] = plasma.set_parallel_cell_data(   &MPI_ID,   "MPI_ID" ) ;
-		
-		VarTag["Sph"  ] = plasma.set_parallel_cell_data(   &Sph,   "Sph" ) ;
+
+		VarTag["Sph"  ] = plasma.set_parallel_cell_data(   &Sph,   "Sph" ) ;	
+
+		VarTag["eEnergyLoss"] = plasma.set_parallel_cell_data(   &eEnergyLoss,   "eEnergyLoss" ) ;
 	
 		//---------Variable definition of ICP simulation ---------------------------
 		/*
@@ -387,6 +383,7 @@ void CVariable::UltraMPPAvgVarInit()
 	VarTag["AvgEx"  ] = plasma.set_parallel_cell_data(   &AvgEx, "Ex [V/m]" ) ;
 	VarTag["AvgEy"  ] = plasma.set_parallel_cell_data(   &AvgEy, "Ey [V/m]" ) ;
 	VarTag["AvgEz"  ] = plasma.set_parallel_cell_data(   &AvgEz, "Ez [V/m]" ) ;
+	VarTag["eAvgEnergyLoss"] = plasma.set_parallel_cell_data( &eAvgEnergyLoss, "eAvgEnergyLoss" ) ;
 	VarTag["avg_plot_var"] = plasma.set_parallel_cell_data( &avg_plot_var, "avg_plot_var" ) ;
 }
 void CVariable::UltraMPPInitialCellParameter()
@@ -1160,8 +1157,6 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 void CVariable::ResetAvgZero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
 
-	eAvgEnergyLoss.zero() ;
-
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) 
 	{
 		AvgPotential[ i ] = 0.0 ;
@@ -1169,6 +1164,7 @@ void CVariable::ResetAvgZero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 		       AvgEy[ i ] = 0.0 ;
 		       AvgEz[ i ] = 0.0 ;
 		avg_plot_var[i] = 0.0 ;
+		eAvgEnergyLoss[i] = 0.0 ;
 	}
 
 	if ( plasma.Mesh.ndim == 3 ) {	
@@ -1192,10 +1188,10 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 {
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ )  {
 		AvgPotential[ i ] += Potential.current[ i ] / config->StepPerCycle ;
-		AvgEx[ i ]        +=                Ex[ i ] / config->StepPerCycle ;
-		AvgEy[ i ]        +=                Ey[ i ] / config->StepPerCycle ;
-		eAvgEnergyLoss[ i ] += eEnergyLoss[ i ]/config->StepPerCycle ;
-		avg_plot_var[ i ] += avg_plot_var[ i ]/config->StepPerCycle ;
+		AvgEx[ i ]        +=             Ex[ i ] / config->StepPerCycle ;
+		AvgEy[ i ]        +=             Ey[ i ] / config->StepPerCycle ;
+		eAvgEnergyLoss[ i ] +=  eEnergyLoss[ i ] / config->StepPerCycle ;
+		avg_plot_var  [ i ] += avg_plot_var[ i ] / config->StepPerCycle ;
 	}
 	if( plasma.Mesh.ndim == 3 ) {	
 		for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {

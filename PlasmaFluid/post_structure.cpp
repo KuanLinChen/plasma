@@ -89,7 +89,7 @@ void CPost::OutputAverageFlow( boost::shared_ptr<CConfig> &config, boost::shared
 	plasma.set_output( var->VarTag["AvgEz"] ) ;
 
 
-	plasma.set_output( var->eAvgEnergyLoss.data_id ) ;
+	plasma.set_output( var->VarTag["eAvgEnergyLoss"] ) ;
 	
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var-> AvgT[ iSpecies ].data_id ) ;
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU0[ iSpecies ].data_id ) ;

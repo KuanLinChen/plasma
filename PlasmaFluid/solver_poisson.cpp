@@ -258,7 +258,7 @@ void CPoisson::MatA_SourceB( boost::shared_ptr<CConfig> &config, boost::shared_p
 							/( var->eps_eff[ j ]*( Cell_i->face[k]->dr_c2f[    cell_index] ) 
 							+  var->eps_eff[ i ]*( Cell_i->face[k]->dr_c2f[1 - cell_index] ) ) ;
 
-				Ad_dPN = HarmonicMean * ( Cell_i->face[k]->dA ) ;
+				Ad_dPN = HarmonicMean * ( Cell_i->face[k]->dA ) / var->eps_eff[ i ] ;
 
 
 				plasma.add_entry_in_matrix( i, Cell_i->id, -Ad_dPN ) ;
@@ -271,7 +271,7 @@ void CPoisson::MatA_SourceB( boost::shared_ptr<CConfig> &config, boost::shared_p
 		/*--------------------------------------------------------------*/
 			for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-				Ad_dPN = var->eps_eff[ i ]/(Cell_i->face[k]->dr_c2c)*(Cell_i->face[k]->dA) ;
+				Ad_dPN = var->eps_eff[ i ]/(Cell_i->face[k]->dr_c2c)*(Cell_i->face[k]->dA) / var->eps_eff[ i ]  ;
 
 				if ( face_type[ Cell_i->face[k]->type ] == NEUMANN ) {
 
@@ -294,7 +294,7 @@ void CPoisson::MatA_SourceB( boost::shared_ptr<CConfig> &config, boost::shared_p
 			}//Loop over boundary face cells
 		/*--------------------------------------------------------------*/
 		}
-		plasma.add_entry_in_source_term( i, var->ChargeDen[ i ]*Cell_i->volume ) ;
+		plasma.add_entry_in_source_term( i, var->ChargeDen[ i ]*Cell_i->volume / var->eps_eff[ i ]  ) ;
 	}//Cell Loop
 	plasma.finish_matrix_construction() ;
 	plasma.finish_source_term_construction() ;
