@@ -294,7 +294,7 @@ void CPoisson::MatA_SourceB( boost::shared_ptr<CConfig> &config, boost::shared_p
 			}//Loop over boundary face cells
 		/*--------------------------------------------------------------*/
 		}
-		plasma.add_entry_in_source_term( i, var->ChargeDen[ i ]*Cell_i->volume / var->eps_eff[ i ]  ) ;
+		plasma.add_entry_in_source_term( i, var->ChargeDen[ i ]*Cell_i->volume ) ;
 	}//Cell Loop
 	plasma.finish_matrix_construction() ;
 	plasma.finish_source_term_construction() ;
@@ -416,6 +416,7 @@ void CPoisson::SOLVE_TEST( boost::shared_ptr<CConfig> &config, boost::shared_ptr
 	its = plasma.get_iteration_number() ;
 
 	ComputeGradient( config, var ) ;
+	var->UltraMPPComputeReducedElectricField();
 	UltraMPPComputeDispCurrentDensity( var ) ;
 
 }

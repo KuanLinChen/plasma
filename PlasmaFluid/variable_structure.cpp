@@ -778,7 +778,11 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 				Cell_i  = plasma.get_cell( i ) ;
 				if( cell_type[ Cell_i->type ] == PLASMA ) {
-		 			Mobi[ 0 ][ i ] = 2.3987*pow( Emag[i], -0.26 ) ;
+					if ( Emag[i] < 5.0000000e+04 ) {
+		 				Mobi[ 0 ][ i ] = 2.3987*pow( 5.0000000e+04, -0.26 ) ;
+					}else{
+		 				Mobi[ 0 ][ i ] = 2.3987*pow( Emag[i], -0.26 ) ;
+					}
 				}
 			}
 			break;
@@ -883,7 +887,11 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
       for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
         Cell_i  = plasma.get_cell( i ) ;
         if( cell_type[ Cell_i->type ] == PLASMA ) {
-          Diff[ 0 ][ i ] = (4.3628E-3)*pow( Emag[i], 0.22 ) ;
+					if ( Emag[i] < 5.0000000e+04 ){
+          	Diff[ 0 ][ i ] = (4.3628E-3)*pow( 5.0000000e+04, 0.22 ) ;
+					} else {
+          	Diff[ 0 ][ i ] = (4.3628E-3)*pow( Emag[i], 0.22 ) ;
+					}
         }
       }
 		break;
@@ -1530,8 +1538,11 @@ void CVariable::SourceSink_PSST_2018( boost::shared_ptr<CDomain> &m, boost::shar
 		Cell *Cell_i  = plasma.get_cell( i ) ;
 
 		if ( cell_type[ Cell_i->type ] == PLASMA ) {
-		
-			alpha = (1.1944E6 + 4.3666E26/pow(Emag[i],3.0) )*exp( (-2.73E7)/Emag[i] ) ;
+			if ( Emag[i] <  5.0000000e+04 ){
+				alpha = (1.1944E6 + 4.3666E26/pow(Emag[i]5.0000000e+04,3.0) )*exp( (-2.73E7)/5.0000000e+04 ) ;
+			} else {
+				alpha = (1.1944E6 + 4.3666E26/pow(Emag[i],3.0) )*exp( (-2.73E7)/Emag[i] ) ;
+			}
 			eta   = 340.75 ;
 			alpha_eta = alpha - eta ;
 
