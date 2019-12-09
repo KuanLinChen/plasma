@@ -1538,8 +1538,10 @@ void CVariable::SourceSink_PSST_2018( boost::shared_ptr<CDomain> &m, boost::shar
 		Cell *Cell_i  = plasma.get_cell( i ) ;
 
 		if ( cell_type[ Cell_i->type ] == PLASMA ) {
+			
 			if ( Emag[i] <  5.0000000e+04 ){
-				alpha = (1.1944E6 + 4.3666E26/pow(Emag[i]5.0000000e+04,3.0) )*exp( (-2.73E7)/5.0000000e+04 ) ;
+
+				alpha = (1.1944E6 + 4.3666E26/pow(5.0000000e+04,3.0) )*exp( (-2.73E7)/5.0000000e+04 ) ;
 			} else {
 				alpha = (1.1944E6 + 4.3666E26/pow(Emag[i],3.0) )*exp( (-2.73E7)/Emag[i] ) ;
 			}
