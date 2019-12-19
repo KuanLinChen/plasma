@@ -48,7 +48,7 @@ class CFDMaxwell
 		 */	
 		void SOLVE                                  ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 
-		void UltraMPPComputeCurrentDanAndSourceTerm( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
+		void UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 		
 		void UltraMPPComputePowerAbsorptionFromMaxwell( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 		
