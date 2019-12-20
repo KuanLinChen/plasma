@@ -1,4 +1,5 @@
 #include "post_structure.hpp"
+#define FDMaxwell false
 using namespace std ;
 CPost::CPost()
 {
@@ -67,13 +68,14 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	plasma.set_output( var->Diff[ iSpecies ].data_id ) ;
 	plasma.write_output(to_string(Step)) ;
 	
-	/*
+	#if (FDMaxwell == true ) 
 	FDMaxwell_Re.set_output( "FVFD-"+to_string(Cycle)+"-"+to_string(Step) ) ;
 	FDMaxwell_Re.set_output( var->E_phi_Re.tag_current ) ;
 	FDMaxwell_Re.set_output( var->E_phi_Im.tag_current ) ;		
 	FDMaxwell_Re.set_output( var->VarTag["Power_Absorption_FVFD"   ] ) ;
 	FDMaxwell_Re.set_output( var->VarTag["permittivity_FVFD"       ] ) ;	
-	FDMaxwell_Re.write_output(to_string(Step)) ;*/
+	FDMaxwell_Re.write_output(to_string(Step)) ;
+	#endif 
 
 }
 void CPost::OutputAverageFlow( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var, int Cycle )
@@ -89,7 +91,7 @@ void CPost::OutputAverageFlow( boost::shared_ptr<CConfig> &config, boost::shared
 	plasma.set_output( var->VarTag["AvgEz"] ) ;
 
 
-	plasma.set_output( var->VarTag["eAvgEnergyLoss"] ) ;
+	plasma.set_output( var->eAvgEnergyLoss.data_id ) ;
 	
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var-> AvgT[ iSpecies ].data_id ) ;
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ ) plasma.set_output( var->AvgU0[ iSpecies ].data_id ) ;

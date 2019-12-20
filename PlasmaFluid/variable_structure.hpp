@@ -110,6 +110,12 @@ class CVariable
 	void Init( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> & ) ;
 
 	/*! 
+	 * \brief Bulid the cell perperties.
+	 * \param[in] domain - Name of the file with the grid information.
+	 */
+	void CellProperties	( boost::shared_ptr<CDomain> & ) ;
+
+	/*! 
 	 * \brief Initial the solution variable array.
 	 * \param[in] domain - Name of the file with the grid information.
 	 * \param[in] config - Definition of the particular problem.
@@ -152,29 +158,22 @@ class CVariable
 	map<string,int> VarTag ;
 
 	variable_set Potential ;/*!< \brief potential */
-
 	double *ChargeDen,      /*!< \brief net charge density */ 
 				 *eps,            /*!< \brief Material permittivity */ 
 				 *eps_eff ;       /*!< \brief Effective permittivity for semi-implicit poissiony */ 
-
 	double *Ex, *PreEx,     /*!< \brief current & previous Electric fields in X-dir. */ 
 	       *Ey, *PreEy,     /*!< \brief current & previous Electric fields in Y-dir. */ 
 	       *Ez, *PreEz,     /*!< \brief current & previous Electric fields in Z-dir. */ 
 				 *Etd,            /*!< \brief reduce Electric fields in unit: Td */ 
 				 *Emag ;          /*!< \brief Electric fields magnitude */ 
-	double *MPI_ID ;
-	double *Kappa ;				  /*!< \brief the variable for ion energy. */
-	double *Beta ;          /*!< \brief For Correct Ion sound Speed */ 
+	double *Kappa ;				  /*!< \brief the variable for modified sound speed. See My IEEE paper. */
 	double *plot_var, *avg_plot_var ;
 
-	double *Sph ;  /*!< \brief Photo ionization source term. */ 
-
-	/*--- Cycle averaged UltraMPP variables ---*/
 	void UltraMPPAvgVarInit() ;
 	double *AvgPotential,   /*!< \brief cycle-averaged potential */
-				 *AvgEx,          /*!< \brief cycle-averaged electric fields in X-dir. */ 
-				 *AvgEy,          /*!< \brief cycle-averaged electric fields in Y-dir. */ 
-				 *AvgEz ;         /*!< \brief cycle-averaged electric fields in Z-dir. */ 
+			*AvgEx,          /*!< \brief cycle-averaged electric fields in X-dir. */ 
+			*AvgEy,          /*!< \brief cycle-averaged electric fields in Y-dir. */ 
+			*AvgEz ;         /*!< \brief cycle-averaged electric fields in Z-dir. */ 
 
 	void UltraMPPInitialCellParameter() ;
 
@@ -208,8 +207,9 @@ class CVariable
 	CScalar *DD_Convection ;/*!< \brief Drift-Diffusion Approximation convection term (for semi-implicit poisson's eqnuation). */ 
 
 	CScalar TotalNumberDensity ;
+	CScalar MPI_ID ;
 	CScalar *Debug ;
-	//CScalar Beta ;/*!< \brief For Correct Ion sound Speed */ 
+	CScalar Beta ;/*!< \brief For Correct Ion sound Speed */ 
 	double Ramp_factor ;
 	CScalar  *T,  *AvgT,  *PreT ;/*!< \brief Present, cycle-averaged and Previoud time temperature. */ 
 	CScalar *U0, *AvgU0, *PreU0 ;/*!< \brief Present, cycle-averaged and Previoud time number density. */ 
@@ -234,6 +234,15 @@ class CVariable
 
 	CScalar DebyeLength, AvgDebyeLength ;/*!< \brief DebyeLength. */ 
 	CScalar CFL, AvgCFL ;/*!< \brief DebyeLength. */ 
+
+
+	CScalar Eps,/*!< \brief Effective permittivity for semi-implicit poissiony */ 
+		   Eps0 ;/*!< \brief Material permittivity */ 
+
+
+
+
+	CScalar NetQ ; /*!< \brief Net charged density for poisson source term */ 
 
 	/*--- Chemistry Module ---*/
 	chemistry Chemistry ;
@@ -278,10 +287,7 @@ class CVariable
     double Qe, PI, Me, Kb ;
 
     CTable eEnergyLossTable ;
-
-    double *eEnergyLoss, *eAvgEnergyLoss ;
-    //CScalar eEnergyLoss, eAvgEnergyLoss ;
-
+    CScalar eEnergyLoss, eAvgEnergyLoss ;
     double PhysicalTime ;/*!< \brief Physical time. */
     double Dt ;/*!< \brief Time step size. */
     /*! 
@@ -336,14 +342,16 @@ class CVariable
     //void ComputeDebyeLengthRatio_CFL( boost::shared_ptr<CDomain> &m ) ;
 		//void ComputeDebyeLengthRatio_CFL( boost::shared_ptr<CDomain> &m,  boost::shared_ptr<CConfig> &config  ) ;
 	
-	/*! 
+    /*! 
 	 * \brief Calculate Least-square coeff store in scalar.
 	 * \param[in] domain - Name of the file with the grid information.
 	 */ 
 	void Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m ) ;
 	double PN[ 3 ], Pf[ 3 ], Nf[ 3 ], PPf[ 3 ], NPf[ 3 ], fPf[ 3 ], mf[ 3 ] ;
+	CScalar Global_Id, Local_Id ;
     CScalar LSQ_Cx[6], LSQ_Cy[6], LSQ_Cz[6] ;/*!< \brief Lease-Square Coefficient using scale. LSq_C_dir[iFace][cell]. */
     double DotProduct(double *A, double *B ){
+		//cout<<"A"<<endl;
 		return A[0]*B[0] + A[1]*B[1] ;
 	};
 	CScalar Energy_Term[6], Momentum_Term[3] ;

@@ -1,4 +1,5 @@
 #include "domain_structure.hpp"
+#define FDMaxwell false
 using namespace std ;
 CDomain::CDomain()
 {
@@ -326,6 +327,9 @@ void CDomain::Init()
 
 	type_typename[  NEUMANN  ]	=	"NEUMANN" ;
 	typename_type[ "NEUMANN" ]	=	 NEUMANN  ;
+	
+	type_typename[  GROUND_FVFD   ]	=	"GROUND_FVFD" ;
+	typename_type[ "GROUND_FVFD"  ]	=	 GROUND_FVFD  ;
 
 	/* Cell */
 	type_typename[  SOLID_POWER  ]	=	"SOLID_POWER" ;
@@ -333,6 +337,15 @@ void CDomain::Init()
 
 	type_typename[  SOLID_GROUND  ]	=	"SOLID_GROUND" ;
 	typename_type[ "SOLID_GROUND" ]	=	 SOLID_GROUND  ;
+	
+	type_typename[  QUARTZ_FVFD  ]	=	"QUARTZ_FVFD" ;
+	typename_type[ "QUARTZ_FVFD" ]	=	 QUARTZ_FVFD  ;
+	
+	type_typename[  Empty  ]	=	"Empty " ;
+	typename_type[ "Empty " ]	=	 Empty   ;
+	
+	type_typename[  coil  ]	=	"coil" ;
+	typename_type[ "coil" ]	=	 coil  ;
 
 
 	type_typename[  PLASMA  ]	=	"PLASMA" ;
@@ -340,6 +353,7 @@ void CDomain::Init()
 
 	type_typename[  DIELECTRIC  ]	=	"DIELECTRIC";
 	typename_type[ "DIELECTRIC" ]	=	 DIELECTRIC ;
+	
 
 	UltraMPPExtractFaceCellTag() ;
 
@@ -389,6 +403,25 @@ void CDomain::UltraMPPExtractFaceCellTag()
 	  	MPP_cell_tag  [ json_cell_setting["name"][ icc ] ] = plasma.get_cell_type_mapping( json_cell_setting["name"][ icc ] ) ;
 	  }
 
+	/* For ICP */	 
+	#if ( FDMaxwell == true ) 
+	json &bc_setting    = *(FDMaxwell_coupled_eqs.get_json_input_parameter("boundary_setting")) ;
+    json &cell_setting  = *(FDMaxwell_coupled_eqs.get_json_input_parameter("volume_setting"  )) ;
+
+    /* Face */
+		for ( int ibc = 0; ibc < bc_setting["name"].size(); ibc++){
+		MPP_face_tag [ bc_setting["name"][ ibc ] ] = FDMaxwell_Re.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Re"][ ibc ] );
+        MPP_face_tag [ bc_setting["name"][ ibc ] ] = FDMaxwell_Im.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Im"][ ibc ] );
+                                    			 FDMaxwell_coupled_eqs.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Re"][ ibc ] );
+                                    			 FDMaxwell_coupled_eqs.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Im"][ ibc ] );
+		}
+
+	/* Cell */
+	    for ( int icc = 0; icc < cell_setting["name"].size(); icc++ ) {
+	  	MPP_cell_tag [ cell_setting["name"][ icc ] ] = FDMaxwell_coupled_eqs.get_cell_type_mapping( cell_setting["name"][ icc ] );
+	    }
+	#endif
+	  
 	  /* Debug */
 		#define face_cell_check false
     #if( face_cell_check == true )
