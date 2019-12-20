@@ -13,7 +13,7 @@
 // #include "PETSc_solver.h"
 #define Debug false
 #define Helmholtz_Module false
-#define POISSON_KL true
+#define POISSON_KL false
 #define ICP false
 
 using namespace std ;

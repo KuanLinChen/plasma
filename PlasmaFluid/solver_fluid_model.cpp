@@ -358,7 +358,8 @@ void CFluidModel::ContinuityIntegral( boost::shared_ptr<CDomain> &m, boost::shar
 	 		Source = (-1.0)*SourceSink*Cell_i->volume ;
 	 		Res[ 0 ][ i ] += LogicalSwitch*Source ;
 	 		Res[ 0 ][ i ]  = Res[ 0 ][ i ]/Cell_i->volume/LogicalSwitch ;
-
+	 		var->ProductionRate[iSpecies][ i ] = SourceSink ;
+	 		
 			/*--- Integrate ---*/
 			var->U0[ iSpecies ][ i ]  = var->PreU0[iSpecies][ i ] - var->Dt * Res[ 0 ][ i ] ;
 

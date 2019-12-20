@@ -328,7 +328,7 @@ void CPoisson::ComputeGradient( boost::shared_ptr<CConfig> &config, boost::share
 				if ( cell_type[ Cell_i->type ] != cell_type[ Cell_j->type ]  ) {//For discontinued face
 
 					//If neighboring cell is "electrode", the boundary value should calculate by SineVoltage function. 
-					if ( cell_type[ Cell_j->type ] == POWER or cell_type[ Cell_j->type ] == GROUND ) {
+					if ( cell_type[ Cell_j->type ] == SOLID_POWER or cell_type[ Cell_j->type ] == SOLID_GROUND ) {
 
 						BC_Value = SineVoltage( plasma.get_cell_typename( Cell_j->data_id ), config, var ) ;
 						dVar = BC_Value - var->Potential.current[ i ] ;
