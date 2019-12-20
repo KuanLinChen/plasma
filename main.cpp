@@ -14,6 +14,8 @@
 #define Debug false
 #define Helmholtz_Module false
 #define POISSON_KL true
+#define ICP false
+
 using namespace std ;
 int mpi_size, /*!< \brief The number of processes. */
 		mpi_rank ;/*!< \brief The rank(id) of the process. */
@@ -27,10 +29,11 @@ bool MON_INS = false ; /*!< \brief Trigger for monitor instantaneous averaged da
 ultraMPP plasma  ;/*!< \brief UltraMPP main object. */
 
 // ICP
-/*
+#if ( ICP == true )
 ultraMPP FDMaxwell_Re  ;
 ultraMPP FDMaxwell_Im  ;
-ultraMPP FDMaxwell_coupled_eqs  ;*/
+ultraMPP FDMaxwell_coupled_eqs  ;
+#endif
 
 json &json_bc_setting ;/*!< \brief Boundary condition informations. */
 json &json_cell_setting;/*!< \brief Cell condition informations. */  
@@ -75,14 +78,14 @@ int main( int argc, char * argv[] )
 		plasma.load_mesh( argv[1] + MPPFile ) ;
 	
 	/* Initial the FVFD object. */
-	/*
-        FDMaxwell_Re.set_linear_solver_library("PETSC");
-        FDMaxwell_Im.set_linear_solver_library("PETSC");
-        FDMaxwell_coupled_eqs.set_linear_solver_library("PETSC");
-    	FDMaxwell_Re.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
-    	FDMaxwell_Im.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
-    	FDMaxwell_coupled_eqs.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;*/
-
+#if ( ICP == true )
+	FDMaxwell_Re.set_linear_solver_library("PETSC");
+	FDMaxwell_Im.set_linear_solver_library("PETSC");
+	FDMaxwell_coupled_eqs.set_linear_solver_library("PETSC");
+	FDMaxwell_Re.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+	FDMaxwell_Im.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+	FDMaxwell_coupled_eqs.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+#endif
 	/*--- This module will be delets after some modification --*/
 		boost::shared_ptr<CDomain> mesh ;
 		mesh = boost::shared_ptr<CDomain> ( new CDomain ) ;
