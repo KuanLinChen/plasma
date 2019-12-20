@@ -58,6 +58,18 @@ const double		vacuum_light_speed		=  299792458 ; /* Unit in m/s */
 #define SOLID_GROUND 	600
 
 
+
+/* please use you own value for your define boundary value. */
+#define GROUND_FVFD		4500
+#define QUARTZ_FVFD 	4600
+#define Empty 				4700
+#define coil 					4800
+
+
+
+
+
+
 /*--- Equation Type ---*/
 #define ELECTRON	 0
 #define ION				 1
