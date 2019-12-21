@@ -13,7 +13,7 @@
 // #include "variable_structure_NS.hpp"
 // #include "PETSc_solver.h"
 #define Debug false
-#define FDMaxwell true
+#define FDMaxwell false
 
 /* Region of #define FDMaxwell 
 main.cpp
