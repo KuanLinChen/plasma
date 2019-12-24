@@ -4,18 +4,24 @@
 #include "domain_structure.hpp"
 #include "variable_structure.hpp"
 #include "solver_poisson.hpp"
+#include "solver_FD_maxwell.hpp"
 #include "solver_drift_diffusion.hpp"
 #include "post_structure.hpp"
 #include "solver_energy_density.hpp"
 #include "solver_fluid_model.hpp"
-#include "solver_photoionization.hpp"
+// #include "solver_navier_stokes.hpp"
 // #include "variable_structure_NS.hpp"
 // #include "PETSc_solver.h"
 #define Debug false
-#define Helmholtz_Module false
-#define POISSON_KL false
-#define ICP false
+#define FDMaxwell false
 
+/* Region of #define FDMaxwell 
+main.cpp
+post_structure.cpp
+variable_structure.cpp
+solver_energy_density.cpp
+domain_structure.cpp
+*/
 using namespace std ;
 int mpi_size, /*!< \brief The number of processes. */
 		mpi_rank ;/*!< \brief The rank(id) of the process. */
@@ -29,7 +35,7 @@ bool MON_INS = false ; /*!< \brief Trigger for monitor instantaneous averaged da
 ultraMPP plasma  ;/*!< \brief UltraMPP main object. */
 
 // ICP
-#if ( ICP == true )
+#if (FDMaxwell == true ) 
 ultraMPP FDMaxwell_Re  ;
 ultraMPP FDMaxwell_Im  ;
 ultraMPP FDMaxwell_coupled_eqs  ;
@@ -43,6 +49,11 @@ map<string,double> face_parameter ;
 
 map<string,int>    MPP_face_tag ;
 map<string,int>    MPP_cell_tag ;
+
+#if (FDMaxwell == true )
+map<string,int>    FVFD_face_tag ;
+map<string,int>    FVFD_cell_tag ;
+#endif
 
 map<int,int> face_type ;
 map<int,int> cell_type ;
@@ -67,8 +78,6 @@ int main( int argc, char * argv[] )
 		boost::shared_ptr<CConfig> Config ;
 		Config = boost::shared_ptr<CConfig> ( new CConfig ) ;
 		Config->Init( argv[1] ) ;
-		Config->CasePath = argv[1] ;
-
 
 	/* Initial the ultraMPP object. */
 		plasma.set_linear_solver_library("PETSC");
@@ -76,16 +85,20 @@ int main( int argc, char * argv[] )
 		plasma.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
 		string MPPFile = "input.json" ;
 		plasma.load_mesh( argv[1] + MPPFile ) ;
-	
+		
 	/* Initial the FVFD object. */
-#if ( ICP == true )
-	FDMaxwell_Re.set_linear_solver_library("PETSC");
-	FDMaxwell_Im.set_linear_solver_library("PETSC");
-	FDMaxwell_coupled_eqs.set_linear_solver_library("PETSC");
-	FDMaxwell_Re.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
-	FDMaxwell_Im.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
-	FDMaxwell_coupled_eqs.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
-#endif
+	#if (FDMaxwell == true )
+        FDMaxwell_Re.set_linear_solver_library("PETSC");
+        FDMaxwell_Im.set_linear_solver_library("PETSC");
+        FDMaxwell_coupled_eqs.set_linear_solver_library("PETSC");
+    	FDMaxwell_Re.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+    	FDMaxwell_Im.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+    	FDMaxwell_coupled_eqs.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+		string MPPFile_FVFD = "FD_maxwell.json" ;
+    	FDMaxwell_Re.load_mesh( argv[1] + MPPFile_FVFD ) ;
+    	FDMaxwell_Im.load_mesh( argv[1] + MPPFile_FVFD ) ;
+    	FDMaxwell_coupled_eqs.load_mesh( argv[1] + MPPFile_FVFD ) ;
+	#endif	
 	/*--- This module will be delets after some modification --*/
 		boost::shared_ptr<CDomain> mesh ;
 		mesh = boost::shared_ptr<CDomain> ( new CDomain ) ;
@@ -107,25 +120,17 @@ int main( int argc, char * argv[] )
 	Var->Init( mesh , Config ) ;
 	Var->Calculate_LSQ_Coeff_Scalar( mesh ) ;
 
-	#if ( Helmholtz_Module == true ) 		
-		boost::shared_ptr<CHelmholtz> Helmholtz ;
-    Helmholtz = boost::shared_ptr<CHelmholtz> ( new CHelmholtz ) ;
-    Helmholtz->Init( Config ) ;
-		Helmholtz->SOLVE( Config, Var ) ;
-    //exit(0);
-  #endif
-
-
 	/*--- Poisson solver ---*/
 	boost::shared_ptr<CPoisson> poisson_solver ;
 	poisson_solver = boost::shared_ptr<CPoisson> ( new CPoisson ) ;
 	poisson_solver->Init( Config ) ;
 	
 	/*--- Frequency domain Maxwell equation solver ---*/
-	/*
+	#if (FDMaxwell == true )
 	boost::shared_ptr<CFDMaxwell> FD_maxwell_solver ;
 	FD_maxwell_solver = boost::shared_ptr<CFDMaxwell> ( new CFDMaxwell ) ;
-	FD_maxwell_solver->Init( Config ) ;*/
+	FD_maxwell_solver->Init( Config,Var ) ;
+	#endif
 
 	/*--- Dirft-diffusion solver ---*/
 	int DriftDiffusionNum=0, FullEqnNum=0 ;
@@ -175,12 +180,11 @@ int main( int argc, char * argv[] )
 				}
 			}
 		}
-//cout<<"BBBB"<<endl;
+
 	/*--- Energy density Eqn. w/ Drift-diffusion solver ---*/
 		boost::shared_ptr<CEnergyDensity> electron_energy_solver ;
 		electron_energy_solver = boost::shared_ptr<CEnergyDensity> ( new CEnergyDensity ) ;
 		electron_energy_solver->Init( mesh, Config, 0 ) ;
-
 
 	/*--- post-processing module ---*/
 		boost::shared_ptr<CPost> post ;
@@ -192,11 +196,7 @@ int main( int argc, char * argv[] )
  	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
  		//cout<<"A1"<<endl;
- 		#if( POISSON_KL == true )
- 			poisson_solver->SOLVE_TEST( Config, Var ) ;
- 		#else
- 			poisson_solver->SOLVE( Config, Var ) ;
- 		#endif
+ 		poisson_solver->SOLVE( Config, Var ) ;
  		//cout<<"A2"<<endl;
 
 	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
@@ -287,20 +287,16 @@ int main( int argc, char * argv[] )
 						fluid_model_solver[ iEqn ]->Solve_Continuity( mesh, Config, Var ) ;
 					}
 				}
-					#if (Debug == true ) 
-						PetscPrintf( PETSC_COMM_WORLD, " Predtic the ion number density...\n" ) ;
-					#endif				
+	 				#if (Debug == true ) 
+	 					PetscPrintf( PETSC_COMM_WORLD, " Predtic the ion number density...\n" ) ;
+	 				#endif				
 
 
 				/* Solve for potential and electric field. */
-				#if( POISSON_KL == true )
-					poisson_solver->SOLVE_TEST( Config, Var ) ;
-				#else
-					poisson_solver->SOLVE( Config, Var ) ;
-				#endif
-					#if (Debug == true ) 
-						PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;
-					#endif
+ 				poisson_solver->SOLVE( Config, Var ) ;
+	 				#if (Debug == true ) 
+	 					PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;
+	 				#endif
 
 				/* Solve number density using D-D approximation for next time step (n+1). */
 				for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
@@ -317,11 +313,12 @@ int main( int argc, char * argv[] )
 				}
 				
 				/* Solve for potential and electric field. */
-				/*
-				FD_maxwell_solver->SOLVE( Config, Var ) ;
-					#if (Debug == true ) 
-						PetscPrintf( PETSC_COMM_WORLD, "FD_maxwell_solver done...\n" ) ;
-					#endif */
+ 				#if (FDMaxwell == true )				
+ 				FD_maxwell_solver->SOLVE( Config, Var ) ;
+	 				#if (Debug == true ) 
+	 					PetscPrintf( PETSC_COMM_WORLD, "FD_maxwell_solver done...\n" ) ;
+	 				#endif 
+	 			#endif
 
 				Var->CalculateElectrodeCurrent( mesh, Config ) ;
 
@@ -351,8 +348,8 @@ int main( int argc, char * argv[] )
 				}
 
 				/* Output instantaneous flow field data */
-				if( WRT_INS ) 
-					post->OutputFlow( mesh, Config, Var, MainCycle, MainStep ) ;
+ 				if( WRT_INS ) 
+ 					post->OutputFlow( mesh, Config, Var, MainCycle, MainStep ) ;
 
 				/* Calculate cycle average data. */
 				if( WRT_CYC_AVG ) {
@@ -360,7 +357,7 @@ int main( int argc, char * argv[] )
 				}
 				Var->AddAverage_PowerAbs( mesh, Config ) ;
 				Var->AddAverage_Electrode( mesh, Config ) ;
-				Var->PhysicalTime += Var->Dt ;
+ 				Var->PhysicalTime += Var->Dt ;
 
 			}//End Main Step
 		//cout<<"A2"<<endl; exit(1) ;
@@ -368,10 +365,10 @@ int main( int argc, char * argv[] )
 
 			if ( MainCycle % 50 == 0 ){
 				for ( Iter=Config->ElectricalMap.begin() ; Iter!=Config->ElectricalMap.end() ; ++Iter ) {
-					if ( Iter->first == POWER and fabs(Var->I_AvgPowerElectrode) > 5.E-5 ) {
-						//Iter->second.BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
-						//BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
-					}
+    				if ( Iter->first == POWER and fabs(Var->I_AvgPowerElectrode) > 5.E-5 ) {
+	    				//Iter->second.BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
+    					//BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
+    				}
 				}
 			}
 
