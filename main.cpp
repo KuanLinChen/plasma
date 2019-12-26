@@ -13,15 +13,9 @@
 // #include "variable_structure_NS.hpp"
 // #include "PETSc_solver.h"
 #define Debug false
-#define FDMaxwell false
+//#define FDMaxwell false
 
-/* Region of #define FDMaxwell 
-main.cpp
-post_structure.cpp
-variable_structure.cpp
-solver_energy_density.cpp
-domain_structure.cpp
-*/
+
 using namespace std ;
 int mpi_size, /*!< \brief The number of processes. */
 		mpi_rank ;/*!< \brief The rank(id) of the process. */
