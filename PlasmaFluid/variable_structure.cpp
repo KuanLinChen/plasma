@@ -1,5 +1,4 @@
 #include "variable_structure.hpp"
-#define FDMaxwell false
 using namespace std ;
 CVariable::CVariable()
 {

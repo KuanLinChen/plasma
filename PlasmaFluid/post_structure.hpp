@@ -8,7 +8,7 @@ using namespace std;
 class CPost 
 {
 	public:
-
+			
 		CPost();
 		void Init() ;
 		void OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var, int, int ) ;

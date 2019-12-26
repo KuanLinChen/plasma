@@ -1,5 +1,4 @@
 #include "post_structure.hpp"
-#define FDMaxwell false
 using namespace std ;
 CPost::CPost()
 {

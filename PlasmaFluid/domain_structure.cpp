@@ -1,5 +1,4 @@
 #include "domain_structure.hpp"
-#define FDMaxwell false
 using namespace std ;
 CDomain::CDomain()
 {

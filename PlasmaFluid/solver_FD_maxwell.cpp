@@ -8,30 +8,26 @@ CFDMaxwell::CFDMaxwell()
 }
 void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CVariable> &var )
 {
-	
 
 	if ( mpi_rank == 0 ){
 		cout<<"Creat FD_maxwell"<<endl;
 	}
+	
     FDMaxwell_Re.set_N_variable_number( 1 ) ;
     FDMaxwell_Im.set_N_variable_number( 1 ) ;
     FDMaxwell_coupled_eqs.set_N_variable_number( 2 ) ;
     
-    
+
     var->Coil_frequency = 13.56e6 ;
     var->Coil_Current 	= 20 ;
     var->omega			= 2 * var->PI * var->Coil_frequency ;
-    /*
-    MPP_face_tag["GROUND_FVFD"] 	= 	FDMaxwell_Re.get_bc_mapping( "GROUND_FVFD") ;	
-	MPP_cell_tag["QUARTZ_FVFD"]	 	=	FDMaxwell_Re.get_cell_type_mapping( "QUARTZ_FVFD" ) ;
-	MPP_cell_tag["coil"]			=	FDMaxwell_Re.get_cell_type_mapping( "coil" ) ;*/
-    
+
     for( int cth = 0; cth < FDMaxwell_Re.Mesh.cell_number; cth++){
     	Cell *cell		=	FDMaxwell_Re.get_cell( cth ) ;
 		
 		if (	cell->type == MPP_cell_tag[ "QUARTZ_FVFD" ]	)
 		{ 
-				var->eps_FVFD	[ cth ]	=   4	;				
+				var->eps_FVFD	[ cth ]	=   4	;	 		
 		} else 
 		{
 				var->eps_FVFD	[ cth ]	=	1	; 				
@@ -39,6 +35,7 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
     }  
 
     UltraMPPComputeCurrentDenAndSourceTerm( config, var ) ;
+
 }
 void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  )
 {	
@@ -51,14 +48,17 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
     FDMaxwell_Im.add_laplacian_matrix_form_op();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-    cout << "L56_maxwell" << endl ;
-    cout << plasma.Mesh.cell_number << endl;
+    cout << "L51_maxwell" << endl ;
+    cout << plasma.Mesh.cell_number << endl ;
     for( int cth = 0; cth < plasma.Mesh.cell_number; cth++){
-    	var->collision_frequency = var->TotalNumberDensity[ cth ]*CollTable.GetValue( var->T[ 0 ][ cth ] ) ; //unit
-        
+    	    cout << "L54_maxwell" << endl ; cout << var->TotalNumberDensity[ cth ] << endl ;
+    	    cout << "L55_maxwell" << endl ; cout << var->CollTable.GetValue( var->T[ 0 ][ cth ] ) << endl ;   
+			cout << "L56_maxwell" << endl ; 	
+    	var->collision_frequency = var->TotalNumberDensity[ cth ]* var->CollTable.GetValue( var->T[ 0 ][ cth ] ) ; //unit
+    cout << "L58_maxwell" << endl ;
         var->sigma_p_Re_plasma[ cth ] 	=   unit_charge*unit_charge*var->U0[0][ cth ]*var->collision_frequency	/electron_mass/( var->collision_frequency * var->collision_frequency + var->omega * var->omega ) ;
  		var->sigma_p_Im_plasma[ cth ] 	= - unit_charge*unit_charge*var->U0[0][ cth ]*var->omega				/electron_mass/( var->collision_frequency * var->collision_frequency + var->omega * var->omega ) ; 
- 		
+
 			cout << cth << endl;
  			cout << "collision_frequency= " << var->collision_frequency << endl ;
  			cout << "ne= " << var->U0[0][ cth ] << endl ;
@@ -103,8 +103,8 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
     FDMaxwell_coupled_eqs.finish_matrix_construction() ;
 
 	/*--- Source B ---*/
-    FDMaxwell_Re.set_bc_value(FVFD_face_tag["GROUND"], 0.0,var->E_phi_Re.face );
-    FDMaxwell_Im.set_bc_value(FVFD_face_tag["GROUND"], 0.0,var->E_phi_Im.face );
+    FDMaxwell_Re.set_bc_value(MPP_face_tag["GROUND"], 0.0,var->E_phi_Re.face );
+    FDMaxwell_Im.set_bc_value(MPP_face_tag["GROUND"], 0.0,var->E_phi_Im.face );
 
     FDMaxwell_Re.before_source_term_construction();
     FDMaxwell_Im.before_source_term_construction();
@@ -125,21 +125,23 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
 void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
 	/*Only the 'coil' region. */
+cout << FDMaxwell_Re.Mesh.cell_number << endl ;
   for ( int cth=0 ; cth< FDMaxwell_Re.Mesh.cell_number ; cth++ ) {
 
-    Cell *cell = plasma.get_cell( cth ) ;
+    Cell *cell = FDMaxwell_Re.get_cell( cth ) ;
 
     if ( cell->type == MPP_cell_tag[ "coil" ] ) {
 		var->CurrentDen[ cth ] = var->Coil_Current/(0.0015*0.0015*var->PI) ;
 	}else{
 		var->CurrentDen[ cth ] = 0 ;		
 	}//if charged species.
-	
-	var->Re_eq_source[ cth ] = 0.0 ;
-	var->Im_eq_source[ cth ]	= var->omega * vacuum_permeability * var->CurrentDen[ cth ] ;
+
+	var->Re_eq_source[ cth ] = 0.0 ; 	
+	var->Im_eq_source[ cth ] = var->omega * vacuum_permeability * var->CurrentDen[ cth ] ; 
 
   }//cell loop.
-  plasma.syn_parallel_cell_data( var->VarTag["CurrentDen"] );
+
+  plasma.syn_parallel_cell_data( var->VarTag["CurrentDen"] );   
 }
 void CFDMaxwell::UltraMPPComputePowerAbsorptionFromMaxwell( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
@@ -163,6 +165,6 @@ void CFDMaxwell::UltraMPPComputeInstantPowerAbsorptionFromMaxwell( boost::shared
 		var->Power_Absorption_FVFD[ cth ] +=   var->sigma_p_Re_FVFD[ cth ] * var->E_phi_Im.current[ cth ] * var->E_phi_Im.current[ cth ] * sin(var->omega*var->PhysicalTime) * sin(var->omega*var->PhysicalTime);
 		var->Power_Absorption_FVFD[ cth ] += - var->sigma_p_Im_FVFD[ cth ] * var->E_phi_Re.current[ cth ] * var->E_phi_Im.current[ cth ] * sin(var->omega*var->PhysicalTime) * sin(var->omega*var->PhysicalTime);
 	}
-	FDMaxwell_Re.syn_parallel_cell_data( var->VarTag["Power_Absorption_plasma"]	, var->VarTag["Power_Absorption_FVFD"] 	   ) ;  
+	FDMaxwell_Re.syn_parallel_cell_data( var->VarTag["Power_Absorption_plasma"]	, var->VarTag["Power_Absorption_FVFD"] 	   ) ; 	cout << "L165_maxwell" << endl ;
 }
 

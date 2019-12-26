@@ -1,6 +1,5 @@
 #include "solver_energy_density.hpp"
 #define Debug_EE_Bulid_A_B_1st_zero 0
-#define FDMaxwell false
 using namespace std ;
 CEnergyDensity::CEnergyDensity()
 {
