@@ -32,7 +32,7 @@ solver_drift_diffusion.cpp 	solver_drift_diffusion.hpp
 
 solver_energy_density.cpp 	solver_energy_density.hpp
 
-solver_FD_maxwell.cpp 	solver_FD_maxwell.hpp
+#solver_FD_maxwell.cpp 	solver_FD_maxwell.hpp
 
 post_structure.cpp 			post_structure.hpp
 
