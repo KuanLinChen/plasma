@@ -35,7 +35,7 @@ class CFDMaxwell
 		
 		CFDMaxwell();
 		
-//		CTable CollTable ;
+		CTable FVFD_CollTable ;
 		/*!
 		 * \brief module initialization.
 		 */	

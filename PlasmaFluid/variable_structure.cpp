@@ -335,6 +335,7 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 
 		TotalGasPressure.initial( "P<sub>gas</sub>" ) ;
 		InitialConditions( m, config ) ;
+
 		CalTotalPressure( m, config ) ;
 		ChemistryUpdate( m, config ) ;
 
@@ -375,6 +376,12 @@ void CVariable::UltraMPPVarInit()
 	
 		//---------Variable definition of ICP simulation ---------------------------
 		#if ( FDMaxwell == true ) 
+		FDMaxwell_coupled_eqs.set_parallel_variable(&E_phi_Re,"E_phi_Re") ;
+    	FDMaxwell_coupled_eqs.set_parallel_variable(&E_phi_Im,"E_phi_Im") ;
+    	FDMaxwell_Re.set_multi_variable( 0, E_phi_Re.tag_current );
+    	FDMaxwell_Im.set_multi_variable( 0, E_phi_Im.tag_current );
+	    FDMaxwell_coupled_eqs.set_multi_variable( 0, E_phi_Re.tag_current );
+	    FDMaxwell_coupled_eqs.set_multi_variable( 1, E_phi_Im.tag_current );
 		VarTag["sigma_p_Re_plasma" ] = plasma.set_parallel_cell_data		  (    &sigma_p_Re_plasma 		, "sigma_p_Re_plasma" 			) ;
 		VarTag["sigma_p_Im_plasma" ] = plasma.set_parallel_cell_data		  (    &sigma_p_Im_plasma 		, "sigma_p_Im_plasma" 			) ;
 		VarTag["sigma_p_Re_FVFD"   ] = FDMaxwell_Re.set_parallel_cell_data(    &sigma_p_Re_FVFD			, "sigma_p_Re_FVFD" 			) ;
@@ -449,13 +456,15 @@ void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_
 
 			for ( int jSpecies = 0; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 
-				U0[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity/Ref_N ;
+				U0[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity/Ref_N ; 
 				U1[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity*0.E-15/Ref_Flux ;
 				U2[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity*0.E-15/Ref_Flux ;
 				U3[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity*0.E-15/Ref_Flux ;//config->Species[jSpecies].InitialDensity ;
+				
 				TotalNumberDensity[ i ] += U0[ jSpecies ][ i ]*Ref_N ;
 
 			}
+
 
 			if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ) {
 				r = Cell_i->r[0] ;
