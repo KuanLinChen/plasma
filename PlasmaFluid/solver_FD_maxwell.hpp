@@ -35,8 +35,7 @@ class CFDMaxwell
 		
 		CFDMaxwell();
 		
-		ultraMPP plasma, FDMaxwell_Re, FDMaxwell_Im, FDMaxwell_coupled_eqs ;
-		CTable CollTable ;
+		CTable FVFD_CollTable ;
 		/*!
 		 * \brief module initialization.
 		 */	
