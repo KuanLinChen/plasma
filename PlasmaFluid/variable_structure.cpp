@@ -101,7 +101,7 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 	 	Dt /= Ref_t ;
 
 	}
-
+	//plocation.rank = mpi_rank ;
 	/*--- Could be delete ---*/
 		Momentum_Term[ 0 ].initial ( "M_Convection" ) ;
 		Momentum_Term[ 1 ].initial ( "M_Force" ) ;
@@ -148,6 +148,25 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 
 	}
 
+	/*
+  	double Emax;
+  	int mpi_rank; 
+  	double ionization_source;
+  	double r[3] ; 
+	*/
+	int lengths[4] = { 1, 1, 1, 3 } ;
+	MPI_Datatype data_types[4]      = { MPI_DOUBLE,        MPI_INT,                 MPI_DOUBLE,                                MPI_DOUBLE } ;
+	const MPI_Aint displacements[4] = {          0, sizeof(double), sizeof(double)+sizeof(int), sizeof(double)+sizeof(int)+sizeof(double) } ;
+	MPI_Type_create_struct(4, lengths, displacements, data_types, &person_type);
+	MPI_Type_commit(&person_type);
+ 
+	// plocation        = new photo_location [ mpi_size ] ;
+	// plocation_buffer = new photo_location [ mpi_size ] ;
+
+	//MPI_TYPE_STRUCT(4, lengths, disp, type, MPI_FLOAT_INT) ;
+
+
+  //exit(1);
 
 		//ElectricalMap.insert( pair< int, CElectrical>( container.Type, container ) ) ;
 		//ElectricalIter = ElectricalMap.find( container.Type ) ;
@@ -1560,25 +1579,70 @@ void CVariable::SourceSink_PSST_2018( boost::shared_ptr<CDomain> &m, boost::shar
 {
 //Bagheri et. al., “Comparison of six simulation codes for positive streamers in air,” Plasma Sources Science and Technology, vol. 27, no. 9, p. 095002, 2018.
 	double alpha=0.0, alpha_eta=0.0, eta=0.0 ;
+	double E_maximum = -1.0 ;
+	int    E_maximum_index = 0 ;
+	double EMAG = 0.0 ;
+	//cout<<"SourceSink_PSST_2018"<<endl;
+	Cell *Cell_i ;
 
 	for ( int i = 0 ; i < plasma.Mesh.cell_number  ; i++ ) {
 
-		Cell *Cell_i  = plasma.get_cell( i ) ;
+		Cell_i  = plasma.get_cell( i ) ;
 
 		if ( cell_type[ Cell_i->type ] == PLASMA ) {
-		
-			alpha = (1.1944E6 + 4.3666E26/pow(Emag[i],3.0) )*exp( (-2.73E7)/Emag[i] ) ;
+			if ( Emag[i] <  5.0000000e+04 ) EMAG =  5.0000000e+04 ;
+			else EMAG = Emag[i] ;
+
+			alpha = (1.1944E6 + 4.3666E26/pow(EMAG,3.0) )*exp( (-2.73E7)/EMAG ) ;
 			eta   = 340.75 ;
 			alpha_eta = alpha - eta ;
+			if ( EMAG > E_maximum )
+			{
+				E_maximum = EMAG ;
+				E_maximum_index = i ;
+			}
 
-			*( ReactionRatePoint[ 0 ] + i  ) = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;//+ R_stable ;
-			*( ReactionRatePoint[ 1 ] + i  ) = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;//+ R_stable ;
-			LFASourceSink[ 0 ][ i ] 		     = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;//+ R_stable ;
-			LFASourceSink[ 1 ][ i ] 		     = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;//+ R_stable ;
+			*( ReactionRatePoint[ 0 ] + i  ) = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;
+			*( ReactionRatePoint[ 1 ] + i  ) = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;
+			LFASourceSink[ 1 ][ i ] 		     = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;
+			LFASourceSink[ 0 ][ i ] 		     = (alpha_eta)*Mobi[ 0 ][ i ]*Emag[ i ]*U0[ 0 ][ i ] ;
 		}
 	}
 	LFASourceSink[ 0 ] = LFASourceSink[ 0 ] ;
 	LFASourceSink[ 1 ] = LFASourceSink[ 1 ] ;
+
+	/* location informations */
+	plocation.Emax 		          = E_maximum*mpi_rank ;
+	plocation.mpi_rank          = mpi_rank ;
+	plocation.ionization_source = LFASourceSink[ 0 ][ E_maximum_index ] ;
+	Cell_i  = plasma.get_cell( E_maximum_index ) ;
+	plocation.r[0] = Cell_i->r[0] ;
+	plocation.r[1] = Cell_i->r[1] ;
+	plocation.r[2] = Cell_i->r[2] ;
+	/* Find the max electric field location. */
+	pmax.Emax     = plocation.Emax ;
+	pmax.mpi_rank = mpi_rank ;
+	MPI_Allreduce( &pmax, &pmax_buffer, 1, MPI_DOUBLE_INT, MPI_MAXLOC, MPI_COMM_WORLD) ;
+
+	cout<<"Before["<<mpi_rank<<"]: "
+			<<"Emax: "<<plocation.Emax<<"\t"
+			<<"ionization_source: "<<plocation.ionization_source<<"\t"
+			<<"mpi_rank: "<<plocation.mpi_rank<<"\t"
+			<<"location x: "<<plocation.r[0]<<"\t"
+			<<"location y: "<<plocation.r[1]<<"\t"
+			<<"location z: "<<plocation.r[2]<<endl;
+
+	/* Bcast to other processor. */
+	MPI_Bcast( &plocation, 1, person_type, pmax_buffer.mpi_rank, MPI_COMM_WORLD ) ;
+
+	cout<<"After["<<mpi_rank<<"]: "
+			<<"Emax: "<<plocation.Emax<<"\t"
+			<<"ionization_source: "<<plocation.ionization_source<<"\t"
+			<<"mpi_rank: "<<plocation.mpi_rank<<"\t"
+			<<"location x: "<<plocation.r[0]<<"\t"
+			<<"location y: "<<plocation.r[1]<<"\t"
+			<<"location z: "<<plocation.r[2]<<endl;
+
 }
 void CVariable::SourceSink_2Fluid( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {

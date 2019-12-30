@@ -181,8 +181,8 @@ void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config,
 							if ( config->Species[ jSpecies ].Type == ELECTRON or config->Species[ jSpecies ].Type == ION ) {
 
 								var->Potential.face[ cell->face[k]->data_id ] += var->Dt*var->Qe*config->Species[jSpecies].Charge
-								*fabs( var->U1[ jSpecies ][ i ]*cell->nA[ k ][ 0 ]*(-1.0) 
-								+      var->U2[ jSpecies ][ i ]*cell->nA[ k ][ 1 ]*(-1.0) ) ;
+								*fabs( var->U1[ jSpecies ][ i ]*cell->nA[ k ][ 0 ] 
+								+      var->U2[ jSpecies ][ i ]*cell->nA[ k ][ 1 ] ) ;
 							}
 
 						}//end jspecies

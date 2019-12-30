@@ -366,8 +366,8 @@ int main( int argc, char * argv[] )
 			if ( MainCycle % 50 == 0 ){
 				for ( Iter=Config->ElectricalMap.begin() ; Iter!=Config->ElectricalMap.end() ; ++Iter ) {
     				if ( Iter->first == POWER and fabs(Var->I_AvgPowerElectrode) > 5.E-5 ) {
-	    				//Iter->second.BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
-    					//BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
+	    				Iter->second.BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
+    					BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
     				}
 				}
 			}

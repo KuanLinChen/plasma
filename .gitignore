@@ -60,3 +60,9 @@ run_200Pa/
 Case_NewChamber/
 
 Run_NewChamber/
+
+RUN_GEC/cmake_install.cmake
+
+RUN_GEC/
+
+mpi_test/
