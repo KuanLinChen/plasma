@@ -259,6 +259,9 @@ int main( int argc, char * argv[] )
 						cout<<"Continuity["<<iEqn<<"] ksp iter : "<<continuity_solver[ iEqn ]->its<<endl ;
 						
 					}
+					#if (FDMaxwell == true )
+					cout<<"FD_maxwell ksp iter : "<<FD_maxwell_solver->its<<endl ;
+					#endif
 					if(Config->PFM_Assumption == "LMEA") 
 						cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;
 				} 
