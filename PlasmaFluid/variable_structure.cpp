@@ -187,6 +187,8 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 		CFL.initial ( "CFL" ) ;
 		AvgCFL.initial ( "CFL" ) ;
 
+		
+
 	/*--- Electrical Field Variables ---*/
 		//Phi.initial ( "Φ [V]" ) ;
 
