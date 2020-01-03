@@ -88,6 +88,9 @@ int main( int argc, char * argv[] )
     	FDMaxwell_Re.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
     	FDMaxwell_Im.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
     	FDMaxwell_coupled_eqs.initial( gargc2, gargv2, &mpi_rank, &mpi_size ) ;
+    	FDMaxwell_Re.set_N_variable_number( 1 ) ;
+    	FDMaxwell_Im.set_N_variable_number( 1 ) ;
+    	FDMaxwell_coupled_eqs.set_N_variable_number( 2 ) ;
 		string MPPFile_FVFD = "FD_maxwell.json" ;
     	FDMaxwell_Re.load_mesh( argv[1] + MPPFile_FVFD ) ;
     	FDMaxwell_Im.load_mesh( argv[1] + MPPFile_FVFD ) ;
