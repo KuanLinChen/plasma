@@ -11,18 +11,6 @@
 
 
 using namespace std;
-struct photo_location
-{ 
-  double Emax;
-  int mpi_rank; 
-  double ionization_source;
-  double r[3] ; 
- }; 
-struct photo_max
-{ 
-  double Emax;
-  int mpi_rank; 
- }; 
 class CScalarFace
 {
 	public:
@@ -168,12 +156,6 @@ class CVariable
 	void UltraMPPVarInit() ;
 
 	map<string,int> VarTag ;
-
-	MPI_Datatype person_type ;
-
-	photo_location plocation, plocation_buffer ;
-
-	photo_max pmax, pmax_buffer; 
 
 	variable_set Potential ;/*!< \brief potential */
 	double *ChargeDen,      /*!< \brief net charge density */ 
