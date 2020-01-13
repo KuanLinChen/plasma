@@ -15,6 +15,9 @@
 #define Debug false
 //#define FDMaxwell false
 
+#define time_monitor true 
+#include "time.h"
+
 
 using namespace std ;
 int mpi_size, /*!< \brief The number of processes. */
@@ -208,6 +211,10 @@ int main( int argc, char * argv[] )
 		double BiasVoltage=0.0 ;
 	//exit(1);
 
+		#if (time_monitor == true )
+		double time_monitor_start, time_monitor_end ;
+		double time_cost = 0 ;
+		#endif
  		/*--- Main Cycle ---*/
  		for ( int MainCycle = 1 ; MainCycle < Config->ExitCycle ; MainCycle ++  ) {
 
@@ -241,9 +248,12 @@ int main( int argc, char * argv[] )
 
 				}
 			}
+			
 			/* TEST */
 			/*--- Main step loop in eack cycle. ---*/
  			for ( int MainStep = 0 ; MainStep < Config->StepPerCycle ; MainStep++ ) {
+ 				
+ 				time_monitor_start = clock() ;
 
  				if( WRT_CYC_AVG and MainStep%(Config->StepPerCycle/Config->WRT_Insta_Freq) == 0  ) WRT_INS = true ;
  				else  WRT_INS 	= false ;
@@ -254,13 +264,20 @@ int main( int argc, char * argv[] )
  				//cout<<"MON_CYC: "<<MON_CYC<<"\t"<<"MON_INS"<<MON_INS<<endl;
 				if( mpi_rank == MASTER_NODE and MON_CYC and MON_INS ){
 					cout<<"MainCycle: "<<MainCycle<<"\t"<<"MainStep: "<<MainStep<<"\t"<<"Voltage: "<<Var->Volt<<"  [V]"<<"\t"<<"PhysicalTime: "<<Var->PhysicalTime<<"  [s]"<<endl ; 
+					#if (FDMaxwell == true )
+					cout<<"Time cost per time step now is: "<< time_cost/CLOCKS_PER_SEC << " s" << endl  ;
+					#endif
 					cout<<"Poissn ksp iter : "<<poisson_solver->its<<endl ;
 					for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
 						cout<<"Continuity["<<iEqn<<"] ksp iter : "<<continuity_solver[ iEqn ]->its<<endl ;
 						
 					}
+					#if (FDMaxwell == true )
+					cout<<"FD_maxwell ksp iter : "<<FD_maxwell_solver->its<<endl ;
+					#endif
 					if(Config->PFM_Assumption == "LMEA") 
-						cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;
+					cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;
+
 				} 
 
  				/* Update solution: Copy solution (n+1) step -> (n) step */ 
@@ -288,13 +305,12 @@ int main( int argc, char * argv[] )
 	 					PetscPrintf( PETSC_COMM_WORLD, " Predtic the ion number density...\n" ) ;
 	 				#endif				
 
-
 				/* Solve for potential and electric field. */
  				poisson_solver->SOLVE( Config, Var ) ;
 	 				#if (Debug == true ) 
 	 					PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;
 	 				#endif
-
+	 				
 				/* Solve number density using D-D approximation for next time step (n+1). */
 				for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
 					continuity_solver[ iEqn ]->Solve( mesh, Config, Var ) ;
@@ -309,7 +325,7 @@ int main( int argc, char * argv[] )
 					fluid_model_solver[ iEqn ]->Solve_Momentum( mesh, Config, Var ) ;
 				}
 				
-				/* Solve for potential and electric field. */
+				/* Solve for maxwell. */
  				#if (FDMaxwell == true )				
  				FD_maxwell_solver->SOLVE( Config, Var ) ;
 	 				#if (Debug == true ) 
@@ -324,6 +340,7 @@ int main( int argc, char * argv[] )
 					electron_energy_solver->Solver( mesh, Config, Var ) ;
 				}
 
+				
 				/*--- Output I-V data ---*/
 				if ( mpi_rank == MASTER_NODE and WRT_CYC_AVG ) {
 
@@ -356,6 +373,8 @@ int main( int argc, char * argv[] )
 				Var->AddAverage_Electrode( mesh, Config ) ;
  				Var->PhysicalTime += Var->Dt ;
 
+ 				time_monitor_end = clock() ;
+ 				time_cost = time_monitor_end - time_monitor_start ;
 			}//End Main Step
 		//cout<<"A2"<<endl; exit(1) ;
 

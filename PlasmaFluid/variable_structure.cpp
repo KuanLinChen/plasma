@@ -730,14 +730,7 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 				Cell_i  = plasma.get_cell( i ) ;
 				if( cell_type[ Cell_i->type ] == PLASMA ) 
-				{
-					 if( mpi_rank == MASTER_NODE )
-					 {
-					 	cout << "i = " << i << ",n_t = " << TotalNumberDensity[i] << ",MI = " << MobilityIter->second.GetValue( T[ 0 ][ i ] ) << endl ;
-					 }
-
-					Mobi[ 0 ][ i ] = MobilityIter->second.GetValue( T[ 0 ][ i ] )/TotalNumberDensity[i] ;
-				}
+				Mobi[ 0 ][ i ] = MobilityIter->second.GetValue( T[ 0 ][ i ] )/TotalNumberDensity[i] ;
 			}
 			break;
 
