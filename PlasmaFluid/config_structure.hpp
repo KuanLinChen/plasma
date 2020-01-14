@@ -97,6 +97,39 @@ class CElectrical
 		if( fabs(BC_Voltage) < ZERO ) BC_Voltage = 0.0 ;
 		BC_Voltage += BiasVoltage ;
 	}
+
+	void UpdateVoltage_osaka( double PhysicalTime ) {
+		double a0,a1,a2,b1,b2,w, x ;
+		x = PhysicalTime ;
+		/* 50 Pa, 70W */
+		//The averaged frequency: 1.354416e+07 Hz
+		// a0 =-6.146115e+01 ;
+		// a1 =-9.240531e-01 ;
+		// a2 = 3.032535e+00 ;
+		// b1 = 8.218754e+01 ;
+		// b2 = 1.762236e+00 ;
+		//  w = 8.519346e+07 ;
+
+		/*70 Pa, 70W */
+		//The averaged frequency: 1.355948e+07 Hz
+		// a0 = -2.472132e+01 ;
+		// a1 = -3.870552e+01 ;
+		// a2 = -9.524845e-01 ;
+		// b1 =  5.346211e+01 ;
+		// b2 =  1.589244e+00 ;
+		//  w =  8.520827e+07 ;
+		/*100 Pa, 70 W */
+		a0 = -7.960469e+00 ;
+		a1 = -9.379988e+00 ;
+		a2 =  3.065029e-01 ;
+		b1 =  5.914650e+01 ;
+		b2 =  1.109108e+00 ;
+ 		 w =  8.520384e+07 ;
+
+		BC_Voltage = a0 + a1*cos(x*w) + b1*sin(x*w) +  a2*cos(2*x*w) + b2*sin(2*x*w) ;
+	}
+
+
 }; 
 class CEquation
 {
