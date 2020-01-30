@@ -66,3 +66,9 @@ RUN_GEC/cmake_install.cmake
 RUN_GEC/
 
 mpi_test/
+
+2020_1D_Vpp300_200Pa/
+
+2020_1D_Vpp400_13p33Pa/
+
+2020_1D_Vpp800_13p33Pa/
