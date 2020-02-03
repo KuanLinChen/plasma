@@ -72,3 +72,9 @@ mpi_test/
 2020_1D_Vpp400_13p33Pa/
 
 2020_1D_Vpp800_13p33Pa/
+
+Case_Donko_Maxwellian/
+
+RUN_200Pa_300Vpp_13p56MHz_Maxwellian/
+
+2020_1D_Vpp300_200Pa_refine/

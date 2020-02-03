@@ -828,6 +828,18 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
 				}
 			}
 			break;
+
+		case 12://P. Dordizadeh et al. , “Numerical investigation of the formation of Trichel pulses in a needle-plane geometry,” Journal of Physics D: Applied Physics 48(41),415203 (2015).	
+			for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
+				Cell_i  = plasma.get_cell( i ) ;
+				if( cell_type[ Cell_i->type ] == PLASMA ) {
+					E_Td = Etd[ i ] ;
+		 			Mobi[ 0 ][ i ] = 5.747e16*pow(E_Td,0.6064)/Emag[ i ] ;
+				}
+			}
+			break;
+
+
 		default:
 				if ( mpi_rank == 0 ){
 					cout <<"The Mobility Type of species[0] you choose is illegal. Please check!!!!" << endl ;
@@ -934,7 +946,29 @@ void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::s
       }
 		break;
 
+		case 12://P. Dordizadeh et al. , “Numerical investigation of the formation of Trichel pulses in a needle-plane geometry,” Journal of Physics D: Applied Physics 48(41),415203 (2015).
+      for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
+        Cell_i  = plasma.get_cell( i ) ;
+        if( cell_type[ Cell_i->type ] == PLASMA ) {
 
+        	E_Td = Etd[ i ] ;
+
+	     		if ( E_Td  < 2.0 ) {
+
+						Diff[ 0 ][ i ] = 1.343e6*pow( E_Td*1.0e-21, 0.3441 )*Mobi[ 0 ][ i ] ;
+
+	        }else if ( E_Td >= 2.0 and E_Td < 12.3 ) {
+
+						Diff[ 0 ][ i ] = 1.213e25*pow( E_Td*1.0e-21, 1.2601 )*Mobi[ 0 ][ i ] ;
+
+	        } else {
+
+						Diff[ 0 ][ i ] = 1.519e9*pow( E_Td*1.0e-21, 0.46113 )*Mobi[ 0 ][ i ] ;
+
+	        }
+        }
+      }
+		break;
 		default:
 			if ( mpi_rank == 0 ){
 				cout <<"The Diffusivity Type of species[0] you choose is illegal. Please check!!!!\n" << endl ;
@@ -1085,7 +1119,19 @@ void CVariable::UpdateIonNeutralTransport( boost::shared_ptr<CDomain> &m, boost:
 					}
 					//exit(1) ;
 				break;
+				case 12:
+					
+					for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 
+						Cell_i  = plasma.get_cell( i ) ;
+
+						if( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) 
+						{
+				 			Mobi[ iSpecies ][ i ] = 5.5E21/TotalNumberDensity[i] ;
+						}
+					}
+					//exit(1) ;
+				break;
 				default:
 						if ( mpi_rank == 0 ){
 							cout <<"The Mobility Type of species[0] you choose is illegal. Please check!!!!" << endl ;
