@@ -158,7 +158,8 @@ class CVariable
 	map<string,int> VarTag ;
 
 	variable_set Potential ;/*!< \brief potential */
-	double *ChargeDen,      /*!< \brief net charge density */ 
+	double *ChargeDen,      /*!< \brief net charge density */ //-rho/eps//
+		   *RealChargeDen,      /*!< \brief net charge density */ //rho [C/m^3] //
 				 *eps,            /*!< \brief Material permittivity */ 
 				 *eps_eff ;       /*!< \brief Effective permittivity for semi-implicit poissiony */ 
 	double *Ex, *PreEx,     /*!< \brief current & previous Electric fields in X-dir. */ 

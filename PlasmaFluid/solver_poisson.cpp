@@ -64,6 +64,12 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	}
 	plasma.syn_parallel_cell_data( var->VarTag["Ex"] );
 	plasma.syn_parallel_cell_data( var->VarTag["Ey"] );
+	
+	/*Compute real net charge density [C/m^3]*/
+	for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) 
+	{
+		var->RealChargeDen[ i ]   = - var->ChargeDen[ i ] * vacuum_permittivity ;
+	}
 
 	if ( plasma.Mesh.ndim == 3 ) {	
 		for ( int i=0 ; i<plasma.Mesh.cell_number ; i++ ) {

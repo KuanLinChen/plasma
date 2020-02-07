@@ -15,13 +15,13 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
     its=0 ;
     
     var->Coil_frequency = 13.56e6 ;
-    var->Coil_Current 	= 20 ;
+    var->Coil_Current 	= 50 ;
     var->omega			= 2 * var->PI * var->Coil_frequency ;
 
     for( int cth = 0; cth < FDMaxwell_Re.Mesh.cell_number; cth++){
     	Cell *cell		=	FDMaxwell_Re.get_cell( cth ) ;
 		
-		if (	cell->type == MPP_cell_tag[ "QUARTZ_FVFD" ]	)
+		if (	cell->type == MPP_cell_tag[ "DIELECTRIC" ]	)
 		{ 
 				var->eps_FVFD	[ cth ]	=   4	;	 		
 		} else 
@@ -119,7 +119,7 @@ cout << FDMaxwell_Re.Mesh.cell_number << endl ;
     Cell *cell = FDMaxwell_Re.get_cell( cth ) ;
 
     if ( cell->type == MPP_cell_tag[ "coil" ] ) {
-		var->CurrentDen[ cth ] = var->Coil_Current/(0.0015*0.0015*var->PI) ;
+		var->CurrentDen[ cth ] = var->Coil_Current/(0.003*0.003*var->PI) ;
 	}else{
 		var->CurrentDen[ cth ] = 0 ;		
 	}//if charged species.
