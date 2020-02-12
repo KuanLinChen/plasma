@@ -52,6 +52,7 @@ class CEnergyDensity
 	 * \param[in] var    - Variable.
 	 */
 	void Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+	void Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 	void Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 
 	/*!

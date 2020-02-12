@@ -78,3 +78,11 @@ Case_Donko_Maxwellian/
 RUN_200Pa_300Vpp_13p56MHz_Maxwellian/
 
 2020_1D_Vpp300_200Pa_refine/
+
+2020_1D_Vpp300_200Pa_BC1/
+
+2020_1D_Vpp300_200Pa_Hagelaar/
+
+2020_1D_Vpp300_200Pa_MC/
+
+Case_Donko_MC/
