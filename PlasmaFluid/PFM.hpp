@@ -1,7 +1,7 @@
 #pragma once
 #include "ultraMPP.h"
 #include "petscsys.h" 
-#define FDMaxwell false
+#define FDMaxwell true
 
 using namespace std;
 
@@ -43,6 +43,7 @@ const double		vacuum_light_speed		=  299792458 ; /* Unit in m/s */
 
 #define BULK			  0
 #define PLASMA			9958
+#define PLASMA_FVFD			9959
 //#define SOLID			9958
 
 #define Debug_MatCoeff_DD_Zero 1
@@ -52,7 +53,9 @@ const double		vacuum_light_speed		=  299792458 ; /* Unit in m/s */
 
 #define POWER					100
 #define GROUND 				200
+#define GROUND_FVFD			201
 #define DIELECTRIC 		300
+#define DIELECTRIC_FVFD 301
 
 #define NEUMANN				400
 #define SYMMETRIC		  400
@@ -63,8 +66,9 @@ const double		vacuum_light_speed		=  299792458 ; /* Unit in m/s */
 
 
 /* please use you own value for your define boundary value. */
-#define GROUND_FVFD		4500
-#define QUARTZ_FVFD 	4600
+
+
+
 #define Empty 				4700
 #define coil 					4800
 

@@ -15,13 +15,13 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
     its=0 ;
     
     var->Coil_frequency = 13.56e6 ;
-    var->Coil_Current 	= 50 ;
+    var->Coil_Current 	= 30 ;
     var->omega			= 2 * var->PI * var->Coil_frequency ;
 
     for( int cth = 0; cth < FDMaxwell_Re.Mesh.cell_number; cth++){
     	Cell *cell		=	FDMaxwell_Re.get_cell( cth ) ;
 		
-		if (	cell->type == MPP_cell_tag[ "DIELECTRIC" ]	)
+		if (	cell->type == MPP_cell_tag[ "DIELECTRIC_FVFD" ]	)
 		{ 
 				var->eps_FVFD	[ cth ]	=   4	;	 		
 		} else 
@@ -89,8 +89,8 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
     FDMaxwell_coupled_eqs.finish_matrix_construction() ;
 
 	/*--- Source B ---*/
-    FDMaxwell_Re.set_bc_value(MPP_face_tag["GROUND"], 0.0,var->E_phi_Re.face );
-    FDMaxwell_Im.set_bc_value(MPP_face_tag["GROUND"], 0.0,var->E_phi_Im.face );
+    FDMaxwell_Re.set_bc_value(MPP_face_tag["GROUND_FVFD"], 0.0,var->E_phi_Re.face );
+    FDMaxwell_Im.set_bc_value(MPP_face_tag["GROUND_FVFD"], 0.0,var->E_phi_Im.face );
 
     FDMaxwell_Re.before_source_term_construction();
     FDMaxwell_Im.before_source_term_construction();
@@ -108,6 +108,14 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
 
     UltraMPPComputePowerAbsorptionFromMaxwell( config, var ) ;
 	//UltraMPPComputeInstantPowerAbsorptionFromMaxwell( config, var ) ;
+	
+	var->power = 0 ;
+	for ( int cth = 0 ; cth < plasma.Mesh.cell_number ; cth++ )
+	{
+		Cell *cell	=	plasma.get_cell( cth ) ;
+		var->power	+=	var->Power_Absorption_plasma[ cth ] * cell->volume;
+	}
+	var->power =	 plasma.parallel_sum( &var->power ) ;
 
 }
 void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )

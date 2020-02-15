@@ -326,9 +326,6 @@ void CDomain::Init()
 
 	type_typename[  NEUMANN  ]	=	"NEUMANN" ;
 	typename_type[ "NEUMANN" ]	=	 NEUMANN  ;
-	
-	type_typename[  GROUND_FVFD   ]	=	"GROUND_FVFD" ;
-	typename_type[ "GROUND_FVFD"  ]	=	 GROUND_FVFD  ;
 
 	/* Cell */
 	type_typename[  SOLID_POWER  ]	=	"SOLID_POWER" ;
@@ -337,21 +334,28 @@ void CDomain::Init()
 	type_typename[  SOLID_GROUND  ]	=	"SOLID_GROUND" ;
 	typename_type[ "SOLID_GROUND" ]	=	 SOLID_GROUND  ;
 	
-	type_typename[  QUARTZ_FVFD  ]	=	"QUARTZ_FVFD" ;
-	typename_type[ "QUARTZ_FVFD" ]	=	 QUARTZ_FVFD  ;
-	
 	type_typename[  Empty  ]	=	"Empty " ;
 	typename_type[ "Empty " ]	=	 Empty   ;
-	
-	type_typename[  coil  ]	=	"coil" ;
-	typename_type[ "coil" ]	=	 coil  ;
-
 
 	type_typename[  PLASMA  ]	=	"PLASMA" ;
 	typename_type[ "PLASMA" ]	=	 PLASMA  ;
 
 	type_typename[  DIELECTRIC  ]	=	"DIELECTRIC";
 	typename_type[ "DIELECTRIC" ]	=	 DIELECTRIC ;
+	
+		#if ( FDMaxwell == true ) 
+	type_typename[  PLASMA_FVFD  ]	=	"PLASMA_FVFD" ;
+	typename_type[ "PLASMA_FVFD" ]	=	 PLASMA_FVFD  ;
+	
+	type_typename[  coil  ]	=	"coil" ;
+	typename_type[ "coil" ]	=	 coil  ;
+	
+	type_typename[  DIELECTRIC_FVFD  ]	=	"DIELECTRIC_FVFD";
+	typename_type[ "DIELECTRIC_FVFD" ]	=	 DIELECTRIC_FVFD ;
+	
+	type_typename[  GROUND_FVFD   ]	=	"GROUND_FVFD" ;
+	typename_type[ "GROUND_FVFD"  ]	=	 GROUND_FVFD  ;
+		#endif
 	
 
 	UltraMPPExtractFaceCellTag() ;
