@@ -13,9 +13,10 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
 		cout<<"Creat FD_maxwell"<<endl;
 	}
     its=0 ;
-    
-    var->Coil_frequency = 13.56e6 ;
-    var->Coil_Current 	= 30 ;
+
+    json &ICP_simulation_condition    = *(FDMaxwell_coupled_eqs.get_json_input_parameter("ICP_simulation_condition")) ;
+	var->Coil_frequency = ICP_simulation_condition["Coil_frequency"] ;
+    var->Coil_Current 	= ICP_simulation_condition["Coil_current"] ;
     var->omega			= 2 * var->PI * var->Coil_frequency ;
 
     for( int cth = 0; cth < FDMaxwell_Re.Mesh.cell_number; cth++){
@@ -23,13 +24,12 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
 		
 		if (	cell->type == MPP_cell_tag[ "DIELECTRIC_FVFD" ]	)
 		{ 
-				var->eps_FVFD	[ cth ]	=   4	;	 		
+				var->eps_FVFD	[ cth ]	=   ICP_simulation_condition["Quartz_eps_r"] ;	 		
 		} else 
 		{
 				var->eps_FVFD	[ cth ]	=	1	; 				
 		}
     }  
-
     UltraMPPComputeCurrentDenAndSourceTerm( config, var ) ;
 
 	FVFD_CollTable.Init( config->CasePath+"5Collision.inp" ) ;
@@ -109,14 +109,18 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
     UltraMPPComputePowerAbsorptionFromMaxwell( config, var ) ;
 	//UltraMPPComputeInstantPowerAbsorptionFromMaxwell( config, var ) ;
 	
-	var->power = 0 ;
+	//Calculate power [W]
+	var->power_inductive = 0 ;
+	var->power_static = 0 ;	
 	for ( int cth = 0 ; cth < plasma.Mesh.cell_number ; cth++ )
 	{
 		Cell *cell	=	plasma.get_cell( cth ) ;
-		var->power	+=	var->Power_Absorption_plasma[ cth ] * cell->volume;
+		var->power_inductive	+=	var->Power_Absorption_plasma[ cth ] * cell->volume;
+		var->power_static	+=	var->JouleHeating[0][ cth ] * cell->volume ;
 	}
-	var->power =	 plasma.parallel_sum( &var->power ) ;
-
+	var->power_inductive =	 plasma.parallel_sum( &var->power_inductive ) ;
+	var->power_static	 =	 plasma.parallel_sum( &var->power_static ) ;
+	
 }
 void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {

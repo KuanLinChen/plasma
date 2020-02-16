@@ -196,7 +196,8 @@ class CVariable
 	double *Im_eq_source; // Source term in Imaginary 	part FD maxwell equation
 	double *Power_Absorption_plasma ;
 	double *Power_Absorption_FVFD ;
-	double power ; // Intergrate Power_Absorption [W/m^3] over all cells
+	double power_inductive ; // Intergrate Power_Absorption [W/m^3] over all cells //From inductive E field 
+	double power_static ; // Intergrate JdotE [W/m^3] over all cells //From static E field 
 	//--------------------------------------------------------------------------
 
 

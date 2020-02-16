@@ -67,9 +67,12 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	/* Diffusion coefficients */
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ )	
 	plasma.set_output( var->Diff[ iSpecies ].data_id ) ;
-
+	
+	#if (FDMaxwell == true ) 
 	plasma.set_output( var->VarTag["sigma_p_Re_plasma"   ] ) ;	
 	plasma.set_output( var->VarTag["sigma_p_Im_plasma"   ] ) ;
+	#endif  
+	
 	plasma.write_output(to_string(Step)) ;
 	#if (FDMaxwell == true ) 
 	FDMaxwell_Re.set_output( "FVFD-"+to_string(Cycle)+"-"+to_string(Step) ) ;
