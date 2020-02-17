@@ -114,7 +114,8 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 		Source 	 = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		//if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ]){
 
 			/*--- Unsteady term ---*/
 			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -125,7 +126,7 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 				j = Cell_i->cell[k]->local_id ; 
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -230,7 +231,7 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			//if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			//if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN" ] ){
 	 				//do nothing
 	 			}else{
@@ -347,7 +348,7 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boo
 		Source 	 = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Unsteady term ---*/
 			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -358,7 +359,7 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boo
 				j = Cell_i->cell[k]->local_id ; 
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -464,7 +465,7 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boo
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( face_type[ Cell_i->face[ k ]->type ]  == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -580,7 +581,7 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m,
 		Source 	 = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Unsteady term ---*/
 			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -591,7 +592,7 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m,
 				j = Cell_i->cell[k]->local_id ; 
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -697,7 +698,7 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m,
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( face_type[ Cell_i->face[ k ]->type ]  == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -817,7 +818,7 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 		#endif
 
 		/*--- Loop over PLASMA cells ---*/
-		if (  cell_type[ Cell_i->type ] == PLASMA ){
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Unsteady term ---*/
 			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -833,7 +834,7 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA){
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ]){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -897,7 +898,7 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -959,7 +960,7 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 		Source 	 = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Unsteady term ---*/
 			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -971,7 +972,7 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA  ){
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ]  ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -1022,7 +1023,7 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ) {
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ) {
 
 	 				//do nothing
 
@@ -1079,7 +1080,7 @@ void CDriftDiffusion::Bulid_A_B_1st_0D( boost::shared_ptr<CDomain> &m, boost::sh
 		Source 	 = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Unsteady term ---*/
 			drift_diffusion.add_entry_in_matrix( i, Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -1128,7 +1129,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 		yFlux = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
@@ -1136,7 +1137,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 				j = Cell_i->cell[k]->local_id ;
 				Cell_j = drift_diffusion.get_cell( j ) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ) {
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -1180,9 +1181,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 					xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
-	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
+	 			} else if(Cell_j->type != MPP_cell_tag[ "PLASMA" ] ) {//Discontinue face
 
-	 			//if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
 	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN" ] ){
 	 					//do nothing
 	 				} else {
@@ -1268,7 +1268,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -1382,7 +1382,7 @@ void CDriftDiffusion::CalculateGradientTe( boost::shared_ptr<CDomain> &m, boost:
 		yFlux = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
@@ -1390,7 +1390,7 @@ void CDriftDiffusion::CalculateGradientTe( boost::shared_ptr<CDomain> &m, boost:
 				j = Cell_i->cell[k]->local_id ;
 				Cell_j = drift_diffusion.get_cell( j ) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ) {
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 
 
@@ -1406,9 +1406,9 @@ void CDriftDiffusion::CalculateGradientTe( boost::shared_ptr<CDomain> &m, boost:
 					xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
-	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
+	 			} else if(Cell_j->type != MPP_cell_tag[ "PLASMA" ] ) {//Discontinue face
 
-	 				if ( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ) {
+	 				if ( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ) {
 	 					//do nothing
 	 				} else {
 
@@ -1442,7 +1442,7 @@ void CDriftDiffusion::CalculateGradientTe( boost::shared_ptr<CDomain> &m, boost:
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -1504,7 +1504,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 		yFlux = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
@@ -1512,7 +1512,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 				j = Cell_i->cell[k]->local_id ;
 				Cell_j = drift_diffusion.get_cell( j ) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ) {
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -1556,9 +1556,9 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 					xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
-	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
+	 			} else if(Cell_j->type != MPP_cell_tag[ "PLASMA" ] ) {//Discontinue face
 
-	 				if ( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ) {
+	 				if ( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ) {
 	 					//do nothing
 	 				} else {
 
@@ -1644,7 +1644,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -1758,7 +1758,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 		yFlux = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
@@ -1766,7 +1766,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 				j = Cell_i->cell[k]->local_id ;
 				Cell_j = drift_diffusion.get_cell( j ) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ) {
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -1810,9 +1810,9 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 					xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
-	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
+	 			} else if(Cell_j->type != MPP_cell_tag[ "PLASMA" ] ) {//Discontinue face
 
-	 				if ( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ) {
+	 				if ( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ) {
 	 					//do nothing
 	 				} else {
 
@@ -1898,7 +1898,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -2012,7 +2012,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 		yFlux = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if (  cell_type[ Cell_i->type ] == PLASMA ){
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -2020,7 +2020,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 				j      = Cell_i->cell[ k ]->local_id ;
 				Cell_j = drift_diffusion.get_cell( j ) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -2064,9 +2064,9 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 					xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
-	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
+	 			} else if(Cell_j->type != MPP_cell_tag[ "PLASMA" ] ) {//Discontinue face
 
-	 				if ( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ) {
+	 				if ( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ) {
 	 					//do nothing
 	 				} else {
 
@@ -2089,7 +2089,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -2139,7 +2139,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 		yFlux = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -2147,7 +2147,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 				j = Cell_i->cell[k]->local_id ;
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if (  cell_type[ Cell_j->type ] == PLASMA ){
+				if (  Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -2190,7 +2190,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 					xFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux * m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
 
-	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
+	 			} else if(Cell_j->type != MPP_cell_tag[ "PLASMA" ] ) {//Discontinue face
 
 					/*--- Diffusion flux ---*/
 					Diff = -var->Diff[iSpecies][ i ] ; 
@@ -2209,7 +2209,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -2257,7 +2257,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 		var->DD_Convection[iSpecies][ i ] = 0.0 ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -2266,7 +2266,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 
 				Cell_j = drift_diffusion.get_cell(j) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
 					dR = m->PFM_CELL[ i ][ k ].dPPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -2299,9 +2299,9 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 
 					var->DD_Convection[iSpecies][ i ] += faceFlux ;
 
-	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
+	 			} else if(Cell_j->type != MPP_cell_tag[ "PLASMA" ] ) {//Discontinue face
 
-	 				if ( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ) {
+	 				if ( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ) {
 	 					//do nothing
 	 				} else {
 
@@ -2373,7 +2373,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
@@ -2460,7 +2460,7 @@ void CDriftDiffusion::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boo
 		Cell_i = drift_diffusion.get_cell( i ) ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA  ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ]  ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -2468,7 +2468,7 @@ void CDriftDiffusion::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boo
 				j = Cell_i->cell[k]->local_id ;
 				Cell_j = drift_diffusion.get_cell(j) ; 
 
-				if ( cell_type[ Cell_j->type ] == DIELECTRIC ) {
+				if ( Cell_j->type == MPP_cell_tag[ "DIELECTRIC" ] ) {
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
 					*fabs( var->U1[ iSpecies ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
@@ -2479,7 +2479,7 @@ void CDriftDiffusion::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boo
 	 		}//End bulk 
 
 	 	/*--- Loop over DIELECTRIC cells ---*/
-	 	} else if( cell_type[ Cell_i->type ] == DIELECTRIC ){
+	 	} else if( Cell_i->type == MPP_cell_tag[ "DIELECTRIC" ] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -2487,7 +2487,7 @@ void CDriftDiffusion::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boo
 				j = m->PFM_CELL[ i ][ k ].NeighborCellId ;
 				Cell_j = drift_diffusion.get_cell(j) ; 
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ) {
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
 					*fabs( var->U1[ iSpecies ][ j ]*m->PFM_CELL[ i ][ k ].nf[ 0 ]*(-1.0) 
@@ -2510,7 +2510,7 @@ void CDriftDiffusion::CalculateCondCurrentDensity( boost::shared_ptr<CDomain> &m
 		Cell_i = drift_diffusion.get_cell( i ) ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA  ){
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ]  ){
 			var->CondJD[iSpecies][0][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U1[ iSpecies ][ i ] ;
 			var->CondJD[iSpecies][1][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U2[ iSpecies ][ i ] ;
 			var->CondJD[iSpecies][2][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U3[ iSpecies ][ i ] ;
@@ -2546,7 +2546,7 @@ void CDriftDiffusion::Semi_Empirical_Temperature( boost::shared_ptr<CDomain> &m,
 		mass =  (BackGroundMass+IonMass)/(5.0*IonMass + 3.0*BackGroundMass )*BackGroundMass ;
 		
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ) {
+		if ( Cell_i->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 			U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
 	 		V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;

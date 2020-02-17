@@ -124,7 +124,7 @@ void CFluidModel::ComputeFlux_HLL( boost::shared_ptr<CDomain> &m, boost::shared_
 		LogicalSwitch = ( 1.0 - Omaga ) + Omaga*Cell_i->r[0] ; 
 
 		/*--- Loop over PLASMA cells ---*/
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -132,7 +132,7 @@ void CFluidModel::ComputeFlux_HLL( boost::shared_ptr<CDomain> &m, boost::shared_
 				j = Cell_i->cell[k]->local_id ; 
 				Cell_j = plasma.get_cell(j) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					/*--- Left state ---*/
 					RhoL = var->U0[iSpecies][ i ] ;
@@ -692,7 +692,7 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 
 		/*--- Loop over PLASMA cells ---*/
 		//if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
-		if ( cell_type[ Cell_i->type ] == PLASMA ){
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
@@ -700,7 +700,7 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 				Cell * Cell_j = plasma.get_cell(j) ;
 
 				//if ( plasma.get_cell_typename( Cell_j->data_id ) == "DIELECTRIC" ) {
-					if ( cell_type[ Cell_j->type ] == DIELECTRIC ){
+					if ( Cell_j->type == MPP_cell_tag[ "DIELECTRIC"] ){
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
 					*fabs( var->U1[ iSpecies ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
@@ -711,7 +711,7 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 	 		}//End bulk 
 
 	 	/*--- Loop over DIELECTRIC cells ---*/
-	 	} else if( cell_type[ Cell_i->type ] == DIELECTRIC ){
+	 	} else if( Cell_i->type == MPP_cell_tag[ "DIELECTRIC"] ){
 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
@@ -719,7 +719,7 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 				j = Cell_i->cell[k]->local_id ; 
 				Cell *Cell_j = plasma.get_cell(j) ;
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ) {
+				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
 					*fabs( var->U1[ iSpecies ][ j ]*m->PFM_CELL[ i ][ k ].nf[ 0 ]*(-1.0) 
@@ -740,7 +740,7 @@ void CFluidModel::CalculateCondCurrentDensity( boost::shared_ptr<CDomain> &m, bo
 
 		/*--- Loop over PLASMA cells ---*/
 		//if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
-		if ( cell_type[ Cell_i->type ] == PLASMA ) {
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ) {
 			var->CondJD[iSpecies][0][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U1[ iSpecies ][ i ] ;
 			var->CondJD[iSpecies][1][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U2[ iSpecies ][ i ] ;
 			var->CondJD[iSpecies][2][i] =  config->Species[ iSpecies ].Charge*var->Qe*var->U3[ iSpecies ][ i ] ;
@@ -771,7 +771,7 @@ void CFluidModel::CalculateThermal2( boost::shared_ptr<CDomain> &m, boost::share
 
 		/*--- Loop over PLASMA cells ---*/
 		//if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
-		if ( cell_type[ Cell_i->type ] == PLASMA ) {
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ) {
         	Thermal2[ i ] = 8.0*var->Qe*var->T[iSpecies][ i ]/var->PI/IonMass ;
 	 	 
 		} else{
@@ -800,7 +800,7 @@ void CFluidModel::CalculateIonNeutralCollisionFrequency( boost::shared_ptr<CDoma
 
 		/*--- Loop over PLASMA cells ---*/
 		//if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
-		if ( cell_type[ Cell_i->type ] == PLASMA ) {
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 			U0 = var->U0[iSpecies][ i ] ;
 			U1 = var->U1[iSpecies][ i ] ;
@@ -947,7 +947,7 @@ void CFluidModel::UltraMPPCalculateKappa( boost::shared_ptr<CDomain> &m, boost::
 		/*--- Loop over PLASMA cells ---*/
 		Cell *Cell_i  = plasma.get_cell( i ) ;
 
-		if ( cell_type[ Cell_i->type ] == PLASMA ) {
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 			TotalCollisionFreq = 0.0 ;
 
@@ -982,7 +982,7 @@ void CFluidModel::UltraMPPCalculateArgonCrossSectionDonko( boost::shared_ptr<CVa
 		en = var->T[iSpecies][ i ] ;
 		Cell *Cell_i  = plasma.get_cell( i ) ;
 
-		if ( cell_type[ Cell_i->type ] == PLASMA ) {
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ) {
 
   		qm = 1.15e-18 * pow(en,-0.1)*pow(1.0+0.015/en,0.6);
   		qi = 2e-19 * pow(en,-0.5)/(1.0+en) +3e-19*en/pow(1.0+en/3.0,2);

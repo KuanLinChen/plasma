@@ -1,7 +1,7 @@
 #pragma once
 #include "ultraMPP.h"
 #include "petscsys.h" 
-#define FDMaxwell true
+#define FDMaxwell false
 
 using namespace std;
 

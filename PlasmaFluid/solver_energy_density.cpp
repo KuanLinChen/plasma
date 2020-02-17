@@ -82,7 +82,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 		iCell  = Cell_i->cell_number ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if (  cell_type[ Cell_i->type ] == PLASMA ){
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Unsteady term ---*/
 			energy_density.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume ) ;
@@ -94,7 +94,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 				Cell_j = energy_density.get_cell( j ) ;
 
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if (  Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					/*--- S-G ---*/
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -191,7 +191,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			//if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			//if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN" ] ){
 	 				//do nothing
 	 			}else{
@@ -308,7 +308,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 		iCell  = Cell_i->cell_number ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if (  cell_type[ Cell_i->type ] == PLASMA ){
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Unsteady term ---*/
 			energy_density.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume ) ;
@@ -320,7 +320,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 				Cell_j = energy_density.get_cell( j ) ;
 
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if (  Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					/*--- S-G ---*/
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -418,7 +418,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN  ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"]  ){
 	 				//do nothing
 	 			}else{
 
@@ -534,7 +534,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 		iCell  = Cell_i->cell_number ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if (  cell_type[ Cell_i->type ] == PLASMA ){
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Unsteady term ---*/
 			energy_density.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume ) ;
@@ -546,7 +546,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 				Cell_j = energy_density.get_cell( j ) ;
 
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if (  Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					/*--- S-G ---*/
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -644,7 +644,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN  ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"]  ){
 	 				//do nothing
 	 			}else{
 
@@ -760,7 +760,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 		iCell  = Cell_i->cell_number ;
 
 		/*--- Loop over PLASMA cells ---*/
-		if (  cell_type[ Cell_i->type ] == PLASMA ){
+		if (  Cell_i->type == MPP_cell_tag[ "PLASMA" ] ){
 
 			/*--- Unsteady term ---*/
 			energy_density.add_entry_in_matrix( i,  Cell_i->id, Cell_i->volume/var->Dt ) ;
@@ -776,7 +776,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 				Cell_j = energy_density.get_cell( j ) ;
 
 
-				if ( cell_type[ Cell_j->type ] == PLASMA ){
+				if (  Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
 
 					/*--- S-G ---*/
 					dL = m->PFM_CELL[ i ][ k ].dNPf / m->PFM_CELL[ i ][ k ].dDist ;
@@ -861,7 +861,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN"] ){
 	 				//do nothing
 	 			}else{
 
