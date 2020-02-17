@@ -191,7 +191,8 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = iCell ; k < iFace ; k++ ) {
 
-	 			if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN  ){
+	 			//if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN" ] ){
 	 				//do nothing
 	 			}else{
 

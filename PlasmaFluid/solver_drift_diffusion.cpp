@@ -230,7 +230,8 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 			/*--- Loop over boundary faces ---*/
 	 		for( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-	 			if( face_type[ Cell_i->face[ k ]->type ]  == NEUMANN ){
+	 			//if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN" ] ){
 	 				//do nothing
 	 			}else{
 
@@ -1181,7 +1182,8 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 
 	 			} else if( cell_type[ Cell_j->type ] != PLASMA ) {//Discontinue face
 
-	 				if ( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ) {
+	 			//if( cell_type[ Cell_i->face[ k ]->type ] == NEUMANN ){
+	 			if( Cell_i->face[ k ]->type == MPP_face_tag[ "NEUMANN" ] ){
 	 					//do nothing
 	 				} else {
 
