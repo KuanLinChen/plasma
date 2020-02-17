@@ -372,7 +372,9 @@ void CVariable::UltraMPPVarInit()
 
 		VarTag["Etd" ] = plasma.set_parallel_cell_data(  &Etd,  "Etd" ) ;
 		VarTag["Emag"] = plasma.set_parallel_cell_data( &Emag, "Emag" ) ;
-
+		VarTag["Tx"] = plasma.set_parallel_cell_data( &Tx, "Tx" ) ;
+		VarTag["Ty"] = plasma.set_parallel_cell_data( &Ty, "Ty" ) ;
+		//GradTe
 		VarTag["Kappa"] = plasma.set_parallel_cell_data( &Kappa, "kappa" ) ;
 
 		VarTag["plot_var"] = plasma.set_parallel_cell_data( &plot_var, "plot_var" ) ;

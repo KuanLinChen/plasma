@@ -169,6 +169,7 @@ class CVariable
 				 *Emag ;          /*!< \brief Electric fields magnitude */ 
 	double *Kappa ;				  /*!< \brief the variable for modified sound speed. See My IEEE paper. */
 	double *plot_var, *avg_plot_var ;
+	double *Tx, *Ty ;
 
 	void UltraMPPAvgVarInit() ;
 	double *AvgPotential,   /*!< \brief cycle-averaged potential */
