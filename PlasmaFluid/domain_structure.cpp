@@ -343,19 +343,19 @@ void CDomain::Init()
 	type_typename[  DIELECTRIC  ]	=	"DIELECTRIC";
 	typename_type[ "DIELECTRIC" ]	=	 DIELECTRIC ;
 	
-		#if ( FDMaxwell == true ) 
-	type_typename[  PLASMA_FVFD  ]	=	"PLASMA_FVFD" ;
-	typename_type[ "PLASMA_FVFD" ]	=	 PLASMA_FVFD  ;
+	#if ( FDMaxwell == true ) 
+		type_typename[  PLASMA_FVFD  ]	=	"PLASMA_FVFD" ;
+		typename_type[ "PLASMA_FVFD" ]	=	 PLASMA_FVFD  ;
 	
-	type_typename[  coil  ]	=	"coil" ;
-	typename_type[ "coil" ]	=	 coil  ;
+		type_typename[  coil  ]	=	"coil" ;
+		typename_type[ "coil" ]	=	 coil  ;
 	
-	type_typename[  DIELECTRIC_FVFD  ]	=	"DIELECTRIC_FVFD";
-	typename_type[ "DIELECTRIC_FVFD" ]	=	 DIELECTRIC_FVFD ;
+		type_typename[  DIELECTRIC_FVFD  ]	=	"DIELECTRIC_FVFD";
+		typename_type[ "DIELECTRIC_FVFD" ]	=	 DIELECTRIC_FVFD ;
 	
-	type_typename[  GROUND_FVFD   ]	=	"GROUND_FVFD" ;
-	typename_type[ "GROUND_FVFD"  ]	=	 GROUND_FVFD  ;
-		#endif
+		type_typename[  GROUND_FVFD   ]	=	"GROUND_FVFD" ;
+		typename_type[ "GROUND_FVFD"  ]	=	 GROUND_FVFD  ;
+	#endif
 	
 
 	UltraMPPExtractFaceCellTag() ;
@@ -408,15 +408,15 @@ void CDomain::UltraMPPExtractFaceCellTag()
 
 	/* For ICP */	 
 	#if ( FDMaxwell == true ) 
-	json &bc_setting    = *(FDMaxwell_coupled_eqs.get_json_input_parameter("boundary_setting")) ;
+		json &bc_setting    = *(FDMaxwell_coupled_eqs.get_json_input_parameter("boundary_setting")) ;
     json &cell_setting  = *(FDMaxwell_coupled_eqs.get_json_input_parameter("volume_setting"  )) ;
 
     /* Face */
 		for ( int ibc = 0; ibc < bc_setting["name"].size(); ibc++){
-		MPP_face_tag [ bc_setting["name"][ ibc ] ] = FDMaxwell_Re.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Re"][ ibc ] );
-        MPP_face_tag [ bc_setting["name"][ ibc ] ] = FDMaxwell_Im.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Im"][ ibc ] );
-                                    			 FDMaxwell_coupled_eqs.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Re"][ ibc ] );
-                                    			 FDMaxwell_coupled_eqs.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Im"][ ibc ] );
+			MPP_face_tag [ bc_setting["name"][ ibc ] ] = FDMaxwell_Re.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Re"][ ibc ] );
+			MPP_face_tag [ bc_setting["name"][ ibc ] ] = FDMaxwell_Im.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Im"][ ibc ] );
+			FDMaxwell_coupled_eqs.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Re"][ ibc ] );
+			FDMaxwell_coupled_eqs.set_bc_mapping( bc_setting["name"][ ibc ],  bc_setting["Boundary_type_Im"][ ibc ] );
 		}
 
 	/* Cell */
