@@ -274,6 +274,8 @@ int main( int argc, char * argv[] )
 					}
 					#if (FDMaxwell == true )
 					cout<<"FD_maxwell ksp iter : "<<FD_maxwell_solver->its<<endl ;
+					cout<<"Power absorbed by electron from inductive field is " << Var->power_inductive << " W." << endl ; 
+					cout<<"Power absorbed by electron from static field is " << Var->power_static << " W." << endl ; 
 					#endif
 					if(Config->PFM_Assumption == "LMEA") 
 					cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;
