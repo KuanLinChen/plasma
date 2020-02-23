@@ -90,7 +90,6 @@ void CPoisson::UltraMPPComputeNetCharge( boost::shared_ptr<CConfig> &config, boo
     Cell *cell = plasma.get_cell( i ) ;
     var->ChargeDen[ i ] = 0.0 ;
 
-//    if ( cell_type[ cell->type ] == PLASMA ) {
     if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 			for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
