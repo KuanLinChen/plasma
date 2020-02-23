@@ -68,7 +68,7 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	/*Compute real net charge density [C/m^3]*/
 	for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) 
 	{
-		var->RealChargeDen[ i ]   = - var->ChargeDen[ i ] * vacuum_permittivity ;
+		var->RealChargeDen[ i ]   = - var->ChargeDen[ i ] * vacuum_permittivity / var->Qe ;
 	}
 
 	if ( plasma.Mesh.ndim == 3 ) {	
@@ -90,7 +90,8 @@ void CPoisson::UltraMPPComputeNetCharge( boost::shared_ptr<CConfig> &config, boo
     Cell *cell = plasma.get_cell( i ) ;
     var->ChargeDen[ i ] = 0.0 ;
 
-    if ( cell_type[ cell->type ] == PLASMA ) {
+//    if ( cell_type[ cell->type ] == PLASMA ) {
+    if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 			for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 
@@ -125,7 +126,7 @@ void CPoisson::UltraMPPComputeEffectivePermitt( boost::shared_ptr<CConfig> &conf
 
     Cell *cell = plasma.get_cell( i ) ;
     tmp = 0.0 ;
-    if ( cell_type[ cell->type ] == PLASMA ) {
+    if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 			for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 				if ( config->Species[ jSpecies ].Type == ELECTRON or config->Species[ jSpecies ].Type == ION ) {
@@ -152,7 +153,8 @@ void CPoisson::UltraMPPComputeEffectivePermittEleOnly( boost::shared_ptr<CConfig
     Cell *cell = plasma.get_cell( i ) ;
     tmp = 0.0 ;
 
-    if ( cell_type[ cell->type ] == PLASMA ) {
+//    if ( cell_type[ cell->type ] == PLASMA ) {
+    if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 			for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 				if ( config->Species[ jSpecies ].Type == ELECTRON ) {
@@ -176,11 +178,10 @@ void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config,
 
     tmp = 0.0 ;
 
-    if ( cell_type[ cell->type ] == PLASMA ) {
-
+    if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 			for ( int k = 0 ; k < cell->cell_number ; k++ ){
 				Cell *cell2 = plasma.get_cell( cell->cell[ k ]->local_id ) ; 
-				if ( cell_type[ cell2->type ] == DIELECTRIC ) {
+				if ( cell2->type == MPP_cell_tag[ "DIELECTRIC" ] ) {
 
 						for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 
