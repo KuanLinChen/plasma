@@ -74,7 +74,9 @@ class CDriftDiffusion
 	 * \param[in] config - Definition of the particular problem.
 	 * \param[in] var    - Variable.
 	 */
-	void Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+	void Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;	
+	void Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+					//BBC = Brezmes & Breitkopf, 2015 ; COMSOL, 2013
 	void Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 	void Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 	void Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
@@ -90,6 +92,8 @@ class CDriftDiffusion
 	 * \param[in] var    - Variable.
 	 */
 	void CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+	void CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+						//BBC = Brezmes & Breitkopf, 2015 ; COMSOL, 2013
 	void CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	void CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	void CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
