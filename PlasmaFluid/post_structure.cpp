@@ -16,7 +16,7 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
  }
 	//plasma.set_output( var->VarTag["effective_permittivity"] ) ;
 	plasma.set_output( var->VarTag["ChargeDen"             ] ) ;
-	plasma.set_output( var->VarTag["ChargeDen    [C/m^3]"             ] ) ;
+	plasma.set_output( var->VarTag["ChargeDen    [m^-3]"             ] ) ;
 	plasma.set_output( var->VarTag["plot_var"] ) ;
 
 	plasma.set_output( var->VarTag["Tx"] ) ;

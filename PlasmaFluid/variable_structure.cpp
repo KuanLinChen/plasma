@@ -360,7 +360,7 @@ void CVariable::UltraMPPVarInit()
 		VarTag["permittivity"          ] = plasma.set_parallel_cell_data(&eps      , "permittivity"           ) ;
 		VarTag["effective_permittivity"] = plasma.set_parallel_cell_data(&eps_eff  , "effective_permittivity" ) ;
 		VarTag["ChargeDen"             ] = plasma.set_parallel_cell_data(&ChargeDen, "ChargeDen"              ) ;
-		VarTag["ChargeDen    [C/m^3]"   ] = plasma.set_parallel_cell_data(&RealChargeDen, "ChargeDen    [C/m^3]"              ) ;
+		VarTag["ChargeDen    [m^-3]"   ] = plasma.set_parallel_cell_data(&RealChargeDen, "ChargeDen    [m^-3]"              ) ;
 		
 		VarTag["Ex"   ] = plasma.set_parallel_cell_data(    &Ex, "Ex  [V/m]" ) ;
 		VarTag["Ey"   ] = plasma.set_parallel_cell_data(    &Ey, "Ey  [V/m]" ) ;
