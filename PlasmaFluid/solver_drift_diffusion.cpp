@@ -415,10 +415,12 @@ void CDriftDiffusion::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::s
 
 						case 0:/*--- Electron ---*/
 
-	 						/*--- Drift term ---*/
+	 						/*--- Drift term ---*/ /*No drift term in BBC.*/
+	 						/*
 							U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
 	 						V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 	 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] );
+							*/
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ;	if ( fixTe ) Te = 0.5 ;
@@ -1813,11 +1815,13 @@ void CDriftDiffusion::CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boo
 
 							case 0:/*--- Electron ---*/
 
-		 						/*--- Drift term ---*/
+	 							/*--- Drift term ---*/ /*No drift term in BBC.*/
+	 							/*
 								U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
 		 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 		 						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
-
+								*/
+								
 		 						/*--- Thermal flux term ---*/
 		 						Te = var->T[ 0 ][ i ] ;
 		 						if ( fixTe ) Te = 0.5 ;
