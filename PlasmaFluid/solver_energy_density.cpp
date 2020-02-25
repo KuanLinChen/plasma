@@ -57,7 +57,7 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 			break;
 
 		case 6://BBC = Brezmes & Breitkopf, 2015 ; COMSOL, 2013
-			Bulid_A_B_1st_Hagelaar_Txy( m, config, variable ) ;
+			Bulid_A_B_1st_BBC( m, config, variable ) ;
 			break;
 						
 		default:
@@ -378,11 +378,13 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 
 						/*--- Electron, thermal flux ---*/
 						case 0:
-	 						/*--- Drift term ---*/
+	 						/*--- Drift term ---*/ /*No drift term in BBC.*/
+	 						/*
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
 	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
-
+							*/  
+							
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
 	 						vn += 5/6*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec)/(1.0+Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
