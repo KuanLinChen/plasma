@@ -66,7 +66,7 @@ void CDriftDiffusion::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 
 			case 7://GEC
 				//Bulid_A_B_1st_BBC( m, config, variable ) ;
-				Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
+				Bulid_A_B_1st_GEC( m, config, variable ) ;
 			break;
 			default:
 				cout<<"wall type"<<WallType<<endl;exit(1);
@@ -356,6 +356,7 @@ void CDriftDiffusion::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::s
 	int j=0 ;
 	double Source=0.0, vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0 ;
 	double Diff=0.0, Mobi=0.0, SourceSink=0.0, TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
+	double P_torr=0.0, E=0.0, EoverP=0.0, alpha=0.0, k_ioni=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
 	drift_diffusion.before_matrix_construction() ;
@@ -558,14 +559,14 @@ void CDriftDiffusion::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::s
 	 		/*--- Previous solution ---*/
 	 		//Source += (var->PreU0[iSpecies][ i ])*Cell_i->volume/var->Dt ;
 	 		drift_diffusion.add_entry_in_source_term( i, (var->PreU0[iSpecies][ i ])*Cell_i->volume/var->Dt ) ;
-	 		double P_torr=0.0, E=0.0, EoverP=0.0, alpha=0.0, k_ioni=0.0 ;
+
 
 			P_torr = var->TotalGasPressure[ i ] ;
 		  E = sqrt ( var->Ex[i]*var->Ex[i] + var->Ey[i]*var->Ey[i] )*0.01 ;
 		  EoverP = E/P_torr ; // unit: cm
 
 		  alpha = 34.0*exp(-16.0/pow(EoverP,0.4) )*P_torr *100.0 ;
-		  k_ioni = (alpha/var->TotalNumberDensity[i])*var->Mu[0][i]*(E/0.01) ;
+		  k_ioni = (alpha/var->TotalNumberDensity[i])*var->Mobi[0][i]*(E/0.01) ;
 	 		SourceSink = k_ioni * var->TotalNumberDensity[i]*var->U0[0][i] ;
 
 	 		var->ProductionRate[iSpecies][ i ] = SourceSink ;
