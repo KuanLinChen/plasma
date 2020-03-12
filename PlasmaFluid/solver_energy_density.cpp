@@ -266,17 +266,17 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 												 										 + var->Ey[ i ]*var->U2[ iSpecies ][ i ] ) ;
 
 	 		/*--- energy loss term ---*/
-	 		// switch ( eLOSS ) {
-	 		// 	case 1:
-	 			SourceSink = *(var->EnergySourcePoint + (i) ) ;
-				// 	break;
-				// case 2:
-	 		// 		SourceSink = var->eEnergyLossTable.GetValueLog( var->T[iSpecies][ i ] ) * var->TotalNumberDensity[ i ]*var->U0[ iSpecies ][ i ] ;
-				// 	break;
-				// default:
-	 		// 		SourceSink = *(var->EnergySourcePoint + (i) ) ;
-		  //   		break;
-	 		// }
+	 		switch ( eLOSS ) {
+	 			case 1:
+	 				SourceSink = *(var->EnergySourcePoint + (i) ) ;
+					break;
+				case 2:
+	 				SourceSink = var->eEnergyLossTable.GetValue( var->T[iSpecies][ i ] )*var->TotalNumberDensity[ i ]/var->Qe*var->U0[iSpecies][i] ;
+					break;
+				default:
+	 				SourceSink = *(var->EnergySourcePoint + (i) ) ;
+		   		break;
+	 		}
 	 		//Source += (-SourceSink)*Cell_i->volume*var->Dt ;
 	 		//Source += (JdotE-SourceSink/var->Ref_ES)*Cell_i->volume*var->Dt ;
 	 		energy_density.add_entry_in_source_term( i, (JdotE-SourceSink/var->Ref_ES)*Cell_i->volume*var->Dt ) ;

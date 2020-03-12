@@ -14,7 +14,7 @@ void CConfig::Init( string Path )
 	Cycle 				= 0 ;
 	CasePath = Path ;
 	eMeanEnergyFile = "NULL";
-	eEnergyLossFile = "" ;
+	eEnergyLossFile = "";
 	SecondaryElectronEmissionEnergy = 0.0 ;
 	SecondaryElectronEmissionCoeff 	= 0.0 ;
 	ReflectionCoefficient 			= 0.0 ;
