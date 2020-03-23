@@ -17,6 +17,9 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
     json &ICP_simulation_condition    = *(FDMaxwell_coupled_eqs.get_json_input_parameter("ICP_simulation_condition")) ;
 	var->Coil_frequency = ICP_simulation_condition["Coil_frequency"] ;
     var->Coil_Current 	= ICP_simulation_condition["Coil_current"] ;
+    var->Coil_area 		= ICP_simulation_condition["Coil_area"] ;
+    var->Coil_power 		= ICP_simulation_condition["Coil_power"] ;
+    var->Coil_change_factor 		= ICP_simulation_condition["Coil_change_factor"] ;
     var->omega			= 2 * var->PI * var->Coil_frequency ;
 
     for( int cth = 0; cth < FDMaxwell_Re.Mesh.cell_number; cth++){
@@ -24,7 +27,7 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
 		
 		if (	cell->type == MPP_cell_tag[ "DIELECTRIC_FVFD" ]	)
 		{ 
-				var->eps_FVFD	[ cth ]	=   ICP_simulation_condition["Quartz_eps_r"] ;	 		
+				var->eps_FVFD	[ cth ]	=   ICP_simulation_condition["DIELECTRIC_eps_r"] ;	 		
 		} else 
 		{
 				var->eps_FVFD	[ cth ]	=	1	; 				
@@ -92,6 +95,8 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
     FDMaxwell_Re.set_bc_value(MPP_face_tag["GROUND_FVFD"], 0.0,var->E_phi_Re.face );
     FDMaxwell_Im.set_bc_value(MPP_face_tag["GROUND_FVFD"], 0.0,var->E_phi_Im.face );
 
+    UltraMPPComputeCurrentDenAndSourceTerm( config, var ) ;
+
     FDMaxwell_Re.before_source_term_construction();
     FDMaxwell_Im.before_source_term_construction();
     FDMaxwell_coupled_eqs.before_source_term_construction();
@@ -124,14 +129,14 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
 }
 void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
+	
 	/*Only the 'coil' region. */
-cout << FDMaxwell_Re.Mesh.cell_number << endl ;
   for ( int cth=0 ; cth< FDMaxwell_Re.Mesh.cell_number ; cth++ ) {
 
     Cell *cell = FDMaxwell_Re.get_cell( cth ) ;
 
     if ( cell->type == MPP_cell_tag[ "coil" ] ) {
-		var->CurrentDen[ cth ] = var->Coil_Current/(0.003*0.003*var->PI) ;
+		var->CurrentDen[ cth ] = var->Coil_Current/var->Coil_area ;
 	}else{
 		var->CurrentDen[ cth ] = 0 ;		
 	}//if charged species.
@@ -140,6 +145,14 @@ cout << FDMaxwell_Re.Mesh.cell_number << endl ;
 	var->Im_eq_source[ cth ] = var->omega * vacuum_permeability * var->CurrentDen[ cth ] ; 
 
   }//cell loop.
+  
+  if( var->power_inductive < var->Coil_power )
+  {
+  		var->Coil_Current = var->Coil_Current * var->Coil_change_factor ;
+  }else if( var->power_inductive > var->Coil_power)
+  {
+		var->Coil_Current = var->Coil_Current / var->Coil_change_factor ;	
+  }
 
   plasma.syn_parallel_cell_data( var->VarTag["CurrentDen"] );   
 }

@@ -74,6 +74,7 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	#if (FDMaxwell == true ) 
 	plasma.set_output( var->VarTag["sigma_p_Re_plasma"   ] ) ;	
 	plasma.set_output( var->VarTag["sigma_p_Im_plasma"   ] ) ;
+	plasma.set_output( var->VarTag["Power_Absorption_plasma"   ] ) ;
 	#endif  
 	
 	plasma.write_output(to_string(Step)) ;
@@ -82,7 +83,9 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	FDMaxwell_Re.set_output( var->E_phi_Re.tag_current ) ;
 	FDMaxwell_Re.set_output( var->E_phi_Im.tag_current ) ;		
 	FDMaxwell_Re.set_output( var->VarTag["Power_Absorption_FVFD"   ] ) ;
-	FDMaxwell_Re.set_output( var->VarTag["permittivity_FVFD"       ] ) ;	
+	FDMaxwell_Re.set_output( var->VarTag["permittivity_FVFD"       ] ) ;
+	FDMaxwell_Re.set_output( var->VarTag["sigma_p_Re_FVFD"   ] ) ;	
+	FDMaxwell_Re.set_output( var->VarTag["sigma_p_Im_FVFD"   ] ) ;	
 	FDMaxwell_Re.write_output(to_string(Step)) ;
 
 	#endif 
