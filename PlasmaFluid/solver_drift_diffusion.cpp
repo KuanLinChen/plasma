@@ -167,19 +167,19 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 
 					if ( Pe < -ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else if ( Pe > ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else {
 
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 
 					}
 
@@ -209,10 +209,10 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 	 							}
 	 							
 	 						}
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -224,19 +224,19 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ) ;
 
 	  					/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 
 						break;
 
@@ -282,10 +282,10 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 	 							
 	 						} 
 	 						
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -297,20 +297,20 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf  ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf  ) ;
 	  						/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						default:
@@ -402,19 +402,19 @@ void CDriftDiffusion::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::s
 
 					if ( Pe < -ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else if ( Pe > ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else {
 
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 
 					}
 
@@ -444,10 +444,10 @@ void CDriftDiffusion::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::s
 	 							}
 	 							
 	 						}
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -459,19 +459,19 @@ void CDriftDiffusion::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::s
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ) ;
 
 	  					/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 
 						break;
 
@@ -517,10 +517,10 @@ void CDriftDiffusion::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::s
 	 							
 	 						} 
 	 						
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -532,20 +532,20 @@ void CDriftDiffusion::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::s
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf  ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf  ) ;
 	  						/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						default:
@@ -639,19 +639,19 @@ void CDriftDiffusion::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::s
 
 					if ( Pe < -ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else if ( Pe > ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else {
 
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 
 					}
 
@@ -683,10 +683,10 @@ void CDriftDiffusion::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::s
 	 							}
 	 							
 	 						}
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -698,19 +698,19 @@ void CDriftDiffusion::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::s
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ) ;
 
 	  					/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 
 						break;
 
@@ -756,10 +756,10 @@ void CDriftDiffusion::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::s
 	 							
 	 						} 
 	 						
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -771,20 +771,20 @@ void CDriftDiffusion::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::s
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf  ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf  ) ;
 	  						/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						default:
@@ -874,19 +874,19 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boo
 
 					if ( Pe < -ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else if ( Pe > ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else {
 
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 
 					}
 
@@ -917,10 +917,10 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boo
 	 							}
 	 							
 	 						}
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -932,19 +932,19 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boo
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ) ;
 
 	  					/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 
 						break;
 
@@ -989,10 +989,10 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boo
 	 							
 	 						} 
 	 						
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -1004,20 +1004,20 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boo
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf  ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf  ) ;
 	  						/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						default:
@@ -1107,19 +1107,19 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m,
 
 					if ( Pe < -ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else if ( Pe > ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else {
 
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 
 					}
 
@@ -1150,10 +1150,10 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m,
 	 							}
 	 							
 	 						}
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -1165,19 +1165,19 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m,
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ) ;
 
 	  					/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 
 						break;
 
@@ -1222,10 +1222,10 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m,
 	 							
 	 						} 
 	 						
-	 						//Source += SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
-							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//Source += SecondaryElectronEmission*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+							drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
+							drift_diffusion.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA ) ;
 						break;
 
 						case 1:/*--- Ion ---*/
@@ -1237,20 +1237,20 @@ void CDriftDiffusion::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m,
 
 							/*--- Thermal flux term ---*/
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						/*--- Neutral, Diffusion flux ---*/	
 						case 2:	
 
 							Diff = -var->Diff[iSpecies][ i ] ;
-	  					//C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
-	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dPPf  ) ;
+	  					//C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf ;//*var->Dt ;
+	  					drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dPPf  ) ;
 	  						/*--- Thermal flux term ---*/
 	 						vn = 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;//*var->Dt ;
-	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA ;//*var->Dt ;
+	 						drift_diffusion.add_entry_in_matrix     ( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 						break;
 
 						default:
@@ -1348,32 +1348,32 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 
 					if ( Pe < -ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 						#if Debug_Bulid_A_B_1st_zero
-							C[ 0 ] += vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-							C[ncol] = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+							C[ 0 ] += vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
+							C[ncol] = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
 						#endif
 
 					} else if ( Pe > ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 						#if Debug_Bulid_A_B_1st_zero
-							C[ 0 ] += vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-							C[ncol] = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+							C[ 0 ] += vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
+							C[ncol] = vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
 						#endif
 
 					} else {
 
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;	
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;	
 						#if Debug_Bulid_A_B_1st_zero
-							C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
-							C[ncol] =  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+							C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ;
+							C[ncol] =  Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ;
 						#endif
 
 					}
@@ -1382,9 +1382,9 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 	 			} else {/*--- For discontuity face ---*/
 
 					Diff 	= -var->Diff[iSpecies][ i ] ;
-	  			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+	  			drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 	  			#if Debug_Bulid_A_B_1st_zero
-	  				C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea ;
+	  				C[ 0 ] +=  vn*Cell_i->face[k]->dA ;
 	  			#endif
 	 			}
 	 		}//End bulk face
@@ -1398,9 +1398,9 @@ void CDriftDiffusion::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::
 	 			}else{
 
 					Diff = -var->Diff[iSpecies][ i ] ;
-					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 					#if Debug_Bulid_A_B_1st_zero
-						C[ 0 ] += -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+						C[ 0 ] += -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ;
 					#endif
 	 			}
 	 		}
@@ -1487,19 +1487,19 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 
 					if ( Pe < -ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else if ( Pe > ZERO ) {
 
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id, vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 					} else {
 
 						Diff = (-1.0)*( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
-						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;	
+						drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, -Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
+						drift_diffusion.add_entry_in_matrix( i,  Cell_j->id,  Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;	
 
 					}
 
@@ -1509,7 +1509,7 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 					U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
  					V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
  					vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] );
- 					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea ) ;
+ 					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA ) ;
 
 	 			}
 	 		}//End bulk face
@@ -1528,7 +1528,7 @@ void CDriftDiffusion::Bulid_A_B_1st_neumann( boost::shared_ptr<CDomain> &m, boos
 					U  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ex[ i ] ;
 					V  = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ]* var->Ey[ i ] ;
 					vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] );
-					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea  ) ;
+					drift_diffusion.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA  ) ;
 
 	 			}
 	 		}
@@ -1652,19 +1652,19 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 					/*--- S-G ---*/
 					if ( Pe < -ZERO ) {
 
-						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else if ( Pe > ZERO ) {
 
-						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else {
 
 						Diff = -( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;
-						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
-						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
+						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 					}
 
@@ -1710,7 +1710,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 		 						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 								yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -1728,7 +1728,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 		 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[ iSpecies ][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+		 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 		 						xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 								yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -1740,7 +1740,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 								/*--- Diffusion flux ---*/
 								Diff = -var->Diff[iSpecies][ i ] ; 
 
-		  					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+		  					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 								PV = var->U0[iSpecies][ i ] ;
 
 		  					faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
@@ -1795,7 +1795,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -1814,7 +1814,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+	 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -1826,7 +1826,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 
 							/*--- Diffusion flux ---*/	
 							Diff = -var->Diff[iSpecies][ i ] ; 
-							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 							PV = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
@@ -1889,8 +1889,8 @@ void CDriftDiffusion::CalculateGradientTe( boost::shared_ptr<CDomain> &m, boost:
 
 
 
-					P = -1.0/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
-					N =  1.0/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+					P = -1.0/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
+					N =  1.0/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 
 					PV = var->T[iSpecies][ i ] ;
@@ -2027,19 +2027,19 @@ void CDriftDiffusion::CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boo
 					/*--- S-G ---*/
 					if ( Pe < -ZERO ) {
 
-						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else if ( Pe > ZERO ) {
 
-						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else {
 
 						Diff = -( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;
-						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
-						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
+						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 					}
 
@@ -2087,7 +2087,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boo
 
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 		 						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 								yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2105,7 +2105,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boo
 		 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[ iSpecies ][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+		 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 		 						xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 								yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2117,7 +2117,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boo
 								/*--- Diffusion flux ---*/
 								Diff = -var->Diff[iSpecies][ i ] ; 
 
-		  					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+		  					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 								PV = var->U0[iSpecies][ i ] ;
 
 		  					faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
@@ -2172,7 +2172,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boo
 
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2191,7 +2191,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boo
 
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+	 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2203,7 +2203,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boo
 
 							/*--- Diffusion flux ---*/	
 							Diff = -var->Diff[iSpecies][ i ] ; 
-							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 							PV = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
@@ -2282,19 +2282,19 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 					/*--- S-G ---*/
 					if ( Pe < -ZERO ) {
 
-						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else if ( Pe > ZERO ) {
 
-						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else {
 
 						Diff = -( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;
-						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
-						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
+						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 					}
 
@@ -2341,7 +2341,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 		 						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 								yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2359,7 +2359,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 		 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[ iSpecies ][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+		 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 		 						xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 								yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2371,7 +2371,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 								/*--- Diffusion flux ---*/
 								Diff = -var->Diff[iSpecies][ i ] ; 
 
-		  					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+		  					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 								PV = var->U0[iSpecies][ i ] ;
 
 		  					faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
@@ -2426,7 +2426,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2445,7 +2445,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+	 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2457,7 +2457,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 
 							/*--- Diffusion flux ---*/	
 							Diff = -var->Diff[iSpecies][ i ] ; 
-							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 							PV = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
@@ -2536,19 +2536,19 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 					/*--- S-G ---*/
 					if ( Pe < -ZERO ) {
 
-						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else if ( Pe > ZERO ) {
 
-						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else {
 
 						Diff = -( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;
-						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
-						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
+						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 					}
 
@@ -2595,7 +2595,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 		 						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 								yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2613,7 +2613,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 		 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[ iSpecies ][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+		 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 		 						xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 								yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2625,7 +2625,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 								/*--- Diffusion flux ---*/
 								Diff = -var->Diff[iSpecies][ i ] ; 
 
-		  					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+		  					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 								PV = var->U0[iSpecies][ i ] ;
 
 		  					faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
@@ -2680,7 +2680,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2699,7 +2699,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+	 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 	 						xFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 							yFlux += faceFlux*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2711,7 +2711,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 
 							/*--- Diffusion flux ---*/	
 							Diff = -var->Diff[iSpecies][ i ] ; 
-							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 							PV = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
@@ -2790,19 +2790,19 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 					/*--- S-G ---*/
 					if ( Pe < -ZERO ) {
 
-						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else if ( Pe > ZERO ) {
 
-						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else {
 
 						Diff = -( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;
-						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
-						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
+						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 					}
 
@@ -2827,7 +2827,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
  						vn = max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 						PV = var->U0[iSpecies][ i ] ;
 
- 						faceFlux = ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+ 						faceFlux = ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
  						xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 						yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2850,7 +2850,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_neumann( boost::shared_ptr<CDomain> &m,
 
 					PV = var->U0[iSpecies][ i ] ;
 
-					faceFlux = ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea*m->PFM_CELL[ i ][ k ].dPPf ;
+					faceFlux = ( vn*PV )*Cell_i->face[k]->dA*m->PFM_CELL[ i ][ k ].dPPf ;
 
 					xFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 0 ] ;
 					yFlux += faceFlux* m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
@@ -2917,19 +2917,19 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 					/*--- S-G ---*/
 					if ( Pe < -ZERO ) {
 
-						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else if ( Pe > ZERO ) {
 
-						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-						N = vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+						P = vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
+						N = vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
 
 					} else {
 
 						Diff = -( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;
-						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
-						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+						P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
+						N =  Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
 					}
 					PV = var->U0[iSpecies][ i ] ;
@@ -2944,7 +2944,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 
 					/*--- Diffusion flux ---*/
 					Diff = -var->Diff[iSpecies][ i ] ; 
-					P    = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+					P    = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 					PV   = var->U0[iSpecies][ i ] ;
 
 					faceFlux= ( P*PV - 0.0 )*m->PFM_CELL[ i ][ k ].dPPf ;
@@ -2965,7 +2965,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_zero( boost::shared_ptr<CDomain> &m, bo
 
 					/*--- Diffusion flux ---*/
 					Diff = -var->Diff[iSpecies][ i ] ; 
-					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*m->PFM_CELL[ i ][ k ].dArea ;
+					P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 					PV = var->U0[iSpecies][ i ] ;
 						
 					faceFlux= ( P*PV - 0.0 )*m->PFM_CELL[ i ][ k ].dPPf ;
@@ -3045,7 +3045,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 					PV = var->U0[iSpecies][ i ] ;
 					NV = var->U0[iSpecies][ j ] ;
 
-					faceFlux = ( P*PV + N*NV )*m->PFM_CELL[ i ][ k ].dArea ;
+					faceFlux = ( P*PV + N*NV )*Cell_i->face[k]->dA ;
 
 					var->DD_Convection[iSpecies][ i ] += faceFlux ;
 
@@ -3083,7 +3083,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea ;
+		 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA ;
 
 								var->DD_Convection[iSpecies][ i ] += faceFlux ;
 
@@ -3100,7 +3100,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 								//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
 								PV = var->U0[iSpecies][ i ] ;
 
-		 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea ;
+		 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA ;
 
 								var->DD_Convection[iSpecies][ i ] += faceFlux ;
 
@@ -3156,7 +3156,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*m->PFM_CELL[ i ][ k ].dArea ;
+	 						faceFlux = ( vn*PV - SecondaryElectronEmission)*Cell_i->face[k]->dA ;
 
 							var->DD_Convection[iSpecies][ i ] += faceFlux ;
 
@@ -3173,7 +3173,7 @@ void CDriftDiffusion::CalculateDDConvection( boost::shared_ptr<CDomain> &m, boos
 	 						//vn += 0.25*sqrt( 8.0*var->Qe*var->T[iSpecies][ i ] / var->PI / (config->Species[ iSpecies ].Mass_Kg/var->Ref_Mass) ) ;
 							PV = var->U0[iSpecies][ i ] ;
 
-	 						faceFlux=  ( vn*PV )*m->PFM_CELL[ i ][ k ].dArea ;
+	 						faceFlux=  ( vn*PV )*Cell_i->face[k]->dA ;
 
 							var->DD_Convection[iSpecies][ i ] += faceFlux ;
 

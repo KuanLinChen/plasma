@@ -50,8 +50,8 @@ class CCell {
 		   NNP[3], /*!< \brief Vector of NN'. */
 		     dPPf, /*!< \brief Distance between P' and f. */
 		   	 dNPf, /*!< \brief Distance between N' and f. */
-			dDist, /*!< \brief Distance between P' and N'. */
-			dArea; /*!< \brief Face area. */
+			dDist; /*!< \brief Distance between P' and N'. */
+			//dArea; /*!< \brief Face area. */
 	double SurfaceCharge ;
 	void Init()
 	{
@@ -60,7 +60,7 @@ class CCell {
 		 dPPf = 0.0 ;
 		 dNPf = 0.0 ;
 		dDist = 0.0 ;
-		dArea = 0.0 ;
+		//dArea = 0.0 ;
 		for ( int i = 0 ; i < 3 ; i++ ){
 			 nf[ i ] = 0.0 ;
 			 mf[ i ] = 0.0 ;

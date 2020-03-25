@@ -128,25 +128,25 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 					
 					if ( Pe < -ZERO  ){
 
-						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else if ( Pe > ZERO  ){
 
-						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else {
 
 						Diff = - ( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;  
-						//C[ 0 ] 	  += -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						//C[ncol]    =  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						//C[ 0 ] 	  += -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						//C[ncol]    =  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
 
 					}
 
@@ -176,10 +176,10 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 						break;
 
 						/*--- Ion, drift flux ---*/	
@@ -232,10 +232,10 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 	 						
 						break;
 
@@ -354,25 +354,25 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 					
 					if ( Pe < -ZERO  ){
 
-						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else if ( Pe > ZERO  ){
 
-						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else {
 
 						Diff = - ( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;  
-						//C[ 0 ] 	  += -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						//C[ncol]    =  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						//C[ 0 ] 	  += -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						//C[ncol]    =  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
 
 					}
 
@@ -402,10 +402,10 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 						break;
 
 						/*--- Ion, drift flux ---*/	
@@ -458,10 +458,10 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 	 						
 						break;
 
@@ -581,25 +581,25 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 					
 					if ( Pe < -ZERO  ){
 
-						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else if ( Pe > ZERO  ){
 
-						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else {
 
 						Diff = - ( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;  
-						//C[ 0 ] 	  += -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						//C[ncol]    =  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						//C[ 0 ] 	  += -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						//C[ncol]    =  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
 
 					}
 
@@ -631,10 +631,10 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 						break;
 
 						/*--- Ion, drift flux ---*/	
@@ -687,10 +687,10 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 	 						
 						break;
 
@@ -809,25 +809,25 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 					
 					if ( Pe < -ZERO  ){
 
-						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else if ( Pe > ZERO  ){
 
-						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else {
 
 						Diff = - ( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;  
-						//C[ 0 ] 	  += -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						//C[ncol]    =  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						//C[ 0 ] 	  += -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						//C[ncol]    =  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
 
 					}
 
@@ -858,10 +858,10 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 						break;
 
 						/*--- Ion, drift flux ---*/	
@@ -913,10 +913,10 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 	 						
 						break;
 
@@ -1035,25 +1035,25 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 					
 					if ( Pe < -ZERO  ){
 
-						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else if ( Pe > ZERO  ){
 
-						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+						//C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						//C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA*var->Dt ) ;
 
 					} else {
 
 						Diff = - ( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;  
-						//C[ 0 ] 	  += -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						//C[ncol]    =  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						//C[ 0 ] 	  += -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						//C[ncol]    =  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist*var->Dt ) ;
 
 					}
 
@@ -1084,10 +1084,10 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 						break;
 
 						/*--- Ion, drift flux ---*/	
@@ -1139,10 +1139,10 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 	 							}
 	 						}
 
-	 						//C[ 0 ] +=  vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
-	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*m->PFM_CELL[ i ][ k ].dArea*var->Dt ) ;
+	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
+	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
+	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 	 						
 						break;
 
@@ -1265,30 +1265,30 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 					
 					if ( Pe < -ZERO  ){
 
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 
 						#if Debug_EE_Bulid_A_B_1st_zero
-							C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-							C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+							C[ 0 ] += C53*vn*(     - 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
+							C[ncol] = C53*vn*( 1.0 + 1.0/( exp(-Pe)-1.0) )*Cell_i->face[k]->dA ;
 						#endif
 
 					} else if ( Pe > ZERO  ){
 
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id, C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ) ;
 						#if Debug_EE_Bulid_A_B_1st_zero
-							C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
-							C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*m->PFM_CELL[ i ][ k ].dArea ;
+							C[ 0 ] += C53*vn*( 1.0 + 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
+							C[ncol] = C53*vn*(     - 1.0/( exp( Pe)-1.0) )*Cell_i->face[k]->dA ;
 						#endif
 					} else {
 
 						Diff = - ( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ) ;  
-						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
-						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
+						energy_density.add_entry_in_matrix( i,  Cell_j->id,  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 						#if Debug_EE_Bulid_A_B_1st_zero						
-							C[ 0 ] += -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
-							C[ncol] =  C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+							C[ 0 ] += -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ;
+							C[ncol] =  C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ;
 						#endif
 					}
 					ncol ++ ;
@@ -1301,9 +1301,9 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 						case 0:
 
 							Diff = -var->Diff[iSpecies][ i ] ;
-							energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+							energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 							#if Debug_EE_Bulid_A_B_1st_zero
-							C[0]+= -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+							C[0]+= -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ;
 							#endif
 						break;
 
@@ -1337,9 +1337,9 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 						/*--- Electron, thermal flux ---*/
 						case 0:
 							Diff = -var->Diff[iSpecies][ i ] ;
-							energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ) ;
+							energy_density.add_entry_in_matrix( i,  Cell_i->id, -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ) ;
 							#if Debug_EE_Bulid_A_B_1st_zero
-								C[0]+= -C53*Diff*m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+								C[0]+= -C53*Diff*Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ;
 							#endif
 						break;
 

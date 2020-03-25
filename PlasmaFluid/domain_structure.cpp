@@ -76,7 +76,7 @@ void CDomain::BulidCellStructure()
 
 				/*--- dDist = |P'N'|, dArea = face area ---*/
 				PFM_CELL[ i ][ k ].dDist = PFM_CELL[ i ][ k ].dPPf + PFM_CELL[ i ][ k ].dNPf ;
-				PFM_CELL[ i ][ k ].dArea = Cell_i->face[ k ]->dA ;
+				//PFM_CELL[ i ][ k ].dArea = Cell_i->face[ k ]->dA ;
 
 				PFM_CELL[ i ][ k ].SurfaceCharge = 0.0 ;
 
@@ -130,7 +130,7 @@ void CDomain::BulidCellStructure()
 
 				/*--- dDist = |P'N'|, dArea = face area ---*/
 				PFM_CELL[ i ][ k ].dDist = PFM_CELL[ i ][ k ].dPPf ;//+ PFM_CELL[ i ][ k ].dNPf ;
-				PFM_CELL[ i ][ k ].dArea = Cell_i->face[ k ]->dA ;
+				//PFM_CELL[ i ][ k ].dArea = Cell_i->face[ k ]->dA ;
 				PFM_CELL[ i ][ k ].SurfaceCharge = 0.0 ;
 			}
 		}//End Interior cell
@@ -186,7 +186,7 @@ void CDomain::BulidCellStructure()
 
 			/*--- dDist = |P'N'|, dArea = face area ---*/
 			PFM_CELL[ i ][ k ].dDist = PFM_CELL[ i ][ k ].dPPf ; //+ PFM_CELL[ i ][ k ].dNPf ;
-			PFM_CELL[ i ][ k ].dArea = Cell_i->face[ k ]->dA ;
+			//PFM_CELL[ i ][ k ].dArea = Cell_i->face[ k ]->dA ;
 
 			PFM_CELL[ i ][ k ].SurfaceCharge = 0.0 ;
 		}//End boundary face

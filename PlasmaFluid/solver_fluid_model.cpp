@@ -200,11 +200,11 @@ void CFluidModel::ComputeFlux_HLL( boost::shared_ptr<CDomain> &m, boost::shared_
 					GradU4   = fabs(HL - HR )/m->PFM_CELL[ i ][ k ].dDist ;
 
 				    /*---  Adding to residue  ---*/
-				    Res[ 0 ][ i ] += LogicalSwitch*F0*m->PFM_CELL[ i ][ k ].dArea ;
-				    Res[ 1 ][ i ] += LogicalSwitch*F1*m->PFM_CELL[ i ][ k ].dArea ;
-				    Res[ 2 ][ i ] += LogicalSwitch*F2*m->PFM_CELL[ i ][ k ].dArea ;
-				    Res[ 3 ][ i ] += LogicalSwitch*F3*m->PFM_CELL[ i ][ k ].dArea ;
-				    Res[ 4 ][ i ] += LogicalSwitch*F4*m->PFM_CELL[ i ][ k ].dArea ;
+				    Res[ 0 ][ i ] += LogicalSwitch*F0*Cell_i->face[k]->dA ;
+				    Res[ 1 ][ i ] += LogicalSwitch*F1*Cell_i->face[k]->dA ;
+				    Res[ 2 ][ i ] += LogicalSwitch*F2*Cell_i->face[k]->dA ;
+				    Res[ 3 ][ i ] += LogicalSwitch*F3*Cell_i->face[k]->dA ;
+				    Res[ 4 ][ i ] += LogicalSwitch*F4*Cell_i->face[k]->dA ;
 
 	 			} else {/*--- For discontuity face ---*/
 
@@ -237,11 +237,11 @@ void CFluidModel::ComputeFlux_HLL( boost::shared_ptr<CDomain> &m, boost::shared_
 							F4 =   HL*unL ;
 
 							/*---  Adding to residue  ---*/
-				    		Res[ 0 ][ i ] += LogicalSwitch*F0*m->PFM_CELL[ i ][ k ].dArea ;
-				    		Res[ 1 ][ i ] += LogicalSwitch*F1*m->PFM_CELL[ i ][ k ].dArea ;
-				    		Res[ 2 ][ i ] += LogicalSwitch*F2*m->PFM_CELL[ i ][ k ].dArea ;
-				    		Res[ 3 ][ i ] += LogicalSwitch*F3*m->PFM_CELL[ i ][ k ].dArea ;
-				    		Res[ 4 ][ i ] += LogicalSwitch*F4*m->PFM_CELL[ i ][ k ].dArea ;
+				    		Res[ 0 ][ i ] += LogicalSwitch*F0*Cell_i->face[k]->dA ;
+				    		Res[ 1 ][ i ] += LogicalSwitch*F1*Cell_i->face[k]->dA ;
+				    		Res[ 2 ][ i ] += LogicalSwitch*F2*Cell_i->face[k]->dA ;
+				    		Res[ 3 ][ i ] += LogicalSwitch*F3*Cell_i->face[k]->dA ;
+				    		Res[ 4 ][ i ] += LogicalSwitch*F4*Cell_i->face[k]->dA ;
 
 
 						break;
@@ -300,11 +300,11 @@ void CFluidModel::ComputeFlux_HLL( boost::shared_ptr<CDomain> &m, boost::shared_
 							F4 =   HL*unL ;
 
 							/*---  Adding to residue  ---*/
-				    		Res[ 0 ][ i ] += LogicalSwitch*F0*m->PFM_CELL[ i ][ k ].dArea ;
-				    		Res[ 1 ][ i ] += LogicalSwitch*F1*m->PFM_CELL[ i ][ k ].dArea ;
-				    		Res[ 2 ][ i ] += LogicalSwitch*F2*m->PFM_CELL[ i ][ k ].dArea ;
-				    		Res[ 3 ][ i ] += LogicalSwitch*F3*m->PFM_CELL[ i ][ k ].dArea ;
-				    		Res[ 4 ][ i ] += LogicalSwitch*F4*m->PFM_CELL[ i ][ k ].dArea ;
+				    		Res[ 0 ][ i ] += LogicalSwitch*F0*Cell_i->face[k]->dA ;
+				    		Res[ 1 ][ i ] += LogicalSwitch*F1*Cell_i->face[k]->dA ;
+				    		Res[ 2 ][ i ] += LogicalSwitch*F2*Cell_i->face[k]->dA ;
+				    		Res[ 3 ][ i ] += LogicalSwitch*F3*Cell_i->face[k]->dA ;
+				    		Res[ 4 ][ i ] += LogicalSwitch*F4*Cell_i->face[k]->dA ;
 
 						break;
 
@@ -484,11 +484,11 @@ void CFluidModel::EnergyDensityIntegral( boost::shared_ptr<CDomain> &m, boost::s
 					qz = 0.0 ;
 
 					//F4 = qx*m->PFM_CELL[ i ][ k ].nf[ 0 ] + qy*m->PFM_CELL[ i ][ k ].nf[ 1 ] + qz*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
-					Ad_dPN = m->PFM_CELL[ i ][ k ].dArea/m->PFM_CELL[ i ][ k ].dDist ;
+					Ad_dPN = Cell_i->face[k]->dA/m->PFM_CELL[ i ][ k ].dDist ;
 					F4 = -Ad_dPN*var->T[ iSpecies ][ i ]*var->Qe + Ad_dPN*var->T[ iSpecies ][ j ]*var->Qe ;
 					//qn = 0.0 ;
-					Res[ 4 ][ i ] += LogicalSwitch*F4*m->PFM_CELL[ i ][ k ].dArea ;
-					var->Energy_Term[ 1 ][ i ] =  LogicalSwitch*F4*m->PFM_CELL[ i ][ k ].dArea ;
+					Res[ 4 ][ i ] += LogicalSwitch*F4*Cell_i->face[k]->dA ;
+					var->Energy_Term[ 1 ][ i ] =  LogicalSwitch*F4*Cell_i->face[k]->dA ;
 
 	 			}
 	 		}
