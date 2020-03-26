@@ -620,8 +620,8 @@ void CVariable::ChemistryUpdate( boost::shared_ptr<CDomain> &m, boost::shared_pt
 
 	} else if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ){
 
-		//SourceSink_Streamer( m, config ) ;
-		SourceSink_PSST_2018( m, config ) ;
+		SourceSink_Streamer( m, config ) ;
+		//SourceSink_PSST_2018( m, config ) ;
 
 	} else {
 
@@ -1753,4 +1753,29 @@ void CVariable::UltraMPPComputeArgonIonTemperaturePHELPS( int iSpecies )
 	T[iSpecies]=T[iSpecies] ;
 }
 
+void CVariable::SourceSink_Streamer( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
+{
+	double alpha=0.0, eta=0.0 ;
+	double U0_e=0.0, E_Td=0.0 ;
+	double T0=273.0, T=300.0 ;
+	double Etd_Min = 0.0;
+	double C0=750.0*T0/T, C1=1.75E+3, C2=1.15E12, C3=-4.0E4,C4=T/T0, C5=(-1.0)*750.0*T0/587.0/T, C6=0.0, psi=0.0 ;
+	Cell *Cell_i ;
 
+	for ( int i = 0 ; i < plasma.Mesh.cell_number  ; i++ ) {
+
+		Cell_i  = plasma.get_cell( i ) ;
+
+		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ) {
+
+			U0_e = U0[0][i] ;
+			alpha 	= AlphaTable.GetValue( Emag[ i ]  ) ;
+			*( ReactionRatePoint[ 0 ] + i  ) = (alpha)*Mobi[ 0 ][ i ]*Emag[ i ] *U0_e ;//+ R_stable ;
+			*( ReactionRatePoint[ 1 ] + i  ) = (alpha)*Mobi[ 0 ][ i ]*Emag[ i ] *U0_e ;//+ R_stable ;
+			LFASourceSink[ 0 ][ i ] 		 = (alpha)*Mobi[ 0 ][ i ]*Emag[ i ] *U0_e ;//+ R_stable ;
+			LFASourceSink[ 1 ][ i ] 		 = (alpha)*Mobi[ 0 ][ i ]*Emag[ i ] *U0_e ;//+ R_stable ;
+		}
+	}
+	LFASourceSink[ 0 ] = LFASourceSink[ 0 ] ;
+	LFASourceSink[ 1 ] = LFASourceSink[ 1 ] ;
+}

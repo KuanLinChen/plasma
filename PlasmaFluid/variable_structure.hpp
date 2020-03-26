@@ -388,7 +388,7 @@ class CVariable
 	double Ref_L, Ref_N, Ref_SS, Ref_ES, Ref_Qe, Ref_Mass, Ref_Mu, Ref_Diff, Ref_Eps, Ref_Phi, Ref_V, Ref_Te, Ref_t, Ref_Flux, Ref_EN, Ref_Rho, Ref_JD, Ref_SQ, Ref_Kb, Ref_EField ;
 	void ReferenceValue_Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 
-
+	void SourceSink_Streamer( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config ) ;
 
 	void UltraMPPComputeArgonIonTemperaturePHELPS( int iSpecies ) ;
 	// CScalar dPhi, dEx, dEy ;
