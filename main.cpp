@@ -209,12 +209,16 @@ int main( int argc, char * argv[] )
 			PCB_FileOutput<<"VARIABLES=\"Time\", \"PowerAbs [W]\", \"Bias Voltage [V]\" , \"Residue\""<<endl ;
 		}
 		double BiasVoltage=0.0 ;
+		double Target_POWER = 100.0, Current_Voltage=0.0 ;
 	//exit(1);
 
 		#if (time_monitor == true )
 		double time_monitor_start, time_monitor_end ;
 		double time_cost = 0 ;
 		#endif
+
+		bool power_control = false ;
+
  		/*--- Main Cycle ---*/
  		for ( int MainCycle = 1 ; MainCycle < Config->ExitCycle ; MainCycle ++  ) {
 
@@ -379,15 +383,37 @@ int main( int argc, char * argv[] )
  				time_monitor_end = clock() ;
  				time_cost = time_monitor_end - time_monitor_start ;
 			}//End Main Step
-		//cout<<"A2"<<endl; exit(1) ;
 
 
-			if ( MainCycle % 50 == 0 ){
+			if ( MainCycle % 10 == 0 and power_control ){
+				/* Self-Bias */
 				for ( Iter=Config->ElectricalMap.begin() ; Iter!=Config->ElectricalMap.end() ; ++Iter ) {
     				if ( Iter->first == POWER and fabs(Var->I_AvgPowerElectrode) > 5.E-5 ) {
 	    				//Iter->second.BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
     					//BiasVoltage += (Var->I_AvgPowerElectrode*Var->Dt*Config->StepPerCycle)/(500*1.0E-12)*0.5 ;
     				}
+				}
+				/* Power Control */
+				if (       Var->AvgPowerAbs < (Target_POWER+0.05*Target_POWER) ){
+					for ( Iter=Config->ElectricalMap.begin() ; Iter!=Config->ElectricalMap.end() ; ++Iter ) {
+    				if ( Iter->first == POWER ) {
+    					Current_Voltage = Iter->second.Voltage_p2p ;
+	    				Iter->second.Voltage_p2p = Current_Voltage + 0.5*fabs(Target_POWER - Var->AvgPowerAbs );
+    				}
+					}
+				} else if( Var->AvgPowerAbs < (Target_POWER-0.05*Target_POWER) ){
+					for ( Iter=Config->ElectricalMap.begin() ; Iter!=Config->ElectricalMap.end() ; ++Iter ) {
+    				if ( Iter->first == POWER ) {
+    					Current_Voltage = Iter->second.Voltage_p2p ;
+	    				Iter->second.Voltage_p2p = Current_Voltage - 0.5*fabs(Target_POWER - Var->AvgPowerAbs );
+    				}
+					}
+				} else {
+					for ( Iter=Config->ElectricalMap.begin() ; Iter!=Config->ElectricalMap.end() ; ++Iter ) {
+    				if ( Iter->first == POWER ) {
+    					Current_Voltage = Iter->second.Voltage_p2p ;
+    				}
+					}
 				}
 			}
 
@@ -396,6 +422,11 @@ int main( int argc, char * argv[] )
 				cout<<"BiasVoltage: "<< BiasVoltage <<endl ;
 				cout<<"Power Current[A] : "<< Var->I_AvgPowerElectrode <<endl ;
 				cout<<"POWER [W]: "<<Var->AvgPowerAbs <<endl;
+				for ( Iter=Config->ElectricalMap.begin() ; Iter!=Config->ElectricalMap.end() ; ++Iter ) {
+    			if ( Iter->first == POWER ) {
+						cout<<"Voltage [V]:"<<Iter->second.Voltage_p2p<<endl;
+    			}
+				}
 			}
 
 			if( mpi_rank == MASTER_NODE )
