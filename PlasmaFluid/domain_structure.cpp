@@ -29,108 +29,166 @@ void CDomain::BulidCellStructure()
 			if ( plasma.get_cell_typename( Cell_i->data_id ) ==  plasma.get_cell_typename( Cell_i->cell[ k ]->data_id ) ){
 
 				/*--- PN Vector ---*/
-				PN[ 0 ] = Cell_i->cell[ k ]->r[0] - Cell_i->r[0] ;
-				PN[ 1 ] = Cell_i->cell[ k ]->r[1] - Cell_i->r[1] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PN[ idim ] = Cell_i->cell[ k ]->r[idim] - Cell_i->r[idim] ;
+				}
+				//PN[ 0 ] = Cell_i->cell[ k ]->r[0] - Cell_i->r[0] ;
+				//PN[ 1 ] = Cell_i->cell[ k ]->r[1] - Cell_i->r[1] ;
+				//PN[ 2 ] = Cell_i->cell[ k ]->r[2] - Cell_i->r[2] ;
 
 				/*--- Pf Vector ---*/
-				Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-				Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					Pf[ idim ] = Cell_i->face[ k ]->r[idim] - Cell_i->r[idim] ;
+				}
+				//Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+				//Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+				//Pf[ 2 ] = Cell_i->face[ k ]->r[2] - Cell_i->r[2] ;
 
 				/*--- Nf Vector ---*/
-				Nf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->cell[ k ]->r[0] ;
-				Nf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->cell[ k ]->r[1] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					Nf[ idim ] = Cell_i->face[ k ]->r[idim] - Cell_i->cell[ k ]->r[idim] ;
+				}
+				//Nf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->cell[ k ]->r[0] ;
+				//Nf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->cell[ k ]->r[1] ;
+				//Nf[ 2 ] = Cell_i->face[ k ]->r[2] - Cell_i->cell[ k ]->r[2] ;
 
 				/*--- Face Normal & Tangent Vector ---*/
-				PFM_CELL[ i ][ k ].nf[ 0 ] = Cell_i->nA[ k ][ 0 ] ;
-				PFM_CELL[ i ][ k ].nf[ 1 ] = Cell_i->nA[ k ][ 1 ] ;
-				PFM_CELL[ i ][ k ].nf[ 2 ] = Cell_i->nA[ k ][ 2 ] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PFM_CELL[ i ][ k ].nf[ idim ] = Cell_i->nA[ k ][ idim ] ;
+				}
+				//PFM_CELL[ i ][ k ].nf[ 0 ] = Cell_i->nA[ k ][ 0 ] ;
+				//PFM_CELL[ i ][ k ].nf[ 1 ] = Cell_i->nA[ k ][ 1 ] ;
+				//PFM_CELL[ i ][ k ].nf[ 2 ] = Cell_i->nA[ k ][ 2 ] ;
 
-				PFM_CELL[ i ][ k ].mf[ 0 ] = -Cell_i->nA[ k ][ 1 ] ;
-				PFM_CELL[ i ][ k ].mf[ 1 ] =  Cell_i->nA[ k ][ 0 ] ;
+				//PFM_CELL[ i ][ k ].mf[ 0 ] = -Cell_i->nA[ k ][ 1 ] ;
+				//PFM_CELL[ i ][ k ].mf[ 1 ] =  Cell_i->nA[ k ][ 0 ] ;
+				//PFM_CELL[ i ][ k ].mf[ 1 ] =  Cell_i->nA[ k ][ 0 ] ;
 
 				/*--- P'f Vector ---*/
-				PPf[ 0 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0] ;
-				PPf[ 1 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1] ;
-			    PFM_CELL[ i ][ k ].dPPf = sqrt( DotProduct( PPf, PPf ) ) ; 
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PPf[ idim ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[idim] ;
+				}
+				//PPf[ 0 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0] ;
+				//PPf[ 1 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1] ;
+				//PPf[ 2 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[2] ;
+			  PFM_CELL[ i ][ k ].dPPf = sqrt( DotProduct( PPf, PPf ) ) ; 
 
 				/*--- N'f Vector ---*/
-				NPf[ 0 ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0];
-				NPf[ 1 ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1];
+				for ( int idim=0; idim < 3 ; idim++ ){
+					NPf[ idim ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[idim] ;
+				}
+				//Pf[ 0 ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0] ;
+				//NPf[ 1 ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1] ;
+				//NPf[ 2 ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[2] ;
 			  PFM_CELL[ i ][ k ].dNPf = sqrt( DotProduct( NPf, NPf ) ) ; 
 
 				/*--- PP'  Vector ( PP' = Pf - P'f ) ---*/
-				PFM_CELL[ i ][ k ].PPP[ 0 ] = Pf[ 0 ] - PPf[ 0 ] ;
-				PFM_CELL[ i ][ k ].PPP[ 1 ] = Pf[ 1 ] - PPf[ 1 ] ;
-				// if ( fabs( Cell[ i ][ k ].PPP[ 0 ] ) < ZERO ) Cell[ i ][ k ].PPP[ 0 ] = 0.0 ;
-				// if ( fabs( Cell[ i ][ k ].PPP[ 1 ] ) < ZERO ) Cell[ i ][ k ].PPP[ 1 ] = 0.0 ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PFM_CELL[ i ][ k ].PPP[ idim ] = Pf[ idim ] - PPf[ idim ] ;
+				}
+				//PFM_CELL[ i ][ k ].PPP[ 0 ] = Pf[ 0 ] - PPf[ 0 ] ;
+				//PFM_CELL[ i ][ k ].PPP[ 1 ] = Pf[ 1 ] - PPf[ 1 ] ;
+				//PFM_CELL[ i ][ k ].PPP[ 2 ] = Pf[ 2 ] - PPf[ 2 ] ;
 
 				/*--- NN'  Normal Vector ( NN' = Nf - N'f ) ---*/
-				PFM_CELL[ i ][ k ].NNP[ 0 ] = Nf[ 0 ] - NPf[ 0 ] ;
-				PFM_CELL[ i ][ k ].NNP[ 1 ] = Nf[ 1 ] - NPf[ 1 ] ;
-				// if ( fabs( Cell[ i ][ k ].NNP[ 0 ] ) < ZERO ) Cell[ i ][ k ].NNP[ 0 ] = 0.0 ;
-				// if ( fabs( Cell[ i ][ k ].NNP[ 1 ] ) < ZERO ) Cell[ i ][ k ].NNP[ 1 ] = 0.0 ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PFM_CELL[ i ][ k ].NNP[ idim ] = Nf[ idim ] - NPf[ idim ] ;
+				}
+				//PFM_CELL[ i ][ k ].NNP[ 0 ] = Nf[ 0 ] - NPf[ 0 ] ;
+				//PFM_CELL[ i ][ k ].NNP[ 1 ] = Nf[ 1 ] - NPf[ 1 ] ;
+				//PFM_CELL[ i ][ k ].NNP[ 2 ] = Nf[ 2 ] - NPf[ 2 ] ;
 
 				/*--- Af Vector ---*/
-				PFM_CELL[ i ][ k ].Af[ 0 ] = Cell_i->A[ k ][ 0 ] ;
-				PFM_CELL[ i ][ k ].Af[ 1 ] = Cell_i->A[ k ][ 1 ] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PFM_CELL[ i ][ k ].Af[ idim ] = Cell_i->A[ k ][ idim ] ;
+				}
+				//PFM_CELL[ i ][ k ].Af[ 0 ] = Cell_i->A[ k ][ 0 ] ;
+				//PFM_CELL[ i ][ k ].Af[ 1 ] = Cell_i->A[ k ][ 1 ] ;
+				//PFM_CELL[ i ][ k ].Af[ 2 ] = Cell_i->A[ k ][ 2 ] ;
 
 				/*--- dDist = |P'N'|, dArea = face area ---*/
 				PFM_CELL[ i ][ k ].dDist = PFM_CELL[ i ][ k ].dPPf + PFM_CELL[ i ][ k ].dNPf ;
-				//PFM_CELL[ i ][ k ].dArea = Cell_i->face[ k ]->dA ;
 
 				PFM_CELL[ i ][ k ].SurfaceCharge = 0.0 ;
 
 			} else {//Discontinue face
 
 				/*--- PN Vector ---*/
-				PN[ 0 ] = Cell_i->cell[ k ]->r[0] - Cell_i->r[0] ;
-				PN[ 1 ] = Cell_i->cell[ k ]->r[1] - Cell_i->r[1] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PN[ idim ] = Cell_i->cell[ k ]->r[idim] - Cell_i->r[idim] ;
+				}
+				//PN[ 0 ] = Cell_i->cell[ k ]->r[0] - Cell_i->r[0] ;
+				//PN[ 1 ] = Cell_i->cell[ k ]->r[1] - Cell_i->r[1] ;
+				//PN[ 2 ] = Cell_i->cell[ k ]->r[2] - Cell_i->r[2] ;
 
 				/*--- Pf Vector ---*/
-				Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-				Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					Pf[ idim ] = Cell_i->face[ k ]->r[idim] - Cell_i->r[idim] ;
+				}
+				//Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+				//Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+				//Pf[ 2 ] = Cell_i->face[ k ]->r[2] - Cell_i->r[2] ;
 
 				/*--- Nf Vector ---*/
-				Nf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->cell[ k ]->r[0] ;
-				Nf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->cell[ k ]->r[1] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					Nf[ idim ] = Cell_i->face[ k ]->r[idim] - Cell_i->cell[ k ]->r[idim] ;
+				}
+				//Nf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->cell[ k ]->r[0] ;
+				//Nf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->cell[ k ]->r[1] ;
+				//Nf[ 2 ] = Cell_i->face[ k ]->r[2] - Cell_i->cell[ k ]->r[2] ;
 
 				/*--- Face Normal & Tangent Vector ---*/
-				PFM_CELL[ i ][ k ].nf[ 0 ] = Cell_i->nA[ k ][ 0 ] ;
-				PFM_CELL[ i ][ k ].nf[ 1 ] = Cell_i->nA[ k ][ 1 ] ;
-				PFM_CELL[ i ][ k ].nf[ 2 ] = Cell_i->nA[ k ][ 2 ] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PFM_CELL[ i ][ k ].nf[ idim ] = Cell_i->nA[ k ][ idim ] ;
+				}					
+				//PFM_CELL[ i ][ k ].nf[ 0 ] = Cell_i->nA[ k ][ 0 ] ;
+				//PFM_CELL[ i ][ k ].nf[ 1 ] = Cell_i->nA[ k ][ 1 ] ;
+				//PFM_CELL[ i ][ k ].nf[ 2 ] = Cell_i->nA[ k ][ 2 ] ;
 
-				PFM_CELL[ i ][ k ].mf[ 0 ] = -Cell_i->nA[ k ][ 1 ] ;
-				PFM_CELL[ i ][ k ].mf[ 1 ] =  Cell_i->nA[ k ][ 0 ] ;
+				//PFM_CELL[ i ][ k ].mf[ 0 ] = -Cell_i->nA[ k ][ 1 ] ;
+				//PFM_CELL[ i ][ k ].mf[ 1 ] =  Cell_i->nA[ k ][ 0 ] ;
 
 				/*--- P'f Vector ---*/
-				PPf[ 0 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0] ;
-				PPf[ 1 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PPf[ idim ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[idim] ;
+				}
+				//PPf[ 0 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0] ;
+				//PPf[ 1 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1] ;
+				//PPf[ 2 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[2] ;
 				PFM_CELL[ i ][ k ].dPPf = sqrt( DotProduct( PPf, PPf ) ) ; 
 
 				/*--- N'f Vector ---*/
-				NPf[ 0 ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0];
-				NPf[ 1 ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1];
+				for ( int idim=0; idim < 3 ; idim++ ){
+					NPf[ idim ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[idim];
+				}
+				//NPf[ 0 ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0];
+				//NPf[ 1 ] = DotProduct( Nf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1];
 				PFM_CELL[ i ][ k ].dNPf = sqrt( DotProduct( NPf, NPf ) ) ; 
 
 				/*--- PP'  Vector ( PP' = Pf - P'f ) ---*/
-				PFM_CELL[ i ][ k ].PPP[ 0 ] = Pf[ 0 ] - PPf[ 0 ] ;
-				PFM_CELL[ i ][ k ].PPP[ 1 ] = Pf[ 1 ] - PPf[ 1 ] ;
-				// if ( fabs( PFM_CELL[ i ][ k ].PPP[ 0 ] ) < ZERO ) PFM_CELL[ i ][ k ].PPP[ 0 ] = 0.0 ;
-				// if ( fabs( PFM_CELL[ i ][ k ].PPP[ 1 ] ) < ZERO ) PFM_CELL[ i ][ k ].PPP[ 1 ] = 0.0 ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PFM_CELL[ i ][ k ].PPP[ idim ] = Pf[ idim ] - PPf[ idim ] ;
+				}
+				//PFM_CELL[ i ][ k ].PPP[ 0 ] = Pf[ 0 ] - PPf[ 0 ] ;
+				//PFM_CELL[ i ][ k ].PPP[ 1 ] = Pf[ 1 ] - PPf[ 1 ] ;
 
 				/*--- NN'  Normal Vector ( NN' = Nf - N'f ) ---*/
-				PFM_CELL[ i ][ k ].NNP[ 0 ] = Nf[ 0 ] - NPf[ 0 ] ;
-				PFM_CELL[ i ][ k ].NNP[ 1 ] = Nf[ 1 ] - NPf[ 1 ] ;
-				// if ( fabs( PFM_CELL[ i ][ k ].NNP[ 0 ] ) < ZERO ) PFM_CELL[ i ][ k ].NNP[ 0 ] = 0.0 ;
-				// if ( fabs( PFM_CELL[ i ][ k ].NNP[ 1 ] ) < ZERO ) PFM_CELL[ i ][ k ].NNP[ 1 ] = 0.0 ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PFM_CELL[ i ][ k ].NNP[ idim ] = Nf[ idim ] - NPf[ idim ] ;
+				}
+				//PFM_CELL[ i ][ k ].NNP[ 0 ] = Nf[ 0 ] - NPf[ 0 ] ;
+				//PFM_CELL[ i ][ k ].NNP[ 1 ] = Nf[ 1 ] - NPf[ 1 ] ;
 
 				/*--- Af Vector ---*/
-				PFM_CELL[ i ][ k ].Af[ 0 ] = Cell_i->A[ k ][ 0 ] ;
-				PFM_CELL[ i ][ k ].Af[ 1 ] = Cell_i->A[ k ][ 1 ] ;
+				for ( int idim=0; idim < 3 ; idim++ ){
+					PFM_CELL[ i ][ k ].Af[ idim ] = Cell_i->A[ k ][ idim ] ;
+				}
+				//PFM_CELL[ i ][ k ].Af[ 0 ] = Cell_i->A[ k ][ 0 ] ;
+				//PFM_CELL[ i ][ k ].Af[ 1 ] = Cell_i->A[ k ][ 1 ] ;
+				//PFM_CELL[ i ][ k ].Af[ 1 ] = Cell_i->A[ k ][ 1 ] ;
 
 				/*--- dDist = |P'N'|, dArea = face area ---*/
 				PFM_CELL[ i ][ k ].dDist = PFM_CELL[ i ][ k ].dPPf ;//+ PFM_CELL[ i ][ k ].dNPf ;
-				//PFM_CELL[ i ][ k ].dArea = Cell_i->face[ k ]->dA ;
 				PFM_CELL[ i ][ k ].SurfaceCharge = 0.0 ;
 			}
 		}//End Interior cell
@@ -146,24 +204,33 @@ void CDomain::BulidCellStructure()
 			//PN[ 1 ] = Cell_i->cell[ k ]->r[1] - Cell_i->r[1] ;
 
 			/*--- Pf Vector ---*/
-			Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-			Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+			for ( int idim=0; idim < 3 ; idim++ ){
+				Pf[ idim ] = Cell_i->face[ k ]->r[idim] - Cell_i->r[idim] ;
+			}
+			//Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+			//Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
 
 			/*--- Nf Vector ---*/
 			//Nf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->cell[ k ]->r[0] ;
 			//Nf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->cell[ k ]->r[1] ;
 
 			/*--- Face Normal & Tangent Vector ---*/
-			PFM_CELL[ i ][ k ].nf[ 0 ] = Cell_i->nA[ k ][ 0 ] ;
-			PFM_CELL[ i ][ k ].nf[ 1 ] = Cell_i->nA[ k ][ 1 ] ;
-			PFM_CELL[ i ][ k ].nf[ 2 ] = Cell_i->nA[ k ][ 2 ] ;
+			for ( int idim=0; idim < 3 ; idim++ ){
+				PFM_CELL[ i ][ k ].nf[ idim ] = Cell_i->nA[ k ][ idim ] ;
+			}
+			//PFM_CELL[ i ][ k ].nf[ 0 ] = Cell_i->nA[ k ][ 0 ] ;
+			//PFM_CELL[ i ][ k ].nf[ 1 ] = Cell_i->nA[ k ][ 1 ] ;
+			//PFM_CELL[ i ][ k ].nf[ 2 ] = Cell_i->nA[ k ][ 2 ] ;
 
-			PFM_CELL[ i ][ k ].mf[ 0 ] = -Cell_i->nA[ k ][ 1 ] ;
-			PFM_CELL[ i ][ k ].mf[ 1 ] =  Cell_i->nA[ k ][ 0 ] ;
+			//PFM_CELL[ i ][ k ].mf[ 0 ] = -Cell_i->nA[ k ][ 1 ] ;
+			//PFM_CELL[ i ][ k ].mf[ 1 ] =  Cell_i->nA[ k ][ 0 ] ;
 
 			/*--- P'f  Normal Vector ---*/
-			PPf[ 0 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0] ;
-			PPf[ 1 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1] ;
+			for ( int idim=0; idim < 3 ; idim++ ){
+				PPf[ idim ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[idim] ;
+			}
+			//PPf[ 0 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[0] ;
+			//PPf[ 1 ] = DotProduct( Pf, PFM_CELL[ i ][ k ].nf )*PFM_CELL[ i ][ k ].nf[1] ;
 		  PFM_CELL[ i ][ k ].dPPf = sqrt( DotProduct( PPf, PPf ) ) ; 
 
 			/*--- N'f  Normal Vector ---*/
@@ -172,8 +239,11 @@ void CDomain::BulidCellStructure()
 		   	//PFM_CELL[ i ][ k ].dNPf = sqrt( DotProduct( NPf, NPf ) ) ; 
 
 			/*--- PP'  Normal Vector ( PP' = Pf - P'f ) ---*/
-			PFM_CELL[ i ][ k ].PPP[ 0 ] = Pf[ 0 ] - PPf[ 0 ] ;
-			PFM_CELL[ i ][ k ].PPP[ 1 ] = Pf[ 1 ] - PPf[ 1 ] ;
+			for ( int idim=0; idim < 3 ; idim++ ){
+				PFM_CELL[ i ][ k ].PPP[ idim ] = Pf[ idim ] - PPf[ idim ] ;
+			}
+			//PFM_CELL[ i ][ k ].PPP[ 0 ] = Pf[ 0 ] - PPf[ 0 ] ;
+			//PFM_CELL[ i ][ k ].PPP[ 1 ] = Pf[ 1 ] - PPf[ 1 ] ;
 			// if ( fabs( PFM_CELL[ i ][ k ].PPP[ 0 ] ) < ZERO ) PFM_CELL[ i ][ k ].PPP[ 0 ] = 0.0 ;
 			// if ( fabs( PFM_CELL[ i ][ k ].PPP[ 1 ] ) < ZERO ) PFM_CELL[ i ][ k ].PPP[ 1 ] = 0.0 ;
 			/*--- NN'  Normal Vector ( NN' = Nf - N'f ) ---*/
@@ -181,8 +251,11 @@ void CDomain::BulidCellStructure()
 			//PFM_CELL[ i ][ k ].NNP[ 1 ] = Nf[ 1 ] - NPf[ 1 ] ;
 
 			/*--- Af Vector ---*/
-			PFM_CELL[ i ][ k ].Af[ 0 ] = Cell_i->A[ k ][ 0 ] ;
-			PFM_CELL[ i ][ k ].Af[ 1 ] = Cell_i->A[ k ][ 1 ] ;
+			for ( int idim=0; idim < 3 ; idim++ ){
+				PFM_CELL[ i ][ k ].Af[ idim ] = Cell_i->A[ k ][ idim ] ;
+			}
+			//PFM_CELL[ i ][ k ].Af[ 0 ] = Cell_i->A[ k ][ 0 ] ;
+			//PFM_CELL[ i ][ k ].Af[ 1 ] = Cell_i->A[ k ][ 1 ] ;
 
 			/*--- dDist = |P'N'|, dArea = face area ---*/
 			PFM_CELL[ i ][ k ].dDist = PFM_CELL[ i ][ k ].dPPf ; //+ PFM_CELL[ i ][ k ].dNPf ;

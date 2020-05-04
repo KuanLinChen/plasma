@@ -1828,7 +1828,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m,
 							Diff = -var->Diff[iSpecies][ i ] ; 
 							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
-							PV = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
+							PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
 							faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
 
@@ -2205,7 +2205,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boo
 							Diff = -var->Diff[iSpecies][ i ] ; 
 							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
-							PV = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
+							PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
 							faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
 
@@ -2459,7 +2459,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m
 							Diff = -var->Diff[iSpecies][ i ] ; 
 							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
-							PV = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
+							PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
 							faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
 
@@ -2713,7 +2713,7 @@ void CDriftDiffusion::CalculateAvgDDFlux_Hagelaar_Txy( boost::shared_ptr<CDomain
 							Diff = -var->Diff[iSpecies][ i ] ; 
 							P = -Diff/m->PFM_CELL[ i ][ k ].dDist*Cell_i->face[k]->dA ;
 
-							PV = var->U0[iSpecies][ i ] + DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
+							PV = var->U0[iSpecies][ i ] ;//+ DotProduct( GVarP, m->PFM_CELL[ i ][ k ].PPP ) ;
 
 							faceFlux= ( P*PV )*m->PFM_CELL[ i ][ k ].dPPf ;
 

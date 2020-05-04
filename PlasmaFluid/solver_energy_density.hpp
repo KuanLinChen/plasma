@@ -75,7 +75,4 @@ class CEnergyDensity
 	 */
 	void CalculatePowerAbs( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CVariable> &var ) ;
 
-	double DotProduct(double *A, double *B ){
-		return A[0]*B[0] + A[1]*B[1] ;
-	};
 };

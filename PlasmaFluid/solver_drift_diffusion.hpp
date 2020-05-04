@@ -112,9 +112,6 @@ class CDriftDiffusion
 	 */
 	void CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	void CalculateGradientTe( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
-		double DotProduct(double *A, double *B ){
-			return A[0]*B[0] + A[1]*B[1] ;
-		};
 
 		double Bernoulli_Coeff( double sgn_X, double sgn_q, double mu, double D, double dx, double E_x)
 		{
