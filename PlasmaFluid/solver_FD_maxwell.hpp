@@ -52,4 +52,6 @@ class CFDMaxwell
 		void UltraMPPComputePowerAbsorptionFromMaxwell( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 		
 		void UltraMPPComputeInstantPowerAbsorptionFromMaxwell( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
+		
+		void UltraMPPComputeTotalPower( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 };

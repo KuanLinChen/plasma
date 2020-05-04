@@ -333,8 +333,11 @@ int main( int argc, char * argv[] )
 				}
 				
 				/* Solve for maxwell. */
- 				#if (FDMaxwell == true )				
- 				FD_maxwell_solver->SOLVE( Config, Var ) ;
+ 				#if (FDMaxwell == true )
+ 					if ( abs(Var->power_inductive - Var->Coil_power)/Var->Coil_power > 0.02){ FD_maxwell_solver->SOLVE( Config, Var ) ; }
+
+ 					FD_maxwell_solver->UltraMPPComputePowerAbsorptionFromMaxwell( Config, Var ) ;	
+ 					FD_maxwell_solver->UltraMPPComputeTotalPower( Config, Var ) ;
 	 				#if (Debug == true ) 
 	 					PetscPrintf( PETSC_COMM_WORLD, "FD_maxwell_solver done...\n" ) ;
 	 				#endif 
