@@ -334,7 +334,10 @@ int main( int argc, char * argv[] )
 				
 				/* Solve for maxwell. */
  				#if (FDMaxwell == true )
- 					if ( abs(Var->power_inductive - Var->Coil_power)/Var->Coil_power > 0.02){ FD_maxwell_solver->SOLVE( Config, Var ) ; }
+ 					if (Var->current_Coil_power < var->Coil_power) 
+					Var->current_Coil_power = Var->current_Coil_power + Var->power_grows_rate / Config->StepPerCycle ;
+ 				
+ 					if ( abs(Var->power_inductive - Var->current_Coil_power)/Var->Coil_power > 0.02){ FD_maxwell_solver->SOLVE( Config, Var ) ; }
 
  					FD_maxwell_solver->UltraMPPComputePowerAbsorptionFromMaxwell( Config, Var ) ;	
  					FD_maxwell_solver->UltraMPPComputeTotalPower( Config, Var ) ;

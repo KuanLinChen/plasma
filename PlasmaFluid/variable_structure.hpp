@@ -183,6 +183,8 @@ class CVariable
 	double Coil_frequency  ; // ICP coil freqency
 	double Coil_area  ; // ICP coil area
 	double Coil_power  ; // ICP coil power, This variable is use to fix coil power at certain amount.
+	double current_Coil_power ; // For controling coil power 
+	double power_grows_rate ; // [W/cycle] , change coil power by power_grows_rate W/cycle. 
 	double Coil_change_factor  ; // This is use to change ICP coil current, to fix Coil_power at certain amount.
 	double omega  ; // ICP coil angular freqency
 	double Coil_Current  ;

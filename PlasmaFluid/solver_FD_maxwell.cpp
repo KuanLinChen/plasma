@@ -16,12 +16,17 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
 
     json &ICP_simulation_condition    = *(FDMaxwell_coupled_eqs.get_json_input_parameter("ICP_simulation_condition")) ;
 	var->Coil_frequency = ICP_simulation_condition["Coil_frequency"] ;
-    var->Coil_Current 	= ICP_simulation_condition["Coil_current"] ;
+    var->Coil_Current 	= ICP_simulation_condition["Initial_Coil_current"] ;
     var->Coil_area 		= ICP_simulation_condition["Coil_area"] ;
     var->Coil_power 		= ICP_simulation_condition["Coil_power"] ;
     var->Coil_change_factor 		= ICP_simulation_condition["Coil_change_factor"] ;
+    var->power_grows_rate 		= ICP_simulation_condition["power_grows_rate"] ;
+    var->current_Coil_power 		= ICP_simulation_condition["Initial_Coil_power"] ;
     var->omega			= 2 * var->PI * var->Coil_frequency ;
-	var->power_inductive= var->Coil_power ;
+	var->power_inductive= var->current_Coil_power ;
+	
+	
+	
     for( int cth = 0; cth < FDMaxwell_Re.Mesh.cell_number; cth++){
     	Cell *cell		=	FDMaxwell_Re.get_cell( cth ) ;
 		
