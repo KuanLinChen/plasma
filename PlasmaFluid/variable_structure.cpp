@@ -641,7 +641,7 @@ void CVariable::UltraMPPComputeReducedElectricField()
 		Cell *cell = plasma.get_cell( i ) ;
 
 		if ( cell_type[ cell->type ] == PLASMA ) {
-			Emag[ i ] = sqrt ( Ex[ i ]*Ex[ i ] + Ey[ i ]*Ey[ i ] )*Ref_EField+ZERO ;
+			Emag[ i ] = sqrt ( Ex[ i ]*Ex[ i ] + Ey[ i ]*Ey[ i ] + Ez[ i ]*Ez[ i ] )*Ref_EField+ZERO ;
 			Etd[ i ] = Emag[ i ]/TotalNumberDensity[ i ]/(1.0E-21) ; 
 		}
 	}
@@ -690,12 +690,8 @@ void CVariable::UpdateSolution( boost::shared_ptr<CDomain> &m )
 	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 		PreEx[i] = Ex[i] ;
 		PreEy[i] = Ey[i] ;
+		PreEz[i] = Ez[i] ;
 	}
-	if ( nDim==3 ) {
-		for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
-			PreEz[ i ] = Ez[ i ] ;
-		}
-	}//3D
 }
 void CVariable::UpdateElectronTransport( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
@@ -1286,23 +1282,16 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 		AvgPotential[ i ] += Potential.current[ i ] / config->StepPerCycle ;
 		AvgEx[ i ]        +=                Ex[ i ] / config->StepPerCycle ;
 		AvgEy[ i ]        +=                Ey[ i ] / config->StepPerCycle ;
+		AvgEz[ i ]        +=                Ez[ i ] / config->StepPerCycle ;
 		eAvgEnergyLoss[ i ] += eEnergyLoss[ i ]/config->StepPerCycle ;
 		avg_plot_var[ i ] += avg_plot_var[ i ]/config->StepPerCycle ;
 	}
-	if( plasma.Mesh.ndim == 3 ) {	
-		for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
-			AvgEz[ i ]        +=                Ey[ i ] / config->StepPerCycle ;
-		}
-	}
-
 	for ( int iSpecies = 0 ; iSpecies < config->TotalSpeciesNum ; iSpecies++ ){
 		for ( int i = 0 ; i <plasma.Mesh.cell_number  ; i++ ) {
 			 AvgT[ iSpecies ][ i ] +=  T[ iSpecies ][ i ]/config->StepPerCycle ;
-			 //if(iSpecies==0) cout<<"i: "<<i<<", T: "<<AvgT[ iSpecies ][ i ]<<endl;
 			AvgU0[ iSpecies ][ i ] += U0[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU1[ iSpecies ][ i ] += U1[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU2[ iSpecies ][ i ] += U2[ iSpecies ][ i ]/config->StepPerCycle ;
-			//AvgU3[ iSpecies ][ i ] += U3[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU4[ iSpecies ][ i ] += U4[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgJouleHeating[ iSpecies ][ i ] += JouleHeating[ iSpecies ][ i ]/config->StepPerCycle ;
 		}

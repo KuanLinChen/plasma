@@ -61,23 +61,18 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	{
 		var->Ex[ i ] = - var->Potential.gradient[0][i] ;
 		var->Ey[ i ] = - var->Potential.gradient[1][i] ;
+		var->Ez[ i ] = - var->Potential.gradient[2][i] ;
 	}
 	plasma.syn_parallel_cell_data( var->VarTag["Ex"] );
 	plasma.syn_parallel_cell_data( var->VarTag["Ey"] );
+	plasma.syn_parallel_cell_data( var->VarTag["Ez"] );
 	
 	/*Compute real net charge density [C/m^3]*/
-	for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) 
-	{
+	for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) {
 		var->RealChargeDen[ i ]   = - var->ChargeDen[ i ] * vacuum_permittivity / var->Qe ;
 	}
 
-	if ( plasma.Mesh.ndim == 3 ) {	
-		for ( int i=0 ; i<plasma.Mesh.cell_number ; i++ ) {
-			var->Ez[ i ] = - var->Potential.gradient[2][i] ;
-		}
-		plasma.syn_parallel_cell_data( var->VarTag["Ez"] );
-	} 
-	var->UltraMPPComputeReducedElectricField();
+	var->UltraMPPComputeReducedElectricField() ;
 
 	UltraMPPComputeDispCurrentDensity( var ) ;
 
@@ -187,8 +182,11 @@ void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config,
 							if ( config->Species[ jSpecies ].Type == ELECTRON or config->Species[ jSpecies ].Type == ION ) {
 
 								var->Potential.face[ cell->face[k]->data_id ] += var->Dt*var->Qe*config->Species[jSpecies].Charge
-								*fabs( var->U1[ jSpecies ][ i ]*cell->nA[ k ][ 0 ]*(-1.0) 
-								+      var->U2[ jSpecies ][ i ]*cell->nA[ k ][ 1 ]*(-1.0) ) ;
+								*fabs( 
+											var->U1[ jSpecies ][ i ]*cell->nA[ k ][ 0 ]*(-1.0) 
+								+     var->U2[ jSpecies ][ i ]*cell->nA[ k ][ 1 ]*(-1.0) 
+								+     var->U3[ jSpecies ][ i ]*cell->nA[ k ][ 1 ]*(-1.0) 
+								) ;
 							}
 
 						}//end jspecies
@@ -201,14 +199,12 @@ void CPoisson::UltraMPPComputeDispCurrentDensity( boost::shared_ptr<CVariable> &
 {
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		var->DispJD[0][i] = var->eps[ i ]*( var->Ex[ i ] - var->PreEx[ i ] )/var->Dt ;
-		var->DispJD[1][i] = var->eps[ i ]*( var->Ey[ i ] - var->PreEy[ i ] )/var->Dt ;
-
-		if( plasma.Mesh.ndim == 3 ) var->DispJD[2][i] = var->eps[ i ]*( var->Ez[ i ] - var->PreEz[ i ] )/var->Dt ;
-
+		var-> DispJD[0][i] = var->eps[ i ]*( var->Ex[ i ] - var->PreEx[ i ] )/var->Dt ;
+		var-> DispJD[1][i] = var->eps[ i ]*( var->Ey[ i ] - var->PreEy[ i ] )/var->Dt ;
+		var-> DispJD[2][i] = var->eps[ i ]*( var->Ez[ i ] - var->PreEz[ i ] )/var->Dt ;
 		var->TotalJD[0][i] = var->DispJD[0][ i ] ;
 		var->TotalJD[1][i] = var->DispJD[1][ i ] ;
-		if( plasma.Mesh.ndim == 3 ) var->TotalJD[2][i] = var->DispJD[2][ i ] ;
+		var->TotalJD[2][i] = var->DispJD[2][ i ] ;
 	}//Cell Loop
 }
 void CPoisson::UpdateElectricalMap( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) 
@@ -307,122 +303,123 @@ void CPoisson::MatA_SourceB( boost::shared_ptr<CConfig> &config, boost::shared_p
 }
 void CPoisson::ComputeGradient( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
-	
-	int j=0, NeighborCellIndex=0 ;
-	double dVar=0.0, Gx=0.0, Gy=0.0, Gz=0.0, BC_Value=0.0, L=0.0, R=0.0;
+	cout<<"This will be remove in the feture. @ solver_poisson.cpp"<<endl;
+	// int j=0, NeighborCellIndex=0 ;
+	// double dVar=0.0, Gx=0.0, Gy=0.0, Gz=0.0, BC_Value=0.0, L=0.0, R=0.0;
 
-	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+	// for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell *Cell_i = plasma.get_cell(i) ;
+	// 	Cell *Cell_i = plasma.get_cell(i) ;
 
-		Gx = Gy = Gz = 0.0 ;
+	// 	Gx = Gy = Gz = 0.0 ;
 
-		if ( cell_type[ Cell_i->type ] == POWER or cell_type[ Cell_i->type ] == GROUND ) {
+	// 	if ( cell_type[ Cell_i->type ] == POWER or cell_type[ Cell_i->type ] == GROUND ) {
 
-			var->Ex[ i ] = 0.0 ;
-			var->Ey[ i ] = 0.0 ;
-			if( plasma.Mesh.ndim == 3 )  var->Ez[ i ] = 0.0 ;
+	// 		var->Ex[ i ] = 0.0 ;
+	// 		var->Ey[ i ] = 0.0 ;
+	// 		var->Ez[ i ] = 0.0 ;
+	// 		if( plasma.Mesh.ndim == 3 )  var->Ez[ i ] = 0.0 ;
 
-		} else {//could be dielectric or plasma
+	// 	} else {//could be dielectric or plasma
 
-			/*--- Loop over neighbor "cells" ---*/
-			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
+	// 		/*--- Loop over neighbor "cells" ---*/
+	// 		for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
 
-				j = Cell_i->cell[ k ]->data_id ;
-				Cell * Cell_j = plasma.get_cell( j ) ;
+	// 			j = Cell_i->cell[ k ]->data_id ;
+	// 			Cell * Cell_j = plasma.get_cell( j ) ;
 
-				if ( cell_type[ Cell_i->type ] != cell_type[ Cell_j->type ]  ) {//For discontinued face
+	// 			if ( cell_type[ Cell_i->type ] != cell_type[ Cell_j->type ]  ) {//For discontinued face
 
-					//If neighboring cell is "electrode", the boundary value should calculate by SineVoltage function. 
-					if ( cell_type[ Cell_j->type ] == SOLID_POWER or cell_type[ Cell_j->type ] == SOLID_GROUND ) {
+	// 				//If neighboring cell is "electrode", the boundary value should calculate by SineVoltage function. 
+	// 				if ( cell_type[ Cell_j->type ] == SOLID_POWER or cell_type[ Cell_j->type ] == SOLID_GROUND ) {
 
-						BC_Value = SineVoltage( plasma.get_cell_typename( Cell_j->data_id ), config, var ) ;
-						dVar = BC_Value - var->Potential.current[ i ] ;
+	// 					BC_Value = SineVoltage( plasma.get_cell_typename( Cell_j->data_id ), config, var ) ;
+	// 					dVar = BC_Value - var->Potential.current[ i ] ;
 
-					//If neighboring cell is "dielectric", the boundary value should calculate by formula. 
+	// 				//If neighboring cell is "dielectric", the boundary value should calculate by formula. 
 
-					} else {
+	// 				} else {
 
-						cout<<"error for calculate gradient"<<endl ;
+	// 					cout<<"error for calculate gradient"<<endl ;
 						
-					}
+	// 				}
 
-				} else {
+	// 			} else {
 
-					dVar = var->Potential.current[ j ] - var->Potential.current[ i ] ;
+	// 				dVar = var->Potential.current[ j ] - var->Potential.current[ i ] ;
 
-				}
-				Gx = Gx + var->LSQ_Cx[ k ][ i ]*dVar ;
-		    Gy = Gy + var->LSQ_Cy[ k ][ i ]*dVar ;
-			}
-			//cout<<"Loop over boundary faces"<<endl;
+	// 			}
+	// 			Gx = Gx + var->LSQ_Cx[ k ][ i ]*dVar ;
+	// 	    Gy = Gy + var->LSQ_Cy[ k ][ i ]*dVar ;
+	// 		}
+	// 		//cout<<"Loop over boundary faces"<<endl;
 
 
-			/*--- Loop over boundary faces ---*/
-			for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
+	// 		/*--- Loop over boundary faces ---*/
+	// 		for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-				if ( face_type[ Cell_i->face[ k ]->type ]  == NEUMANN ) {
+	// 			if ( face_type[ Cell_i->face[ k ]->type ]  == NEUMANN ) {
 
-					BC_Value = var->Potential.current[ i ] ;
+	// 				BC_Value = var->Potential.current[ i ] ;
 
-				} else if( face_type[ Cell_i->face[ k ]->type ]  != PLASMA ) {
+	// 			} else if( face_type[ Cell_i->face[ k ]->type ]  != PLASMA ) {
 
-					BC_Value = SineVoltage( plasma.get_face_typename( Cell_i->face[ k ]->data_id) , config, var ) ;
+	// 				BC_Value = SineVoltage( plasma.get_face_typename( Cell_i->face[ k ]->data_id) , config, var ) ;
 
-				} else {
+	// 			} else {
 
-					cout<<"ERR@Poisson 388"<<endl ;
+	// 				cout<<"ERR@Poisson 388"<<endl ;
 
-				}
+	// 			}
 				
-				dVar = BC_Value - var->Potential.current[ i ] ;
-				//cout<<var->Potential.current[ i ]<<endl;
-				Gx = Gx + var->LSQ_Cx[ k ][ i ]*dVar ;
-		    Gy = Gy + var->LSQ_Cy[ k ][ i ]*dVar ;
+	// 			dVar = BC_Value - var->Potential.current[ i ] ;
+	// 			//cout<<var->Potential.current[ i ]<<endl;
+	// 			Gx = Gx + var->LSQ_Cx[ k ][ i ]*dVar ;
+	// 	    Gy = Gy + var->LSQ_Cy[ k ][ i ]*dVar ;
 
-			}
-			var->Ex[ i ] = Gx ;
-			var->Ey[ i ] = Gy ;
-			if( plasma.Mesh.ndim == 3 ) var->Ez[ i ] = Gz ;
+	// 		}
+	// 		var->Ex[ i ] = Gx ;
+	// 		var->Ey[ i ] = Gy ;
+	// 		if( plasma.Mesh.ndim == 3 ) var->Ez[ i ] = Gz ;
 
-		}//For Dielectric or Plasma
+	// 	}//For Dielectric or Plasma
 
-		var->Ex[ i ] = (-1.0)*var->Ex[ i ] ;
-		var->Ey[ i ] = (-1.0)*var->Ey[ i ] ;
-	}//Loop over all cells
-	plasma.syn_parallel_cell_data( var->VarTag["Ex"] );
-	plasma.syn_parallel_cell_data( var->VarTag["Ey"] );
+	// 	var->Ex[ i ] = (-1.0)*var->Ex[ i ] ;
+	// 	var->Ey[ i ] = (-1.0)*var->Ey[ i ] ;
+	// }//Loop over all cells
+	// plasma.syn_parallel_cell_data( var->VarTag["Ex"] );
+	// plasma.syn_parallel_cell_data( var->VarTag["Ey"] );
 }
 void CPoisson::SOLVE_TEST( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  )
 {
-	UpdateElectricalMap( config, var ) ;
-	
-	/*--- compute the transport coefficient (permittivity). ---*/
-	switch ( config->Equation[ POISSON ].Equation ) {
-		case 0: 	UltraMPPComputePermitt                ( config, var ) ; break ;
-		case 1:		UltraMPPComputeEffectivePermitt       ( config, var ) ; break ;
-		case 2:		UltraMPPComputeEffectivePermittEleOnly( config, var ) ; break ;
-		default: 
-		if( mpi_rank == 0 ) cout << "No such equation option, Pls contact K.-L. Chen " << endl ; exit(1) ; break ;
-	}
+	cout<<"This will be remove in the feture. @ solver_poisson.cpp"<<endl;
+	// UpdateElectricalMap( config, var ) ;
+	// /*--- compute the transport coefficient (permittivity). ---*/
+	// switch ( config->Equation[ POISSON ].Equation ) {
+	// 	case 0: 	UltraMPPComputePermitt                ( config, var ) ; break ;
+	// 	case 1:		UltraMPPComputeEffectivePermitt       ( config, var ) ; break ;
+	// 	case 2:		UltraMPPComputeEffectivePermittEleOnly( config, var ) ; break ;
+	// 	default: 
+	// 	if( mpi_rank == 0 ) cout << "No such equation option, Pls contact K.-L. Chen " << endl ; exit(1) ; break ;
+	// }
 
-	/*--- Calculate the net charge density for poisson's source term ---*/
-	UltraMPPComputeNetCharge( config, var ) ;
+	// /*--- Calculate the net charge density for poisson's source term ---*/
+	// UltraMPPComputeNetCharge( config, var ) ;
 
-	/*--- set the cell paramtert ---*/
-	//plasma.set_cell_property_parameter( var->eps_eff ) ;
+	// /*--- set the cell paramtert ---*/
+	// //plasma.set_cell_property_parameter( var->eps_eff ) ;
 
 
-	MatA_SourceB( config, var ) ;
+	// MatA_SourceB( config, var ) ;
 
-	/* SOLVE */
-	plasma.get_solution( var->Potential.current );
-	plasma.syn_parallel_cell_data( var->Potential.tag_current );
+	// /* SOLVE */
+	// plasma.get_solution( var->Potential.current );
+	// plasma.syn_parallel_cell_data( var->Potential.tag_current );
 
-	its = plasma.get_iteration_number() ;
+	// its = plasma.get_iteration_number() ;
 
-	ComputeGradient( config, var ) ;
-	var->UltraMPPComputeReducedElectricField();
-	UltraMPPComputeDispCurrentDensity( var ) ;
+	// ComputeGradient( config, var ) ;
+	// var->UltraMPPComputeReducedElectricField();
+	// UltraMPPComputeDispCurrentDensity( var ) ;
 
 }

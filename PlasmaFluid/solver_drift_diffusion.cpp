@@ -120,7 +120,7 @@ void CDriftDiffusion::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
 	int j=0 ;
-	double Source=0.0, vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0 ;
+	double Source=0.0, vn=0.0, U=0.0, V=0.0, w=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0 ;
 	double Diff=0.0, Mobi=0.0, SourceSink=0.0, TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
@@ -158,8 +158,14 @@ void CDriftDiffusion::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boos
 					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
 					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
+					w = dL*config->Species[ iSpecies ].Charge * var->Ez[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ez[ j ] * var->Mobi[iSpecies][ j ]  ;
 
-					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+
+					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+					     V*m->PFM_CELL[ i ][ k ].nf[ 1 ] + 
+					     w*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
+					     
 					Diff = ( dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] );
 
 					Pe = vn*m->PFM_CELL[ i ][ k ].dDist/Diff ;
