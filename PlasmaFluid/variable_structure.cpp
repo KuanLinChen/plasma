@@ -77,7 +77,7 @@ void CVariable::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> 
 	/*--- If electron energy loss term is calculate from file ---*/
 	if ( config->eEnergyLossFile.size() > 0 ) {
 
-		eEnergyLossTable.Init( config->CasePath+"eEnergyLoss.inp" ) ;
+//		eEnergyLossTable.Init( config->CasePath+"eEnergyLoss.inp" ) ;
 
 	}
 

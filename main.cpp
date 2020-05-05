@@ -283,9 +283,47 @@ int main( int argc, char * argv[] )
 					cout<<"Coil current now is " << Var->Coil_Current << " A." << endl ; 
 					#endif
 					if(Config->PFM_Assumption == "LMEA") 
-					cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;
+					cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;		
 
 				} 
+				
+					#if (FDMaxwell == true )
+				//Monitor the change rate of all variable
+				if( MON_CYC and MON_INS ){	
+
+					for ( int jEqn = 0 ; jEqn < DriftDiffusionNum ; jEqn++ ) {	
+
+						Var->two_norm_diff = 0 ;
+						Var->total_particle = 0 ;
+						for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
+							
+							Cell *cell = plasma.get_cell(i) ;				
+						//	if( mpi_rank == MASTER_NODE ){
+						//	cout << "Pre =" << Var->PreU0[ jEqn ][ i ] << endl ;
+						//	cout << "Cur =" << Var->U0[ jEqn ][ i ] << endl ;
+						//}								
+
+
+							Var->two_norm_diff	+= ( 1 - Var->U0[ jEqn ][ i ]/Var->PreU0[ jEqn ][ i ] )*( 1 - Var->U0[ jEqn ][ i ]/Var->PreU0[ jEqn ][ i ] );
+							Var->total_particle +=   Var->U0[ jEqn ][ i ] * cell->volume;
+						}
+
+						Var->two_norm_diff =	 plasma.parallel_sum( &Var->two_norm_diff ) ;	
+						Var->two_norm_diff = 	sqrt (Var->two_norm_diff)/plasma.Mesh.cell_number ;
+						
+						Var->total_particle =	 plasma.parallel_sum( &Var->total_particle ) ;	
+					
+						if( mpi_rank == MASTER_NODE ){
+						cout << "two_norm_diff for jEqn = " << jEqn << " is " << Var->two_norm_diff << endl;
+						cout << "Total particle for jEqn = " << jEqn << " is " << Var->total_particle << endl;
+						}						
+					} 	
+		
+
+				} 	
+					if( mpi_rank == MASTER_NODE )	cout << endl ;	
+					#endif				
+			
 
  				/* Update solution: Copy solution (n+1) step -> (n) step */ 
  				Var->UpdateSolution( mesh ) ; 
@@ -334,10 +372,10 @@ int main( int argc, char * argv[] )
 				
 				/* Solve for maxwell. */
  				#if (FDMaxwell == true )
- 					if (Var->current_Coil_power < var->Coil_power) 
+ 					if (Var->current_Coil_power < Var->Coil_power) 
 					Var->current_Coil_power = Var->current_Coil_power + Var->power_grows_rate / Config->StepPerCycle ;
- 				
- 					if ( abs(Var->power_inductive - Var->current_Coil_power)/Var->Coil_power > 0.02){ FD_maxwell_solver->SOLVE( Config, Var ) ; }
+ 					
+ 					if ( abs(Var->power_inductive - Var->current_Coil_power)/Var->current_Coil_power > 0.02){ FD_maxwell_solver->SOLVE( Config, Var ) ; }
 
  					FD_maxwell_solver->UltraMPPComputePowerAbsorptionFromMaxwell( Config, Var ) ;	
  					FD_maxwell_solver->UltraMPPComputeTotalPower( Config, Var ) ;

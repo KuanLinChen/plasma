@@ -204,6 +204,8 @@ class CVariable
 	double *Power_Absorption_FVFD ;
 	double power_inductive ; // Intergrate Power_Absorption [W/m^3] over all cells //From inductive E field 
 	double power_static ; // Intergrate JdotE [W/m^3] over all cells //From static E field 
+	double two_norm_diff ;
+	double total_particle ;
 	//--------------------------------------------------------------------------
 
 
