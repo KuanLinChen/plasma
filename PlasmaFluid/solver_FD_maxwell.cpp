@@ -139,10 +139,10 @@ void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConf
 	var->Im_eq_source[ cth ] = var->omega * vacuum_permeability * var->CurrentDen[ cth ] ; 
 
   }//cell loop.
- 	if( var->power_inductive < var->Coil_power){	
+ 	if( var->power_inductive < var->current_Coil_power){	
     	var->Coil_Current = var->Coil_Current * var->Coil_change_factor;
-    }else if(var->power_inductive > var->Coil_power){
-    	var->Coil_Current = var->Coil_Current * var->Coil_power / var->power_inductive;
+    }else if(var->power_inductive > var->current_Coil_power){
+    	var->Coil_Current = var->Coil_Current * var->current_Coil_power / var->power_inductive;
 	}
 
   plasma.syn_parallel_cell_data( var->VarTag["CurrentDen"] );   
