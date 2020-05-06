@@ -287,25 +287,19 @@ int main( int argc, char * argv[] )
 
 				} 
 				
-					#if (FDMaxwell == true )
 				//Monitor the change rate of all variable
 				if( MON_CYC and MON_INS ){	
 
-					for ( int jEqn = 0 ; jEqn < DriftDiffusionNum ; jEqn++ ) {	
+					for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {	
 
 						Var->two_norm_diff = 0 ;
 						Var->total_particle = 0 ;
 						for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ){
 							
 							Cell *cell = plasma.get_cell(i) ;				
-						//	if( mpi_rank == MASTER_NODE ){
-						//	cout << "Pre =" << Var->PreU0[ jEqn ][ i ] << endl ;
-						//	cout << "Cur =" << Var->U0[ jEqn ][ i ] << endl ;
-						//}								
 
-
-							Var->two_norm_diff	+= ( 1 - Var->U0[ jEqn ][ i ]/Var->PreU0[ jEqn ][ i ] )*( 1 - Var->U0[ jEqn ][ i ]/Var->PreU0[ jEqn ][ i ] );
-							Var->total_particle +=   Var->U0[ jEqn ][ i ] * cell->volume;
+							Var->two_norm_diff	+= ( 1 - Var->U0[ jSpecies ][ i ]/Var->PreU0[ jSpecies ][ i ] )*( 1 - Var->U0[ jSpecies ][ i ]/Var->PreU0[ jSpecies ][ i ] );
+							Var->total_particle +=   Var->U0[ jSpecies ][ i ] * cell->volume;
 						}
 
 						Var->two_norm_diff =	 plasma.parallel_sum( &Var->two_norm_diff ) ;	
@@ -314,15 +308,12 @@ int main( int argc, char * argv[] )
 						Var->total_particle =	 plasma.parallel_sum( &Var->total_particle ) ;	
 					
 						if( mpi_rank == MASTER_NODE ){
-						cout << "two_norm_diff for jEqn = " << jEqn << " is " << Var->two_norm_diff << endl;
-						cout << "Total particle for jEqn = " << jEqn << " is " << Var->total_particle << endl;
+						cout << "two_norm_diff  for jSpecies = " << jSpecies << " is " << Var->two_norm_diff << endl;
+						cout << "Total particle for jSpecies = " << jSpecies << " is " << Var->total_particle << endl;
 						}						
 					} 	
-		
-
-				} 	
-					if( mpi_rank == MASTER_NODE )	cout << endl ;	
-					#endif				
+					if( mpi_rank == MASTER_NODE )	cout << endl ;			
+				} 				
 			
 
  				/* Update solution: Copy solution (n+1) step -> (n) step */ 
