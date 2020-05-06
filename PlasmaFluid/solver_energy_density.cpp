@@ -806,7 +806,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 {
 	int iFace=0, iCell=0, j=0 ;
 
-	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
+	double vn=0.0, U=0.0, V=0.0, W=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
@@ -1049,7 +1049,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 {
 	int iFace=0, iCell=0, j=0 ;
 
-	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
+	double vn=0.0, U=0.0, V=0.0, W=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;

@@ -191,11 +191,11 @@ int main( int argc, char * argv[] )
 		post = boost::shared_ptr<CPost> ( new CPost ) ;
 
  	/* first solve potential and electric field as initial. */
-		// cout<<"A1"<<endl;
-		// poisson_solver->Solve( mesh, Config, Var ) ;
+		cout<<"A1"<<endl;
+		poisson_solver->SOLVE( Config, Var ) ;
  	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
- 		//cout<<"A1"<<endl;
+ 		cout<<"A2"<<endl;
  		poisson_solver->SOLVE( Config, Var ) ;
  		//cout<<"A2"<<endl;
 
