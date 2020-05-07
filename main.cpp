@@ -217,7 +217,7 @@ int main( int argc, char * argv[] )
 		
 		#if (FDMaxwell == true )
 			ICP_FileOutput.open( "ICP.dat" , ios::out | ios::trunc ) ;
-			ICP_FileOutput<<"VARIABLES=\"Cycle\", \"Controlled power [W]\", \"EM_power [W]\" , \"Current [A]\" , \"ES_power [W]\""<<endl ;
+			ICP_FileOutput<<"VARIABLES=\"Cycle\", \"Controlled power [W]\", \"EM_power [W]\" , \"Current [A]\" , \"ES_power [W]\", \"#Maxwell_equ_solved\" "<<endl ;
 		#endif
 		
 			ParticleMON_FileOutput.open( "ParticleMON.dat" , ios::out | ios::trunc ) ;	
@@ -348,7 +348,7 @@ int main( int argc, char * argv[] )
 						cout << endl ;	
 						#if (FDMaxwell == true )
 
-						ICP_FileOutput<<number_temp<<"\t"<<Var->Controlled_Coil_power<<"\t"<<Var->power_inductive<<"\t"<<Var->Coil_Current<<"\t"<<Var->power_static<<endl;
+						ICP_FileOutput<<number_temp<<"\t"<<Var->Controlled_Coil_power<<"\t"<<Var->power_inductive<<"\t"<<Var->Coil_Current<<"\t"<<Var->power_static<<"\t"<<Var->Maxwell_solver_count<<endl;
 						#endif	
 						
 						ParticleMON_FileOutput<<endl ;	
