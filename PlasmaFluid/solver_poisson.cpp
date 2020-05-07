@@ -57,15 +57,20 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	plasma.get_gradient(&var->Potential);
 
 	/* inverse gradient for Electric field*/
-	for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) 
-	{
+	for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) {
 		var->Ex[ i ] = - var->Potential.gradient[0][i] ;
 		var->Ey[ i ] = - var->Potential.gradient[1][i] ;
-		var->Ez[ i ] = - var->Potential.gradient[2][i] ;
 	}
 	plasma.syn_parallel_cell_data( var->VarTag["Ex"] );
 	plasma.syn_parallel_cell_data( var->VarTag["Ey"] );
-	plasma.syn_parallel_cell_data( var->VarTag["Ez"] );
+	
+	if( plasma.Mesh.ndim == 3 ) {
+		for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) {
+			var->Ez[ i ] = - var->Potential.gradient[2][i] ;
+		}
+		plasma.syn_parallel_cell_data( var->VarTag["Ez"] );
+	}
+
 	
 	/*Compute real net charge density [C/m^3]*/
 	for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) {

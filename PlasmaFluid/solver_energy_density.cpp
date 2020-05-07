@@ -80,7 +80,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 {
 	int iFace=0, iCell=0, j=0 ;
 
-	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
+	double vn=0.0, U=0.0, V=0.0, W=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
@@ -118,7 +118,12 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
 					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
-					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+					W = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
+
+					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+							 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+							 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
 
 					
 					Diff = dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ; 
@@ -159,7 +164,11 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
-	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
+
+	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] +
+	 															 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 															 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
@@ -215,7 +224,11 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
-	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
+
+	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 															 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 															 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
@@ -226,8 +239,9 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ; ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 						}
@@ -306,7 +320,7 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 {
 	int iFace=0, iCell=0, j=0 ;
 
-	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
+	double vn=0.0, U=0.0, V=0.0, W=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
@@ -344,7 +358,12 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
 					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
-					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+					W = dL*config->Species[ iSpecies ].Charge * var->Ez[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ez[ j ] * var->Mobi[iSpecies][ j ]  ;
+
+					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+							 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+							 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
 
 					
 					Diff = dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ; 
@@ -385,7 +404,11 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
-	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
+
+	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 															 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 															 W*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
@@ -396,8 +419,9 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ; ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 						}
@@ -441,7 +465,10 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
-	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
+	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] +
+	 															 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 															 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
@@ -452,8 +479,9 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ; ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 						}
@@ -488,8 +516,9 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 	 		energy_density.add_entry_in_source_term( i,  var->PreU4[iSpecies][ i ] * Cell_i->volume ) ;
 
 			/*--- Joule heating, Note: since d_Te is in eV, there is no need to multiply the elementary charge ---*/
-			JdotE = config->Species[iSpecies].Charge*( var->Ex[ i ]*var->U1[ iSpecies ][ i ] 
-	 												 										 + var->Ey[ i ]*var->U2[ iSpecies ][ i ] ) ;
+			JdotE = config->Species[iSpecies].Charge*( var->Ex[ i ]*var->U1[ iSpecies ][ i ] +
+	 												 										   var->Ey[ i ]*var->U2[ iSpecies ][ i ] +
+	 												 										   var->Ez[ i ]*var->U3[ iSpecies ][ i ] ) ;
 
 	 		/*--- energy loss term ---*/
 	 		// switch ( eLOSS ) {
@@ -533,7 +562,7 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 {
 	int iFace=0, iCell=0, j=0 ;
 
-	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
+	double vn=0.0, U=0.0, V=0.0, W=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
@@ -571,7 +600,12 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
 					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
-					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+					W = dL*config->Species[ iSpecies ].Charge * var->Ez[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ez[ j ] * var->Mobi[iSpecies][ j ]  ;
+
+					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+							 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+							 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
 
 					
 					Diff = dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ; 
@@ -618,15 +652,16 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 							
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
-	 						vn += 5/6*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec)/(1.0+Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
+	 						vn = 5/6*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec)/(1.0+Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
 	 						
 	 						/*--- Secondary electron emission ---*/
 	 						SecondaryElectronEmission = 0.0 ;
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ; ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 						}
@@ -670,7 +705,10 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
-	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
+	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 															 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 															 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
@@ -680,11 +718,17 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 	 						SecondaryElectronEmission = 0.0 ;
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
+
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ; ;
+
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
+
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
+
 	 							}
+
 	 						}
 
 	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
@@ -717,8 +761,9 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 	 		energy_density.add_entry_in_source_term( i,  var->PreU4[iSpecies][ i ] * Cell_i->volume ) ;
 
 			/*--- Joule heating, Note: since d_Te is in eV, there is no need to multiply the elementary charge ---*/
-			JdotE = config->Species[iSpecies].Charge*( var->Ex[ i ]*var->U1[ iSpecies ][ i ] 
-	 												 										 + var->Ey[ i ]*var->U2[ iSpecies ][ i ] ) ;
+			JdotE = config->Species[iSpecies].Charge*( var->Ex[ i ]*var->U1[ iSpecies ][ i ] + 
+	 												 										   var->Ey[ i ]*var->U2[ iSpecies ][ i ] +
+	 												 										   var->Ez[ i ]*var->U3[ iSpecies ][ i ] ) ;
 
 	 		/*--- energy loss term ---*/
 	 		// switch ( eLOSS ) {
@@ -761,7 +806,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 {
 	int iFace=0, iCell=0, j=0 ;
 
-	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
+	double vn=0.0, U=0.0, V=0.0, W=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
@@ -799,7 +844,12 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
 					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
-					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+					V = dL*config->Species[ iSpecies ].Charge * var->Ez[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ez[ j ] * var->Mobi[iSpecies][ j ]  ;
+
+					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+							 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+							 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
 
 					
 					Diff = dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ; 
@@ -840,8 +890,14 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
-	 						vn  =  2.0*C53*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
-	 						vn += -1.0*C53*   ( U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
+
+	 						vn  =  2.0*C53*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
+	 						vn += -1.0*C53*   ( U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
@@ -852,8 +908,9 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ; ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 						}
@@ -896,7 +953,10 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
-	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
+	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 															 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 															 W*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
@@ -907,8 +967,9 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ; ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 						}
@@ -943,8 +1004,9 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 	 		energy_density.add_entry_in_source_term( i,  var->PreU4[iSpecies][ i ] * Cell_i->volume ) ;
 
 			/*--- Joule heating, Note: since d_Te is in eV, there is no need to multiply the elementary charge ---*/
-			JdotE = config->Species[iSpecies].Charge*( var->Ex[ i ]*var->U1[ iSpecies ][ i ] 
-	 												 										 + var->Ey[ i ]*var->U2[ iSpecies ][ i ] ) ;
+			JdotE = config->Species[iSpecies].Charge*( var->Ex[ i ]*var->U1[ iSpecies ][ i ] + 
+	 												 										   var->Ey[ i ]*var->U2[ iSpecies ][ i ] +
+	 												 										   var->Ez[ i ]*var->U3[ iSpecies ][ i ] ) ;
 
 	 		/*--- energy loss term ---*/
 	 		// switch ( eLOSS ) {
@@ -987,7 +1049,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 {
 	int iFace=0, iCell=0, j=0 ;
 
-	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
+	double vn=0.0, U=0.0, V=0.0, W=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
@@ -1025,7 +1087,12 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 					V = dL*( config->Species[ iSpecies ].Charge * var->Ey[ i ] - var->Ty[i] )* var->Mobi[iSpecies][ i ] 
 					  + dR*( config->Species[ iSpecies ].Charge * var->Ey[ j ] - var->Ty[j] )* var->Mobi[iSpecies][ j ]  ;
 
-					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+					W = dL*( config->Species[ iSpecies ].Charge * var->Ez[ i ] - var->Tz[i] )* var->Mobi[iSpecies][ i ] 
+					  + dR*( config->Species[ iSpecies ].Charge * var->Ez[ j ] - var->Tz[j] )* var->Mobi[iSpecies][ j ]  ;
+
+					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+							 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+							 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
 
 					
 					Diff = dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ; 
@@ -1066,8 +1133,14 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
-	 						vn  =  2.0*C53*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
-	 						vn += -1.0*C53*   ( U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
+
+	 						vn  =  2.0*C53*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
+	 						vn += -1.0*C53*   ( U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
@@ -1078,8 +1151,9 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ; ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 						}
@@ -1122,7 +1196,10 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
-	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ]+V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
+	 						vn = C43*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 															 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 															 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
@@ -1133,8 +1210,9 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-	 												  + config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] )*var->U0[jSpecies][ i ] ; ;
+	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
 	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 						}
@@ -1169,8 +1247,9 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 	 		energy_density.add_entry_in_source_term( i,  var->PreU4[iSpecies][ i ] * Cell_i->volume ) ;
 
 			/*--- Joule heating, Note: since d_Te is in eV, there is no need to multiply the elementary charge ---*/
-			JdotE = config->Species[iSpecies].Charge*( var->Ex[ i ]*var->U1[ iSpecies ][ i ] 
-	 												 										 + var->Ey[ i ]*var->U2[ iSpecies ][ i ] ) ;
+			JdotE = config->Species[iSpecies].Charge*( var->Ex[ i ]*var->U1[ iSpecies ][ i ] + 
+	 												 										 	 var->Ey[ i ]*var->U2[ iSpecies ][ i ] +
+	 												 										 	 var->Ez[ i ]*var->U3[ iSpecies ][ i ] ) ;
 
 	 		/*--- energy loss term ---*/
 	 		// switch ( eLOSS ) {
@@ -1213,7 +1292,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 {
 	int iFace=0, iCell=0, j=0 ;
 
-	double vn=0.0, U=0.0, V=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0, Source=0.0 ;
+	double vn=0.0, U=0.0, V=0.0, W=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0, Source=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
 
 	Cell *Cell_i, *Cell_j ;
@@ -1255,7 +1334,12 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 					V = dL*config->Species[ iSpecies ].Charge * var->Ey[ i ] * var->Mobi[iSpecies][ i ] 
 					  + dR*config->Species[ iSpecies ].Charge * var->Ey[ j ] * var->Mobi[iSpecies][ j ]  ;
 
-					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + V*m->PFM_CELL[ i ][ k ].nf[ 1 ] ;
+					W = dL*config->Species[ iSpecies ].Charge * var->Ez[ i ] * var->Mobi[iSpecies][ i ] 
+					  + dR*config->Species[ iSpecies ].Charge * var->Ez[ j ] * var->Mobi[iSpecies][ j ]  ;
+
+					vn = U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+							 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+							 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
 
 					
 					Diff = dL*var->Diff[iSpecies][ i ] + dR*var->Diff[iSpecies][ j ] ; 
@@ -1369,8 +1453,9 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 	 		#endif
 			/*--- Joule heating, Note: since d_Te is in eV, there is no need to multiply the elementary charge ---*/
 			JdotE = config->Species[iSpecies].Charge*( 
-														 var->Ex[ i ]*var->U1[ iSpecies ][ i ] //);
-	 												 + var->Ey[ i ]*var->U2[ iSpecies ][ i ] ) ;
+														 											var->Ex[ i ]*var->U1[ iSpecies ][ i ] +
+	 												 											  var->Ey[ i ]*var->U2[ iSpecies ][ i ] +
+	 												 											  var->Ez[ i ]*var->U3[ iSpecies ][ i ] ) ;
 
 	 		/*--- energy loss term ---*/
 			SourceSink = *(var->EnergySourcePoint + (i) ) ;
