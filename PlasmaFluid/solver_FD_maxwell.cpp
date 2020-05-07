@@ -21,9 +21,10 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
     var->Coil_power 		= ICP_simulation_condition["Coil_power"] ;
     var->Coil_change_factor 		= ICP_simulation_condition["Coil_change_factor"] ;
     var->power_grows_rate 		= ICP_simulation_condition["power_grows_rate"] ;
-    var->current_Coil_power 		= ICP_simulation_condition["Initial_Coil_power"] ;
+    var->Controlled_Coil_power 		= ICP_simulation_condition["Initial_Coil_power"] ;
+    var->Max_current 		= ICP_simulation_condition["Max_current"] ;
     var->omega			= 2 * var->PI * var->Coil_frequency ;
-	var->power_inductive= var->current_Coil_power ;
+	var->power_inductive= var->Controlled_Coil_power ;
 	
 	
 	
@@ -48,6 +49,7 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
 }
 void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  )
 {	
+	var->Maxwell_solver_count++ ;
 	
 	/*--- Matrix A ---*/
     FDMaxwell_Re.before_matrix_construction() ;
@@ -139,11 +141,13 @@ void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConf
 	var->Im_eq_source[ cth ] = var->omega * vacuum_permeability * var->CurrentDen[ cth ] ; 
 
   }//cell loop.
- 	if( var->power_inductive < var->current_Coil_power){	
+ 	if( var->power_inductive < var->Controlled_Coil_power){	
     	var->Coil_Current = var->Coil_Current * var->Coil_change_factor;
-    }else if(var->power_inductive > var->current_Coil_power){
-    	var->Coil_Current = var->Coil_Current * var->current_Coil_power / var->power_inductive;
+    }else if(var->power_inductive > var->Controlled_Coil_power){
+    	var->Coil_Current = var->Coil_Current * var->Controlled_Coil_power / var->power_inductive;
 	}
+	
+	if (var->Coil_Current > var->Max_current) var->Coil_Current = var->Max_current ; 
 
   plasma.syn_parallel_cell_data( var->VarTag["CurrentDen"] );   
 }
