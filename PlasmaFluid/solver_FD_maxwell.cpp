@@ -125,7 +125,7 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
 }
 void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
-	
+	double current_temp =0.0 , current_diff=0.0;
 	/*Only the 'coil' region. */
   for ( int cth=0 ; cth< FDMaxwell_Re.Mesh.cell_number ; cth++ ) {
 
@@ -144,7 +144,9 @@ void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConf
  	if( var->power_inductive < var->Controlled_Coil_power){	
     	var->Coil_Current = var->Coil_Current * var->Coil_change_factor;
     }else if(var->power_inductive > var->Controlled_Coil_power){
-    	var->Coil_Current = var->Coil_Current * var->Controlled_Coil_power / var->power_inductive;
+    	current_temp = var->Coil_Current * var->Controlled_Coil_power / var->power_inductive ;
+    	current_diff = var->Coil_Current - current_temp ;
+    	var->Coil_Current = var->Coil_Current - 0.2 * current_diff;
 	}
 	
 	if (var->Coil_Current > var->Max_current) var->Coil_Current = var->Max_current ; 

@@ -331,7 +331,7 @@ int main( int argc, char * argv[] )
 						}
 
 						Var->two_norm_diff =	 plasma.parallel_sum( &Var->two_norm_diff ) ;	
-						Var->two_norm_diff = 	sqrt (Var->two_norm_diff)/plasma.Mesh.cell_number ;
+						Var->two_norm_diff = 	sqrt (Var->two_norm_diff)/plasma.Mesh.cell_number * Config->StepPerCycle ;
 						
 						Var->total_particle =	 plasma.parallel_sum( &Var->total_particle ) ;	
 					
