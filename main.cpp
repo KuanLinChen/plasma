@@ -335,17 +335,13 @@ int main( int argc, char * argv[] )
 						
 						Var->total_particle =	 plasma.parallel_sum( &Var->total_particle ) ;	
 					
-						if( mpi_rank == MASTER_NODE ){
-						cout << "two_norm_diff  for jSpecies = " << jSpecies << " is " << Var->two_norm_diff << endl;
-						cout << "Total particle for jSpecies = " << jSpecies << " is " << Var->total_particle << endl;
-						
+						if( mpi_rank == MASTER_NODE ){					
 						ParticleMON_FileOutput<<Var->two_norm_diff<<"\t";
 						ParticleMON_FileOutput<<Var->total_particle<<"\t";	
 						}						
 					} 	
 					if( mpi_rank == MASTER_NODE ) {
-						
-						cout << endl ;	
+							
 						#if (FDMaxwell == true )
 
 						ICP_FileOutput<<number_temp<<"\t"<<Var->Controlled_Coil_power<<"\t"<<Var->power_inductive<<"\t"<<Var->Coil_Current<<"\t"<<Var->power_static<<"\t"<<Var->Maxwell_solver_count<<endl;
@@ -407,7 +403,20 @@ int main( int argc, char * argv[] )
  					if (Var->Controlled_Coil_power < Var->Coil_power) 
 					Var->Controlled_Coil_power = Var->Controlled_Coil_power + Var->power_grows_rate / Config->StepPerCycle ;
  					
- 					if ( abs(Var->power_inductive - Var->Controlled_Coil_power)/Var->Controlled_Coil_power > 0.02){ FD_maxwell_solver->SOLVE( Config, Var ) ; }
+ 					if ( abs(Var->power_inductive - Var->Controlled_Coil_power)/Var->Controlled_Coil_power > 0.001){ 
+					 	FD_maxwell_solver->SOLVE( Config, Var ) ; 
+					
+						if( mpi_rank == MASTER_NODE ) {
+						number_temp = double(MainCycle) + double(MainStep)/double(Config->StepPerCycle) ;							
+						ICP_FileOutput<<number_temp<<"\t"<<Var->Controlled_Coil_power<<"\t"<<Var->power_inductive<<"\t"<<Var->Coil_Current<<"\t"<<Var->power_static<<"\t"<<Var->Maxwell_solver_count<<endl;				
+						} 
+					 
+					}else if( MainStep%100 == 0 ){ FD_maxwell_solver->SOLVE( Config, Var ) ; 
+						if( mpi_rank == MASTER_NODE ) {
+						number_temp = double(MainCycle) + double(MainStep)/double(Config->StepPerCycle) ;							
+						ICP_FileOutput<<number_temp<<"\t"<<Var->Controlled_Coil_power<<"\t"<<Var->power_inductive<<"\t"<<Var->Coil_Current<<"\t"<<Var->power_static<<"\t"<<Var->Maxwell_solver_count<<endl;				
+						} 	
+					}
 
  					FD_maxwell_solver->UltraMPPComputePowerAbsorptionFromMaxwell( Config, Var ) ;	
  					FD_maxwell_solver->UltraMPPComputeTotalPower( Config, Var ) ;

@@ -142,11 +142,15 @@ void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConf
 
   }//cell loop.
  	if( var->power_inductive < var->Controlled_Coil_power){	
-    	var->Coil_Current = var->Coil_Current * var->Coil_change_factor;
+    	current_temp = var->Coil_Current * var->Controlled_Coil_power / var->power_inductive ;
+    	current_diff = var->Coil_Current - current_temp ;
+    	var->Coil_Current = var->Coil_Current - 25/var->Controlled_Coil_power * current_diff;
+		 	
+ //   	var->Coil_Current = var->Coil_Current * var->Coil_change_factor;
     }else if(var->power_inductive > var->Controlled_Coil_power){
     	current_temp = var->Coil_Current * var->Controlled_Coil_power / var->power_inductive ;
     	current_diff = var->Coil_Current - current_temp ;
-    	var->Coil_Current = var->Coil_Current - 0.2 * current_diff;
+    	var->Coil_Current = var->Coil_Current - 25/var->Controlled_Coil_power * current_diff;
 	}
 	
 	if (var->Coil_Current > var->Max_current) var->Coil_Current = var->Max_current ; 
