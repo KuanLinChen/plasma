@@ -199,13 +199,34 @@ int main( int argc, char * argv[] )
 
 	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
 
-		ofstream FileOutput, PCB_FileOutput ;
+		ofstream FileOutput, PCB_FileOutput , ParticleMON_FileOutput;
+		
+		#if (FDMaxwell == true )
+		ofstream ICP_FileOutput ;
+		#endif
+		
 		map< int, CElectrical>::iterator Iter;
 
+		double number_temp = 0.0 ;// This just for computation	
+		
 		if ( mpi_rank == MASTER_NODE ){
 			PCB_FileOutput.open( "PCB.dat" , ios::out | ios::trunc ) ;
 			PCB_FileOutput<<"VARIABLES=\"Time\", \"PowerAbs [W]\", \"Bias Voltage [V]\" , \"Residue\""<<endl ;
+		
+		#if (FDMaxwell == true )
+			ICP_FileOutput.open( "ICP.dat" , ios::out | ios::trunc ) ;
+			ICP_FileOutput<<"VARIABLES=\"Cycle\", \"Controlled power [W]\", \"EM_power [W]\" , \"Current [A]\" , \"ES_power [W]\", \"#Maxwell_equ_solved\" "<<endl ;
+		#endif
+		
+			ParticleMON_FileOutput.open( "ParticleMON.dat" , ios::out | ios::trunc ) ;	
+			ParticleMON_FileOutput<<"VARIABLES=\"Cycle\", " ;			
+			for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ )	{	
+			ParticleMON_FileOutput<<"\"Two_norm_diff["+to_string(jSpecies)+"]"+"\" " ;
+			ParticleMON_FileOutput<<"\"Total_particle["+to_string(jSpecies)+"]"+"\" " ;			
+			}
+			ParticleMON_FileOutput<< endl ;		
 		}
+		
 		double BiasVoltage=0.0 ;
 		double Target_POWER = 100.0, Current_Voltage=0.0 ;
 	//exit(1);
@@ -279,15 +300,20 @@ int main( int argc, char * argv[] )
 					cout<<"Power absorbed by electron from inductive field is " << Var->power_inductive << " W." << endl ; 
 					cout<<"Power absorbed by electron from static field is " << Var->power_static << " W." << endl ; 
 					cout<<"Coil current now is " << Var->Coil_Current << " A." << endl ; 
+					cout<<"I have solved Maxwell " << Var->Maxwell_solver_count << " times" << endl ;
 					#endif
 					if(Config->PFM_Assumption == "LMEA") 
-					cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;		
+					cout<<"Energy ksp iter : "<<electron_energy_solver->its<<endl<<endl;
+					
+					number_temp = double(MainCycle) + double(MainStep)/double(Config->StepPerCycle) ;							
+					ParticleMON_FileOutput<<number_temp<<"\t";
 
 				} 
 				
 				//Monitor the change rate of all variable
 				if( MON_CYC and MON_INS ){	
 
+						
 					for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {	
 
 						Var->two_norm_diff = 0 ;
@@ -296,21 +322,32 @@ int main( int argc, char * argv[] )
 							
 							Cell *cell = plasma.get_cell(i) ;				
 
+							if(Var->U0[ jSpecies ][ i ] > 0.1*Config->Species[jSpecies].InitialDensity) 							
 							Var->two_norm_diff	+= ( 1 - Var->U0[ jSpecies ][ i ]/Var->PreU0[ jSpecies ][ i ] )*( 1 - Var->U0[ jSpecies ][ i ]/Var->PreU0[ jSpecies ][ i ] );
+
 							Var->total_particle +=   Var->U0[ jSpecies ][ i ] * cell->volume;
 						}
 
 						Var->two_norm_diff =	 plasma.parallel_sum( &Var->two_norm_diff ) ;	
-						Var->two_norm_diff = 	sqrt (Var->two_norm_diff)/plasma.Mesh.cell_number ;
+						Var->two_norm_diff = 	sqrt (Var->two_norm_diff)/plasma.Mesh.cell_number * Config->StepPerCycle ;
 						
 						Var->total_particle =	 plasma.parallel_sum( &Var->total_particle ) ;	
 					
-						if( mpi_rank == MASTER_NODE ){
-						cout << "two_norm_diff  for jSpecies = " << jSpecies << " is " << Var->two_norm_diff << endl;
-						cout << "Total particle for jSpecies = " << jSpecies << " is " << Var->total_particle << endl;
+						if( mpi_rank == MASTER_NODE ){					
+						ParticleMON_FileOutput<<Var->two_norm_diff<<"\t";
+						ParticleMON_FileOutput<<Var->total_particle<<"\t";	
 						}						
 					} 	
-					if( mpi_rank == MASTER_NODE )	cout << endl ;			
+					if( mpi_rank == MASTER_NODE ) {
+							
+						#if (FDMaxwell == true )
+
+						ICP_FileOutput<<number_temp<<"\t"<<Var->Controlled_Coil_power<<"\t"<<Var->power_inductive<<"\t"<<Var->Coil_Current<<"\t"<<Var->power_static<<"\t"<<Var->Maxwell_solver_count<<endl;
+						#endif	
+						
+						ParticleMON_FileOutput<<endl ;	
+						
+					}			
 				} 				
 			
 
@@ -361,10 +398,23 @@ int main( int argc, char * argv[] )
 				
 				/* Solve for maxwell. */
  				#if (FDMaxwell == true )
- 					if (Var->current_Coil_power < Var->Coil_power) 
-					Var->current_Coil_power = Var->current_Coil_power + Var->power_grows_rate / Config->StepPerCycle ;
+ 					if (Var->Controlled_Coil_power < Var->Coil_power) 
+					Var->Controlled_Coil_power = Var->Controlled_Coil_power + Var->power_grows_rate / Config->StepPerCycle ;
  					
- 					if ( abs(Var->power_inductive - Var->current_Coil_power)/Var->current_Coil_power > 0.02){ FD_maxwell_solver->SOLVE( Config, Var ) ; }
+ 					if ( abs(Var->power_inductive - Var->Controlled_Coil_power)/Var->Controlled_Coil_power > 0.001){ 
+					 	FD_maxwell_solver->SOLVE( Config, Var ) ; 
+					
+						if( mpi_rank == MASTER_NODE ) {
+						number_temp = double(MainCycle) + double(MainStep)/double(Config->StepPerCycle) ;							
+						ICP_FileOutput<<number_temp<<"\t"<<Var->Controlled_Coil_power<<"\t"<<Var->power_inductive<<"\t"<<Var->Coil_Current<<"\t"<<Var->power_static<<"\t"<<Var->Maxwell_solver_count<<endl;				
+						} 
+					 
+					}else if( MainStep%100 == 0 ){ FD_maxwell_solver->SOLVE( Config, Var ) ; 
+						if( mpi_rank == MASTER_NODE ) {
+						number_temp = double(MainCycle) + double(MainStep)/double(Config->StepPerCycle) ;							
+						ICP_FileOutput<<number_temp<<"\t"<<Var->Controlled_Coil_power<<"\t"<<Var->power_inductive<<"\t"<<Var->Coil_Current<<"\t"<<Var->power_static<<"\t"<<Var->Maxwell_solver_count<<endl;				
+						} 	
+					}
 
  					FD_maxwell_solver->UltraMPPComputePowerAbsorptionFromMaxwell( Config, Var ) ;	
  					FD_maxwell_solver->UltraMPPComputeTotalPower( Config, Var ) ;

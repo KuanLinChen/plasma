@@ -183,7 +183,7 @@ class CVariable
 	double Coil_frequency  ; // ICP coil freqency
 	double Coil_area  ; // ICP coil area
 	double Coil_power  ; // ICP coil power, This variable is use to fix coil power at certain amount.
-	double current_Coil_power ; // For controling coil power 
+	double Controlled_Coil_power ; // For controling coil power 
 	double power_grows_rate ; // [W/cycle] , change coil power by power_grows_rate W/cycle. 
 	double Coil_change_factor  ; // This is use to change ICP coil current, to fix Coil_power at certain amount.
 	double omega  ; // ICP coil angular freqency
@@ -206,6 +206,8 @@ class CVariable
 	double power_static ; // Intergrate JdotE [W/m^3] over all cells //From static E field 
 	double two_norm_diff ;
 	double total_particle ;
+	double Max_current ;
+	int Maxwell_solver_count =0;
 	//--------------------------------------------------------------------------
 
 
