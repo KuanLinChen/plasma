@@ -1271,7 +1271,7 @@ void CVariable::ResetAvgZero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 		AvgU0[ iSpecies ].zero() ;
 		AvgU1[ iSpecies ].zero() ;
 		AvgU2[ iSpecies ].zero() ;
-		//AvgU3[ iSpecies ].zero() ;
+		AvgU3[ iSpecies ].zero() ;
 		AvgU4[ iSpecies ].zero() ;
 		AvgJouleHeating[ iSpecies ].zero() ;
 	}
@@ -1293,6 +1293,7 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 			AvgU0[ iSpecies ][ i ] += U0[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU1[ iSpecies ][ i ] += U1[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU2[ iSpecies ][ i ] += U2[ iSpecies ][ i ]/config->StepPerCycle ;
+			AvgU3[ iSpecies ][ i ] += U3[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgU4[ iSpecies ][ i ] += U4[ iSpecies ][ i ]/config->StepPerCycle ;
 			AvgJouleHeating[ iSpecies ][ i ] += JouleHeating[ iSpecies ][ i ]/config->StepPerCycle ;
 		}

@@ -277,7 +277,8 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 
 			/*--- Joule heating, Note: since d_Te is in eV, there is no need to multiply the elementary charge ---*/
 			JdotE = config->Species[iSpecies].Charge*( var->Ex[ i ]*var->U1[ iSpecies ][ i ] 
-	 												 										 + var->Ey[ i ]*var->U2[ iSpecies ][ i ] ) ;
+	 												 										 + var->Ey[ i ]*var->U2[ iSpecies ][ i ] 
+	 												 										 + var->Ez[ i ]*var->U3[ iSpecies ][ i ] ) ;
 
 	 		/*--- energy loss term ---*/
 	 		switch ( eLOSS ) {
