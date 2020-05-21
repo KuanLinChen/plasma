@@ -118,8 +118,7 @@ int main( int argc, char * argv[] )
 	boost::shared_ptr<CVariable> Var ;
 	Var = boost::shared_ptr<CVariable> ( new CVariable ) ;
 	Var->Init( mesh , Config ) ;
-	Var->Calculate_LSQ_Coeff_Scalar( mesh ) ;
-
+	//Var->Calculate_LSQ_Coeff_Scalar( mesh ) ;
 	/*--- Poisson solver ---*/
 	boost::shared_ptr<CPoisson> poisson_solver ;
 	poisson_solver = boost::shared_ptr<CPoisson> ( new CPoisson ) ;
@@ -192,6 +191,7 @@ int main( int argc, char * argv[] )
 
  	/* first solve potential and electric field as initial. */
 		poisson_solver->SOLVE( Config, Var ) ;
+	//cout<<"A"<<endl; PetscEnd() ;
  	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
  		poisson_solver->SOLVE( Config, Var ) ;

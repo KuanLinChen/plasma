@@ -102,7 +102,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
-				j = Cell_i->cell[ k ]->local_id ;
+				j = Cell_i->cell[ k ]->data_id ;
 				Cell_j = energy_density.get_cell( j ) ;
 
 
@@ -343,7 +343,7 @@ void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::sh
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
-				j = Cell_i->cell[ k ]->local_id ;
+				j = Cell_i->cell[ k ]->data_id ;
 				Cell_j = energy_density.get_cell( j ) ;
 
 
@@ -585,7 +585,7 @@ void CEnergyDensity::Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::sh
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
-				j = Cell_i->cell[ k ]->local_id ;
+				j = Cell_i->cell[ k ]->data_id ;
 				Cell_j = energy_density.get_cell( j ) ;
 
 
@@ -829,7 +829,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
-				j = Cell_i->cell[ k ]->local_id ;
+				j = Cell_i->cell[ k ]->data_id ;
 				Cell_j = energy_density.get_cell( j ) ;
 
 
@@ -1072,7 +1072,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar_Txy( boost::shared_ptr<CDomain> &m, 
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
-				j = Cell_i->cell[ k ]->local_id ;
+				j = Cell_i->cell[ k ]->data_id ;
 				Cell_j = energy_density.get_cell( j ) ;
 
 
@@ -1319,7 +1319,7 @@ void CEnergyDensity::Bulid_A_B_1st_zero( boost::shared_ptr<CDomain> &m, boost::s
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < iCell ; k++ ){
 
-				j = Cell_i->cell[ k ]->local_id ;
+				j = Cell_i->cell[ k ]->data_id ;
 				Cell_j = energy_density.get_cell( j ) ;
 
 

@@ -359,10 +359,10 @@ class CVariable
 	 * \brief Calculate Least-square coeff store in scalar.
 	 * \param[in] domain - Name of the file with the grid information.
 	 */ 
-	void Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m ) ;
+	//void Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m ) ;
 	double PN[ 3 ], Pf[ 3 ], Nf[ 3 ], PPf[ 3 ], NPf[ 3 ], fPf[ 3 ], mf[ 3 ] ;
 	CScalar Global_Id, Local_Id ;
-    CScalar LSQ_Cx[6], LSQ_Cy[6], LSQ_Cz[6] ;/*!< \brief Lease-Square Coefficient using scale. LSq_C_dir[iFace][cell]. */
+    //CScalar LSQ_Cx[6], LSQ_Cy[6], LSQ_Cz[6] ;/*!< \brief Lease-Square Coefficient using scale. LSq_C_dir[iFace][cell]. */
     double DotProduct(double *A, double *B ){
 		//cout<<"A"<<endl;
 		return A[0]*B[0] + A[1]*B[1] ;

@@ -25,7 +25,6 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 
 	/*--- Calculate the net charge density for poisson's source term ---*/
 	UltraMPPComputeNetCharge( config, var ) ;
-
 	/*--- set the cell paramtert ---*/
 	plasma.set_cell_property_parameter( var->eps_eff ) ;
 
@@ -34,6 +33,9 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	plasma.add_laplacian_matrix_form_op();
 	plasma.finish_matrix_construction() ;
 
+//	cout<<"B"<<endl;PetscEnd();
+
+	
 	/* face value assigning */
 	double voltage= SineVoltage( "POWER", config, var ) ;
 
@@ -177,7 +179,7 @@ void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config,
 
     if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 			for ( int k = 0 ; k < cell->cell_number ; k++ ){
-				Cell *cell2 = plasma.get_cell( cell->cell[ k ]->local_id ) ; 
+				Cell *cell2 = plasma.get_cell( cell->cell[ k ]->data_id ) ; 
 				if ( cell2->type == MPP_cell_tag[ "DIELECTRIC" ] ) {
 
 						for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {

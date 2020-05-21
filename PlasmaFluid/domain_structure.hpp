@@ -37,8 +37,6 @@ class CLSQ
 };
 class CCell {
 	public:
-	int NeighborCellId ;
-	int NeighborGlobalCellId ;
 
 	double  //PN[2], /*!< \brief Vector of PN. */
 		    //Pf[2], /*!< \brief Vector of Pf. */
@@ -51,12 +49,12 @@ class CCell {
 		     dPPf, /*!< \brief Distance between P' and f. */
 		   	 dNPf, /*!< \brief Distance between N' and f. */
 			dDist; /*!< \brief Distance between P' and N'. */
-			//dArea; /*!< \brief Face area. */
+
 	double SurfaceCharge ;
 	void Init()
 	{
-		NeighborCellId = 0 ;
-		NeighborGlobalCellId = 0 ;
+		//NeighborCellId = 0 ;
+		//NeighborGlobalCellId = 0 ;
 		 dPPf = 0.0 ;
 		 dNPf = 0.0 ;
 		dDist = 0.0 ;
@@ -64,7 +62,7 @@ class CCell {
 		for ( int i = 0 ; i < 3 ; i++ ){
 			 nf[ i ] = 0.0 ;
 			 mf[ i ] = 0.0 ;
-			 Af[ i ] = 0.0 ;
+			Af[ i ] = 0.0 ;
 			PPP[ i ] = 0.0 ; 
 			NNP[ i ] = 0.0 ; 
 		}

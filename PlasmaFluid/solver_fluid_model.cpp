@@ -129,7 +129,7 @@ void CFluidModel::ComputeFlux_HLL( boost::shared_ptr<CDomain> &m, boost::shared_
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
-				j = Cell_i->cell[k]->local_id ; 
+				j = Cell_i->cell[k]->data_id ; 
 				Cell_j = plasma.get_cell(j) ;
 
 				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ){
@@ -471,7 +471,7 @@ void CFluidModel::EnergyDensityIntegral( boost::shared_ptr<CDomain> &m, boost::s
 			/*--- Divergence U ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
-				j = Cell_i->cell[k]->local_id ; 
+				j = Cell_i->cell[k]->data_id ; 
 				Cell_j = plasma.get_cell(j) ;
 
 				if ( plasma.get_cell_typename( Cell_j->data_id ) == "PLASMA" ){
@@ -625,7 +625,7 @@ void CFluidModel::Calculate_Gradient_T( boost::shared_ptr<CDomain> &m, boost::sh
 	// 		/*--- Loop over neighbor "faces" ---*/
 	// 		for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
 
-	// 			j = Cell_i->cell[k]->local_id ; 
+	// 			j = Cell_i->cell[k]->data_id ; 
 	// 			Cell_j = plasma.get_cell(j) ;
 				
 	// 			if ( plasma.get_cell_typename( Cell_j->data_id ) != "PLASMA" ) {//For discontinued face, apply neumann
@@ -696,7 +696,7 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
-				j = Cell_i->cell[k]->local_id ; 
+				j = Cell_i->cell[k]->data_id ; 
 				Cell * Cell_j = plasma.get_cell(j) ;
 
 				//if ( plasma.get_cell_typename( Cell_j->data_id ) == "DIELECTRIC" ) {
@@ -716,7 +716,7 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 			/*--- Loop over bulk faces ---*/
 			for ( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
-				j = Cell_i->cell[k]->local_id ; 
+				j = Cell_i->cell[k]->data_id ; 
 				Cell *Cell_j = plasma.get_cell(j) ;
 
 				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ) {
@@ -988,7 +988,7 @@ void CFluidModel::UltraMPPCalculateArgonCrossSectionDonko( boost::shared_ptr<CVa
   		qi = 2e-19 * pow(en,-0.5)/(1.0+en) +3e-19*en/pow(1.0+en/3.0,2);
   		qb = (qm-qi)/2.0;
 			sigmaIonNeu[ i ] = qi+qb ;
-
+			sigmaIonNeu[ i ] = 1.41186E-17 ;
 		}else {
 
 			sigmaIonNeu[ i ] = 0.0 ;

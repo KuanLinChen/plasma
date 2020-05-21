@@ -416,7 +416,7 @@ void CVariable::UltraMPPInitialCellParameter()
 {
   for ( int cth=0 ; cth<plasma.Mesh.cell_number; cth++ ) {
     Cell *cell = plasma.get_cell( cth ) ;
-    eps[ cth ] = cell_parameter[ cell->Typename ] * vacuum_permittivity ;
+    eps[ cth ] = cell_parameter[ plasma.get_cell_typename( cell->data_id ) ] * vacuum_permittivity ;
   }
   plasma.syn_parallel_cell_data( VarTag["permittivity"] );
 }
@@ -1353,7 +1353,7 @@ void CVariable::CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost:
 			/*--- Loop over bulk faces ---*/
 			for( int k = 0 ; k < Cell_i->cell_number ; k++ ){
 
-				j = m->PFM_CELL[ i ][ k ].NeighborCellId ;
+				j = Cell_i->cell[k]->data_id ; 
 
 				if ( plasma.get_cell_typename( Cell_i->data_id ) == "POWER" ){
 
@@ -1391,7 +1391,7 @@ void CVariable::CalculateElectrodeCurrent( boost::shared_ptr<CDomain> &m, boost:
 				if ( plasma.get_face_typename( Cell_i->face[ k ]->data_id) == "POWER" ){
 
 					I_PowerElectrode_local  += ( TotalJD[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].Af[0]
-										 	 +   TotalJD[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].Af[1] ) ;
+										 	             +   TotalJD[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].Af[1] ) ;
 
 					DispI_PowerElectrode_local += ( DispJD[ 0 ][ i ]*m->PFM_CELL[ i ][ k ].Af[0]
 										 		+   DispJD[ 1 ][ i ]*m->PFM_CELL[ i ][ k ].Af[1] ) ;
@@ -1468,146 +1468,146 @@ void CVariable::Alpha_Beta( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 
 	Beta = Beta ;
 }
-void CVariable::Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m )
-{
-	if ( mpi_rank==MASTER_NODE ) cout<<" Staring build least-square gradient coefficients ..."<<endl;
+// void CVariable::Calculate_LSQ_Coeff_Scalar( boost::shared_ptr<CDomain> &m )
+// {
+// 	// if ( mpi_rank==MASTER_NODE ) cout<<" Staring build least-square gradient coefficients ..."<<endl;
 
-	for ( int k = 0 ; k < 6 ; k++ ) {
-		LSQ_Cx[ k ].initial( "LSQ_Cx" ) ;			
-		LSQ_Cy[ k ].initial( "LSQ_Cy" ) ;			
-		LSQ_Cz[ k ].initial( "LSQ_Cz" ) ;			
-	} 
+// 	// for ( int k = 0 ; k < 6 ; k++ ) {
+// 	// 	LSQ_Cx[ k ].initial( "LSQ_Cx" ) ;			
+// 	// 	LSQ_Cy[ k ].initial( "LSQ_Cy" ) ;			
+// 	// 	LSQ_Cz[ k ].initial( "LSQ_Cz" ) ;			
+// 	// } 
 
-	double dx=0.0, dy=0.0, a11=0.0, a12=0.0, a21=0.0, a22=0.0, det=0.0 ;
-	double ia11=0.0, ia12=0.0, ia21=0.0, ia22=0.0 ;
-	Cell *Cell_i, *Cell_j ;
+// 	// double dx=0.0, dy=0.0, a11=0.0, a12=0.0, a21=0.0, a22=0.0, det=0.0 ;
+// 	// double ia11=0.0, ia12=0.0, ia21=0.0, ia22=0.0 ;
+// 	// Cell *Cell_i, *Cell_j ;
 
-	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+// 	// for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell_i  = plasma.get_cell( i ) ;
+// 	// 	Cell_i  = plasma.get_cell( i ) ;
 		
 
-		Cell_i->face_number = Cell_i->face_number ;
+// 	// 	Cell_i->face_number = Cell_i->face_number ;
 
-		/*--- Reset Matrix ---*/
-		a11 = 0.0 ; a12 = 0.0 ;
-		a21 = 0.0 ; a22 = 0.0 ;
+// 	// 	/*--- Reset Matrix ---*/
+// 	// 	a11 = 0.0 ; a12 = 0.0 ;
+// 	// 	a21 = 0.0 ; a22 = 0.0 ;
 
-		/*--- Loop over neighbor "cells" ---*/
-		for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
+// 	// 	/*--- Loop over neighbor "cells" ---*/
+// 	// 	for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
 
-			if ( plasma.get_cell_typename( Cell_i->data_id ) != plasma.get_cell_typename( Cell_i->cell[ k ]->data_id ) ) {//For discontinued face
+// 	// 		if ( plasma.get_cell_typename( Cell_i->data_id ) != plasma.get_cell_typename( Cell_i->cell[ k ]->data_id ) ) {//For discontinued face
 
-				Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-				Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+// 	// 			Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+// 	// 			Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
 
-				fPf[ 0 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
-				fPf[ 1 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
-				//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
-				//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
-				//
-				dx = Cell_i->face[ k ]->r[0]  - Cell_i->r[0] ;
-				dy = Cell_i->face[ k ]->r[1]  - Cell_i->r[1] ;
+// 	// 			fPf[ 0 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
+// 	// 			fPf[ 1 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
+// 	// 			//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
+// 	// 			//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
+// 	// 			//
+// 	// 			dx = Cell_i->face[ k ]->r[0]  - Cell_i->r[0] ;
+// 	// 			dy = Cell_i->face[ k ]->r[1]  - Cell_i->r[1] ;
 
-			} else {
+// 	// 		} else {
 
-				dx =Cell_i->cell[ k ]->r[0]  - Cell_i->r[0] ;
-				dy =Cell_i->cell[ k ]->r[1]  - Cell_i->r[1] ;
-			}
+// 	// 			dx =Cell_i->cell[ k ]->r[0]  - Cell_i->r[0] ;
+// 	// 			dy =Cell_i->cell[ k ]->r[1]  - Cell_i->r[1] ;
+// 	// 		}
 
-			a11 = a11 + dx*dx ; 
-			a12 = a12 + dx*dy ;
-			a21 = a21 + dx*dy ; 
-			a22 = a22 + dy*dy ;
+// 	// 		a11 = a11 + dx*dx ; 
+// 	// 		a12 = a12 + dx*dy ;
+// 	// 		a21 = a21 + dx*dy ; 
+// 	// 		a22 = a22 + dy*dy ;
 
-		}
+// 	// 	}
 
-		/*--- Loop over domain boundary "faces" ---*/
-		for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
+// 	// 	/*--- Loop over domain boundary "faces" ---*/
+// 	// 	for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-			Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-			Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+// 	// 		Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+// 	// 		Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
 
-			fPf[ 0 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
-			fPf[ 1 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
+// 	// 		fPf[ 0 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
+// 	// 		fPf[ 1 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
 
-			//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
-			//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
-			//cout<<fPf[ 0 ]<<"\t"<<fPf[ 0 ]<<endl;
-			dx = Cell_i->face[ k ]->r[0]  - Cell_i->r[0] ;
-			dy = Cell_i->face[ k ]->r[1]  - Cell_i->r[1] ;
+// 	// 		//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
+// 	// 		//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
+// 	// 		//cout<<fPf[ 0 ]<<"\t"<<fPf[ 0 ]<<endl;
+// 	// 		dx = Cell_i->face[ k ]->r[0]  - Cell_i->r[0] ;
+// 	// 		dy = Cell_i->face[ k ]->r[1]  - Cell_i->r[1] ;
 
-			a11 = a11 + dx*dx ; 	
-			a12 = a12 + dx*dy ;
-			a21 = a21 + dx*dy ;	
-			a22 = a22 + dy*dy ;
-		}
+// 	// 		a11 = a11 + dx*dx ; 	
+// 	// 		a12 = a12 + dx*dy ;
+// 	// 		a21 = a21 + dx*dy ;	
+// 	// 		a22 = a22 + dy*dy ;
+// 	// 	}
 
-		/*--- Cal. LSQ det. ---*/
-		det = a11*a22 - a12*a21 ;
-		//if( fabs(det) < 1.E-14 ) cout<<"LSQ det Singular"<<endl;
+// 	// 	/*--- Cal. LSQ det. ---*/
+// 	// 	det = a11*a22 - a12*a21 ;
+// 	// 	//if( fabs(det) < 1.E-14 ) cout<<"LSQ det Singular"<<endl;
 
-		/*--- Cal. Inverse Matrix ---*/
-		ia11 =  a22/det ;
-		ia12 = -a21/det ;
-		ia21 = -a12/det ;
-		ia22 =  a11/det ;
+// 	// 	--- Cal. Inverse Matrix ---
+// 	// 	ia11 =  a22/det ;
+// 	// 	ia12 = -a21/det ;
+// 	// 	ia21 = -a12/det ;
+// 	// 	ia22 =  a11/det ;
 
-		/*--- Cal. LSQ Coefficient for "cells" ---*/
-		for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
+// 	// 	/*--- Cal. LSQ Coefficient for "cells" ---*/
+// 	// 	for ( int k = 0 ; k < Cell_i->cell_number ; k++ ) {
 
-			if ( plasma.get_cell_typename( Cell_i->data_id ) != plasma.get_cell_typename( Cell_i->cell[ k ]->data_id ) ) {
+// 	// 		if ( plasma.get_cell_typename( Cell_i->data_id ) != plasma.get_cell_typename( Cell_i->cell[ k ]->data_id ) ) {
 
-				Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-				Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
-				fPf[ 0 ] = DotProduct( Pf,  m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
-				fPf[ 1 ] = DotProduct( Pf,  m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
-				//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
-				//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
-				//cout<<fPf[ 0 ]<<"\t"<<fPf[ 0 ]<<endl;
-				dx =  Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-				dy =  Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+// 	// 			Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+// 	// 			Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+// 	// 			fPf[ 0 ] = DotProduct( Pf,  m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
+// 	// 			fPf[ 1 ] = DotProduct( Pf,  m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
+// 	// 			//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
+// 	// 			//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
+// 	// 			//cout<<fPf[ 0 ]<<"\t"<<fPf[ 0 ]<<endl;
+// 	// 			dx =  Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+// 	// 			dy =  Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
 
-			} else {
+// 	// 		} else {
 
-				dx = Cell_i->cell[ k ]->r[0]  - Cell_i->r[0] ;
-				dy = Cell_i->cell[ k ]->r[1]  - Cell_i->r[1] ;
-				//cout<<"normal dy: "<<dy<<endl;
-			}
-			LSQ_Cx[ k ][ i ] = ia11*dx + ia12*dy ;
-			LSQ_Cy[ k ][ i ] = ia21*dx + ia22*dy ;
-			//cout<<"LSQ_Cx["<<k<<"]["<<i<<"]: "<<LSQ_Cx[ k ][ i ]<<endl;
-			//cout<<"LSQ_Cy["<<k<<"]["<<i<<"]: "<<LSQ_Cy[ k ][ i ]<<endl;
-		}
-		//if(mpi_rank==0) cout<<"---------------------------------------"<<endl;
-		/*--- Cal. LSQ Coefficient for domain boundary "faces" ---*/
-		for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
+// 	// 			dx = Cell_i->cell[ k ]->r[0]  - Cell_i->r[0] ;
+// 	// 			dy = Cell_i->cell[ k ]->r[1]  - Cell_i->r[1] ;
+// 	// 			//cout<<"normal dy: "<<dy<<endl;
+// 	// 		}
+// 	// 		LSQ_Cx[ k ][ i ] = ia11*dx + ia12*dy ;
+// 	// 		LSQ_Cy[ k ][ i ] = ia21*dx + ia22*dy ;
+// 	// 		//cout<<"LSQ_Cx["<<k<<"]["<<i<<"]: "<<LSQ_Cx[ k ][ i ]<<endl;
+// 	// 		//cout<<"LSQ_Cy["<<k<<"]["<<i<<"]: "<<LSQ_Cy[ k ][ i ]<<endl;
+// 	// 	}
+// 	// 	//if(mpi_rank==0) cout<<"---------------------------------------"<<endl;
+// 	// 	/*--- Cal. LSQ Coefficient for domain boundary "faces" ---*/
+// 	// 	for ( int k = Cell_i->cell_number ; k < Cell_i->face_number ; k++ ) {
 
-			Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-			Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
-			fPf[ 0 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
-			fPf[ 1 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
-			//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
-			//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
+// 	// 		Pf[ 0 ] = Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+// 	// 		Pf[ 1 ] = Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+// 	// 		fPf[ 0 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[0] ;
+// 	// 		fPf[ 1 ] = DotProduct( Pf, m->PFM_CELL[ i ][ k ].mf )*m->PFM_CELL[ i ][ k ].mf[1] ;
+// 	// 		//dx = ( -fPf[ 0 ] + Cell_i->face[ k ]->r[0] )  - Cell_i->r[0] ;
+// 	// 		//dy = ( -fPf[ 1 ] + Cell_i->face[ k ]->r[1] )  - Cell_i->r[1] ;
 
-			dx =  Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
-			dy =  Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
-			LSQ_Cx[ k ][ i ] = ia11*dx + ia12*dy ;
-			LSQ_Cy[ k ][ i ] = ia21*dx + ia22*dy ;
-			//cout<<"LSQ_Cx["<<k<<"]["<<i<<"]: "<<LSQ_Cx[ k ][ i ]<<endl;
-			//cout<<"LSQ_Cy["<<k<<"]["<<i<<"]: "<<LSQ_Cy[ k ][ i ]<<endl;
-		}//End boundaty face
-		//cout<<endl;
-	}//End cell loop
-	//MPI_Barrier(MPI_COMM_WORLD); exit(1) ;
-	for( int k = 0 ;  k < 6 ; k++ ){
-		LSQ_Cx[ k ] = LSQ_Cx[ k ] ;
-		LSQ_Cy[ k ] = LSQ_Cy[ k ] ;
-		LSQ_Cz[ k ] = LSQ_Cz[ k ] ;
-	}
-	if ( mpi_rank==MASTER_NODE ) cout<<" Build least-square gradient coefficients finish ..."<<endl;
-	//exit(1) ;
-}
+// 	// 		dx =  Cell_i->face[ k ]->r[0] - Cell_i->r[0] ;
+// 	// 		dy =  Cell_i->face[ k ]->r[1] - Cell_i->r[1] ;
+// 	// 		LSQ_Cx[ k ][ i ] = ia11*dx + ia12*dy ;
+// 	// 		LSQ_Cy[ k ][ i ] = ia21*dx + ia22*dy ;
+// 	// 		//cout<<"LSQ_Cx["<<k<<"]["<<i<<"]: "<<LSQ_Cx[ k ][ i ]<<endl;
+// 	// 		//cout<<"LSQ_Cy["<<k<<"]["<<i<<"]: "<<LSQ_Cy[ k ][ i ]<<endl;
+// 	// 	}//End boundaty face
+// 	// 	//cout<<endl;
+// 	// }//End cell loop
+// 	// //MPI_Barrier(MPI_COMM_WORLD); exit(1) ;
+// 	// for( int k = 0 ;  k < 6 ; k++ ){
+// 	// 	LSQ_Cx[ k ] = LSQ_Cx[ k ] ;
+// 	// 	LSQ_Cy[ k ] = LSQ_Cy[ k ] ;
+// 	// 	LSQ_Cz[ k ] = LSQ_Cz[ k ] ;
+// 	// }
+// 	// if ( mpi_rank==MASTER_NODE ) cout<<" Build least-square gradient coefficients finish ..."<<endl;
+// 	// //exit(1) ;
+// }
 void CVariable::SourceSink_PSST_2018( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {
 //Bagheri et. al., “Comparison of six simulation codes for positive streamers in air,” Plasma Sources Science and Technology, vol. 27, no. 9, p. 095002, 2018.
