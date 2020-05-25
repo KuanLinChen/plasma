@@ -53,7 +53,9 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 			break;
 			
 		case 5://GradientT
-			Bulid_A_B_1st_Hagelaar_Txy( m, config, variable ) ;
+			//Bulid_A_B_1st_Hagelaar_Txy( m, config, variable ) ;
+			cout<<"Not Support wall boundary 5"<<endl;
+			PetscEnd();
 			break;
 
 		case 6://BBC = Brezmes & Breitkopf, 2015 ; COMSOL, 2013

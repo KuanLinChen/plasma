@@ -42,7 +42,6 @@ class CCell {
 		    //Pf[2], /*!< \brief Vector of Pf. */
 		    //Nf[2], /*!< \brief Vector of Nf. */
 		    nf[3], /*!< \brief Unit normal vector of surface f. */
-		    mf[3], /*!< \brief Unit Tangent vector of surface f. */
 		    Af[3], /*!< \brief Surface area vector. */
 		   PPP[3], /*!< \brief Vector of PP'. */
 		   NNP[3], /*!< \brief Vector of NN'. */
@@ -61,8 +60,7 @@ class CCell {
 		//dArea = 0.0 ;
 		for ( int i = 0 ; i < 3 ; i++ ){
 			 nf[ i ] = 0.0 ;
-			 mf[ i ] = 0.0 ;
-			Af[ i ] = 0.0 ;
+			 Af[ i ] = 0.0 ;
 			PPP[ i ] = 0.0 ; 
 			NNP[ i ] = 0.0 ; 
 		}
@@ -87,7 +85,7 @@ class CDomain
 		int local_cell_number ;
 
 		int test ;
-		double PN[ 3 ], Pf[ 3 ], Nf[ 3 ], PPf[ 3 ], NPf[ 3 ], fPf[ 3 ], mf[ 3 ] ;
+		double PN[ 3 ], Pf[ 3 ], Nf[ 3 ], PPf[ 3 ], NPf[ 3 ], fPf[ 3 ] ;
 		double LSQ_Weight( double dx, double dy ) {
 
 			//double GradientWeithtPower = 1.0 ; //Inverse distance.
