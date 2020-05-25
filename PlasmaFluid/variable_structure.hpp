@@ -365,7 +365,7 @@ class CVariable
     //CScalar LSQ_Cx[6], LSQ_Cy[6], LSQ_Cz[6] ;/*!< \brief Lease-Square Coefficient using scale. LSq_C_dir[iFace][cell]. */
     double DotProduct(double *A, double *B ){
 		//cout<<"A"<<endl;
-		return A[0]*B[0] + A[1]*B[1] ;
+		return A[0]*B[0] + A[1]*B[1] + A[2]*B[2] ;
 	};
 	CScalar Energy_Term[6], Momentum_Term[3] ;
 

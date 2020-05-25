@@ -19,12 +19,12 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	plasma.set_output( var->VarTag["ChargeDen    [m^-3]"             ] ) ;
 	plasma.set_output( var->VarTag["plot_var"] ) ;
 
-	plasma.set_output( var->VarTag["Tx"] ) ;
-	plasma.set_output( var->VarTag["Ty"] ) ;
+	//plasma.set_output( var->VarTag["Tx"] ) ;
+	//plasma.set_output( var->VarTag["Ty"] ) ;
 
 	plasma.set_output( var->VarTag["Ex"] ) ;
 	plasma.set_output( var->VarTag["Ey"] ) ;
-	if ( nDim == 3 )
+	//if ( nDim == 3 )
 	plasma.set_output( var->VarTag["Ez"] ) ;
 
 	plasma.set_output( var->VarTag["Etd"] ) ;

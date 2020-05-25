@@ -11,6 +11,11 @@ void CDomain::BulidCellStructure()
 	Cell *Cell_i, *Cell_j ;
 
 	PFM_CELL = new CCell *[ plasma.Mesh.cell_number ] ;
+
+  PN[ 0 ] = Pf[ 0 ] = Nf[ 0 ] = PPf[ 0 ] = NPf[ 0 ] = fPf[ 0 ] = 0.0 ;
+  PN[ 1 ] = Pf[ 1 ] = Nf[ 1 ] = PPf[ 1 ] = NPf[ 1 ] = fPf[ 1 ] = 0.0 ;
+  PN[ 2 ] = Pf[ 2 ] = Nf[ 2 ] = PPf[ 2 ] = NPf[ 2 ] = fPf[ 2 ] = 0.0 ;
+
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
 		Cell_i  = plasma.get_cell( i ) ;
@@ -40,7 +45,7 @@ void CDomain::BulidCellStructure()
 					Nf[ idim ] = Cell_i->face[ k ]->r[idim] - Cell_i->cell[ k ]->r[idim] ;
 				}
 
-				/*--- Face Normal & Tangent Vector ---*/
+				/*--- Face Normal Vector ---*/
 				for ( int idim=0; idim < nDim ; idim++ ){
 					PFM_CELL[ i ][ k ].nf[ idim ] =  pow( -1.0, Cell_i->face_index[ k ] ) * Cell_i->face[ k ]->nA[idim] ;
 				}
