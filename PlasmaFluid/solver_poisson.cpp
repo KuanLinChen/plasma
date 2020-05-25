@@ -171,6 +171,7 @@ void CPoisson::UltraMPPComputeEffectivePermittEleOnly( boost::shared_ptr<CConfig
 void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
 	double tmp=0.0 ;
+	double sign_nA = 0.0 ;
   for ( int i=0 ; i<plasma.Mesh.cell_number ; i++ ) {
 
     Cell *cell = plasma.get_cell( i ) ;
@@ -179,6 +180,8 @@ void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config,
 
     if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 			for ( int k = 0 ; k < cell->cell_number ; k++ ){
+				sign_nA = pow( -1.0 , cell->face_index[k] ) ;
+				
 				Cell *cell2 = plasma.get_cell( cell->cell[ k ]->data_id ) ; 
 				if ( cell2->type == MPP_cell_tag[ "DIELECTRIC" ] ) {
 
@@ -187,10 +190,10 @@ void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config,
 							if ( config->Species[ jSpecies ].Type == ELECTRON or config->Species[ jSpecies ].Type == ION ) {
 
 								var->Potential.face[ cell->face[k]->data_id ] += var->Dt*var->Qe*config->Species[jSpecies].Charge
-								*fabs( 
-											var->U1[ jSpecies ][ i ]*cell->nA[ k ][ 0 ]*(-1.0) 
-								+     var->U2[ jSpecies ][ i ]*cell->nA[ k ][ 1 ]*(-1.0) 
-								+     var->U3[ jSpecies ][ i ]*cell->nA[ k ][ 1 ]*(-1.0) 
+								*fabs( 								
+									  var->U1[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[0] * (-1.0)
+								+     var->U2[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[1] * (-1.0)
+								+     var->U3[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[2] * (-1.0)
 								) ;
 							}
 
