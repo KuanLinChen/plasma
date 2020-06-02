@@ -282,8 +282,8 @@ void CFluidModel::ComputeFlux_HLL( boost::shared_ptr<CDomain> &m, boost::shared_
 							wL 	 = var->U3[iSpecies][ i ]/RhoL ;
 
 							unL  = uL*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-								 + vL*m->PFM_CELL[ i ][ k ].nf[ 1 ] 
-								 + wL*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
+								   + vL*m->PFM_CELL[ i ][ k ].nf[ 1 ] 
+								   + wL*m->PFM_CELL[ i ][ k ].nf[ 2 ] ;
 							//unL = unL + GradUvel*m->PFM_CELL[ i ][ k ].dPPf ;
 
 							//pL 	 = (config->Species[ iSpecies ].Gamma-1.0)*( var->U4[iSpecies][ i ]-0.5*config->Species[ iSpecies ].Mass_Kg*RhoL*(uL*uL+vL*vL+wL*wL) ) ;
@@ -400,8 +400,8 @@ void CFluidModel::MomentumIntegral( boost::shared_ptr<CDomain> &m, boost::shared
 			/*--- Force term { (1/m)qnE } ---*/
         	Res[ 1 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ex[ i ]/IonMass) * Cell_i->volume ;
         	Res[ 2 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ey[ i ]/IonMass) * Cell_i->volume ;
-        	//Res[ 3 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ez[ i ]/IonMass) * Cell_i->volume ;
-	 		var->Momentum_Term[1][ i ] = LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ex[ i ]/IonMass) * Cell_i->volume ;
+        	Res[ 3 ][ i ] +=  LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ez[ i ]/IonMass) * Cell_i->volume ;
+	 		//var->Momentum_Term[1][ i ] = LogicalSwitch * (-config->Species[ iSpecies ].Charge*var->Qe*U0*var->Ex[ i ]/IonMass) * Cell_i->volume ;
 			/*--- Collision term ---*/  
 			U = U1/U0 ;
 			V = U2/U0 ;
@@ -411,7 +411,7 @@ void CFluidModel::MomentumIntegral( boost::shared_ptr<CDomain> &m, boost::shared
       Res[ 1 ][ i ]   += LogicalSwitch * (-Mx[ i ]*PlasmaParmeter/IonMass) * Cell_i->volume ;
 			Res[ 2 ][ i ]   += LogicalSwitch * (-My[ i ]*PlasmaParmeter/IonMass) * Cell_i->volume ;
 			Res[ 3 ][ i ]   += LogicalSwitch * (-Mz[ i ]*PlasmaParmeter/IonMass) * Cell_i->volume ;
-			var->Momentum_Term[ 2 ][ i ] = LogicalSwitch * (-Mx[ i ]/IonMass) * Cell_i->volume ;
+			//var->Momentum_Term[ 2 ][ i ] = LogicalSwitch * (-Mx[ i ]/IonMass) * Cell_i->volume ;
 			/*--- Y-Axis-symmetric ---*/
 	        Res[ 1 ][ i ] += (-1.0) * Omaga * (Pressure[ i ]/IonMass) * Cell_i->volume ;
 
@@ -703,8 +703,9 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 					if ( Cell_j->type == MPP_cell_tag[ "DIELECTRIC"] ){
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
-					*fabs( var->U1[ iSpecies ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] 
-						+  var->U2[ iSpecies ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] ) ;
+					*fabs( var->U1[ iSpecies ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] +
+						     var->U2[ iSpecies ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+						     var->U3[ iSpecies ][ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
 
 				}//discontiuity face
 
@@ -722,8 +723,9 @@ void CFluidModel::CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::
 				if ( Cell_j->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 					m->PFM_CELL[ i ][ k ].SurfaceCharge += var->Dt*var->Qe*config->Species[iSpecies].Charge
-					*fabs( var->U1[ iSpecies ][ j ]*m->PFM_CELL[ i ][ k ].nf[ 0 ]*(-1.0) 
-						+  var->U2[ iSpecies ][ j ]*m->PFM_CELL[ i ][ k ].nf[ 1 ]*(-1.0) ) ;
+					*fabs( var->U1[ iSpecies ][ j ]*m->PFM_CELL[ i ][ k ].nf[ 0 ]*(-1.0) +
+						     var->U2[ iSpecies ][ j ]*m->PFM_CELL[ i ][ k ].nf[ 1 ]*(-1.0) +
+						     var->U3[ iSpecies ][ j ]*m->PFM_CELL[ i ][ k ].nf[ 2 ]*(-1.0) ) ;
 
 				}//discontiuity face
 
@@ -988,7 +990,7 @@ void CFluidModel::UltraMPPCalculateArgonCrossSectionDonko( boost::shared_ptr<CVa
   		qi = 2e-19 * pow(en,-0.5)/(1.0+en) +3e-19*en/pow(1.0+en/3.0,2);
   		qb = (qm-qi)/2.0;
 			sigmaIonNeu[ i ] = qi+qb ;
-			sigmaIonNeu[ i ] = 1.41186E-17 ;
+			//sigmaIonNeu[ i ] = 1.41186E-17 ;
 		}else {
 
 			sigmaIonNeu[ i ] = 0.0 ;

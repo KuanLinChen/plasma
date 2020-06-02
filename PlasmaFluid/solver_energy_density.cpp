@@ -811,7 +811,7 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 
 	double vn=0.0, U=0.0, V=0.0, W=0.0, Pe=0.0, ThermalVel=0.0, Te=0.0, SecondaryElectronEmission=0.0, IonFlux=0.0, Te_sec=0.0 ;
 	double Diff = 0.0, Mobi=0.0, SourceSink=0.0, JdotE=0.0,TempGradient=0.0, f1=0.0, f2=0.0, dL=0.0, dR=0.0 ;
-
+	double refl1=0.0, refl2=0.0, gammaNe=0.0, ae=0.0 ;
 	Cell *Cell_i, *Cell_j ;
 	energy_density.before_matrix_construction() ;
 	energy_density.before_source_term_construction() ;
@@ -890,38 +890,56 @@ void CEnergyDensity::Bulid_A_B_1st_Hagelaar( boost::shared_ptr<CDomain> &m, boos
 
 						/*--- Electron, thermal flux ---*/
 						case 0:
+							//Reflec
+	 						refl1 = (1.0-Reflec)/(1.0+Reflec) ;
+	 						refl2 = 2.0/(1.0+Reflec) ;
 	 						/*--- Drift term ---*/
 							U = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ex[ i ] ;
 	 						V = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ey[ i ] ;
 	 						W = config->Species[iSpecies].Charge * var->Mobi[iSpecies][ i ] * var->Ez[ i ] ;
 
-	 						vn  =  2.0*C53*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
-	 																		 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
-	 																		 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
-	 						vn += -1.0*C53*   ( U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
-	 																V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
-	 																W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
+	 						vn  =  refl1*2.0*C53*max( 0.0, U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																					 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																					 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
+	 						if( vn == 0.0 ) ae=0.0 ;
+	 						else ae = 1.0 ;
+
+	 						vn += refl1*-1.0*C53*( U*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 																	 V*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																	 W*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
 
 	 						/*--- Thermal flux term ---*/
 	 						Te = var->T[ 0 ][ i ] ; if( fixTe ) Te = 0.5 ;
-	 						vn += C43*0.5*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
+	 						vn += refl1*C43*0.5*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*(1.0-Reflec);//*exp(-fabs(var->Ex[ i ]*0.5*m->PFM_CELL[ i ][ k ].dDist)/var->T[0][i]) ;
 	 						
 	 						/*--- Secondary electron emission ---*/
 	 						SecondaryElectronEmission = 0.0 ;
+	 						IonFlux=0.0; gammaNe=0.0;
 	 						Te_sec = config->SecondaryElectronEmissionEnergy ;
 	 						for ( int jSpecies = 1 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ){
 	 							if (config->Species[ jSpecies ].Type == ION ){
-	 								IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
-	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
-	 																		config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ; ;
-	 								SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
+	 								// IonFlux = max( 0.0, config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 								// 										config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 								// 										config->Species[jSpecies].Charge * var->Mobi[jSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] )*var->U0[jSpecies][ i ] ;
+	 								// SecondaryElectronEmission += config->SecondaryElectronEmissionCoeff*IonFlux ;
+	 								IonFlux  = ( var->U1[jSpecies][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 														 var->U2[jSpecies][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 								 						 var->U3[jSpecies][ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
+
+	 								//IonFlux += -1.0*max( 0.0, var->U1[jSpecies][ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] + 
+	 								//					   						  var->U2[jSpecies][ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 								//													var->U3[jSpecies][ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
+	 								gammaNe += (1.0-ae)*Te_sec*config->SecondaryElectronEmissionCoeff*IonFlux/ (var->Mobi[iSpecies][ i ]* var->Ex[ i ]*m->PFM_CELL[ i ][ k ].nf[ 0 ] +
+	 																		 																								 var->Mobi[iSpecies][ i ]* var->Ey[ i ]*m->PFM_CELL[ i ][ k ].nf[ 1 ] +
+	 																		 																								 var->Mobi[iSpecies][ i ]* var->Ez[ i ]*m->PFM_CELL[ i ][ k ].nf[ 2 ] ) ;
+	 								SecondaryElectronEmission += refl2*Te_sec*(1.0-ae)*config->SecondaryElectronEmissionCoeff*IonFlux ;
 	 							}
 	 						}
-
+	 						SecondaryElectronEmission += refl1*C43*0.5*sqrt( 8.0*var->Qe*Te / var->PI / (config->Species[ 0 ].Mass_Kg/var->Ref_Mass) )*gammaNe ;
 	 						//C[ 0 ] +=  vn*Cell_i->face[k]->dA*var->Dt ;
 	 						energy_density.add_entry_in_matrix( i,  Cell_i->id, vn*Cell_i->face[k]->dA*var->Dt ) ;
 	 						//Source += 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ;
-	 						energy_density.add_entry_in_source_term( i, 2.0*Te_sec*SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
+	 						energy_density.add_entry_in_source_term( i, SecondaryElectronEmission*Cell_i->face[k]->dA*var->Dt ) ;
 						break;
 
 						/*--- Ion, drift flux ---*/	
