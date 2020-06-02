@@ -287,7 +287,7 @@ int main( int argc, char * argv[] )
  				//cout<<"MON_CYC: "<<MON_CYC<<"\t"<<"MON_INS"<<MON_INS<<endl;
 				if( mpi_rank == MASTER_NODE and MON_CYC and MON_INS ){
 					cout<<"MainCycle: "<<MainCycle<<"\t"<<"MainStep: "<<MainStep<<"\t"<<"Voltage: "<<Var->Volt<<"  [V]"<<"\t"<<"PhysicalTime: "<<Var->PhysicalTime<<"  [s]"<<endl ; 
-					#if (FDMaxwell == true )
+					#if (time_monitor == true )
 					cout<<"Time cost per time step now is: "<< time_cost/CLOCKS_PER_SEC << " s" << endl  ;
 					#endif
 					cout<<"Poissn ksp iter : "<<poisson_solver->its<<endl ;
