@@ -71,6 +71,8 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	for ( int iSpecies=0; iSpecies < config->TotalSpeciesNum ; iSpecies++ )	
 	plasma.set_output( var->Diff[ iSpecies ].data_id ) ;
 	
+	plasma.set_output( var->MPI_ID.data_id ) ;	
+	
 	#if (FDMaxwell == true ) 
 	plasma.set_output( var->VarTag["sigma_p_Re_plasma"   ] ) ;	
 	plasma.set_output( var->VarTag["sigma_p_Im_plasma"   ] ) ;
