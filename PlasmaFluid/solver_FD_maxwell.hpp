@@ -42,16 +42,19 @@ class CFDMaxwell
 		void Init( boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CVariable> &var ) ;
 		int its ;  /*!< \brief ksp iteration number */ 
 
-		/*!
-		 * \brief Compute the effective permittivity (electron only).
-		 */	
+
+		//Solve compled equation.	 
 		void SOLVE                                  ( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 
+		//Compute right hand side, omega * mu0 * J.
 		void UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 		
+		// Compute EM_power absorptiom [Wm^-3] in time average form.	
 		void UltraMPPComputePowerAbsorptionFromMaxwell( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 		
+		// Compute EM_power absorptiom [Wm^-3] which P = Re{J}*Re{E}.		
 		void UltraMPPComputeInstantPowerAbsorptionFromMaxwell( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 		
+		// Compute EM_power & ES_power, which integral EM_power / ES_power absorption over all computation domain.
 		void UltraMPPComputeTotalPower( boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> &var ) ;
 };

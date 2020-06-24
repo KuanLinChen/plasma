@@ -14,20 +14,23 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
 	}
     its=0 ;
 
+	//Warning : Power and current controlling is very tricky, the following result is kind of numerical experiment result,
+	//			so there are lots of varible here. It's better to see the ppt file to understand the definition of them.
+
     json &ICP_simulation_condition    = *(FDMaxwell_coupled_eqs.get_json_input_parameter("ICP_simulation_condition")) ;
-	var->Coil_frequency = ICP_simulation_condition["Coil_frequency"] ;
-    var->Coil_Current 	= ICP_simulation_condition["Initial_Coil_current"] ;
-    var->Coil_area 		= ICP_simulation_condition["Coil_area"] ;
-    var->Coil_power 		= ICP_simulation_condition["Coil_power"] ;
-    var->Coil_change_factor 		= ICP_simulation_condition["Coil_change_factor"] ;
-    var->power_grows_rate 		= ICP_simulation_condition["power_grows_rate"] ;
-    var->Controlled_Coil_power 		= ICP_simulation_condition["Initial_Coil_power"] ;
-    var->Max_current 		= ICP_simulation_condition["Max_current"] ;
-    var->omega			= 2 * var->PI * var->Coil_frequency ;
-	var->power_inductive= var->Controlled_Coil_power ;
+	var->Coil_frequency 			= ICP_simulation_condition["Coil_frequency"] ; 			// Coil frequency, (ex : 13.56 MHz)
+    var->Coil_Current 				= ICP_simulation_condition["Initial_Coil_current"] ; 	// Coil current, (ex : 20A)
+    var->Coil_area 					= ICP_simulation_condition["Coil_area"] ;   			// Coil crosection area (ex : 0.000001 m^2)
+    var->Coil_power 				= ICP_simulation_condition["Coil_power"] ;  			// Final coil power (ex : 400 W)
+    var->Coil_change_factor 		= ICP_simulation_condition["Coil_change_factor"] ; 		// Adjust coil current when it need change. Not use now.
+    var->power_grows_rate 			= ICP_simulation_condition["power_grows_rate"] ; 		// Adjust coil power when it growing. (ex : 10 W/cycle)
+    var->Controlled_Coil_power 		= ICP_simulation_condition["Initial_Coil_power"] ; 		// Expection of coil power.
+    var->Max_current 				= ICP_simulation_condition["Max_current"] ; 			// Maximum current. (ex : 80A)
+    var->omega						= 2 * var->PI * var->Coil_frequency ;
+	var->power_inductive			= var->Controlled_Coil_power ; 							// EM_power, which integral EM_power absorption over all computation domain.
 	
 	
-	
+	// Give the permeability for all cells.
     for( int cth = 0; cth < FDMaxwell_Re.Mesh.cell_number; cth++){
     	Cell *cell		=	FDMaxwell_Re.get_cell( cth ) ;
 		
@@ -41,6 +44,7 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
     }  
     UltraMPPComputeCurrentDenAndSourceTerm( config, var ) ;
 
+	// Read collision table
 	FVFD_CollTable.Init( config->CasePath+"5Collision.inp" ) ;
 	
 	FDMaxwell_Re.apply_linear_solver_setting();
@@ -49,6 +53,7 @@ void CFDMaxwell::Init(  boost::shared_ptr<CConfig> &config ,boost::shared_ptr<CV
 }
 void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  )
 {	
+	// Count that how many times Maxwell equ. solved. This will output to ICP.dat. 
 	var->Maxwell_solver_count++ ;
 	
 	/*--- Matrix A ---*/
@@ -61,26 +66,29 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-
+	// Compute plasma conductivity. (Both real & imaginary part)
     for( int cth = 0; cth < plasma.Mesh.cell_number; cth++){
-	
+		
     	var->collision_frequency = var->TotalNumberDensity[ cth ]* FVFD_CollTable.GetValue( var->T[ 0 ][ cth ] ) ; //unit
         var->sigma_p_Re_plasma[ cth ] 	=   unit_charge*unit_charge*var->U0[0][ cth ]*var->collision_frequency	/electron_mass/( var->collision_frequency * var->collision_frequency + var->omega * var->omega ) ;
  		var->sigma_p_Im_plasma[ cth ] 	= - unit_charge*unit_charge*var->U0[0][ cth ]*var->omega				/electron_mass/( var->collision_frequency * var->collision_frequency + var->omega * var->omega ) ; 
 		
     } 
-
+    
+	// Map plasma conductivity from plasma mesh to FVFD mesh.
 	FDMaxwell_Re.syn_parallel_cell_data( var->VarTag["sigma_p_Re_FVFD"]		, var->VarTag["sigma_p_Re_plasma"] ) ;     
 	FDMaxwell_Re.syn_parallel_cell_data( var->VarTag["sigma_p_Im_FVFD"]		, var->VarTag["sigma_p_Im_plasma"] ) ;  
+ 
   	    
     for( int cth = 0; cth < FDMaxwell_Re.Mesh.cell_number; cth++){
 
         Cell *cell = FDMaxwell_Re.get_cell(cth);
         
-
+		// Compute effective, square of effective Helmhotlz constant. (Both real & imaginary part)
         var->k_square_Re[ cth ] 	=	var->omega * vacuum_permeability * var->sigma_p_Im_FVFD[ cth ] + var->omega*var->omega*var->eps_FVFD[ cth ]/vacuum_light_speed/vacuum_light_speed ;
         var->k_square_Im[ cth ] 	= -	var->omega * vacuum_permeability * var->sigma_p_Re_FVFD[ cth ] ;
 
+		// Building matrix for diagonal term.
         FDMaxwell_Re.add_entry_in_matrix(cth, cell->id, -1/cell->r[0]/cell->r[0] + var->k_square_Re[ cth ]);
         FDMaxwell_Im.add_entry_in_matrix(cth, cell->id, -1/cell->r[0]/cell->r[0] + var->k_square_Re[ cth ]);
 
@@ -103,6 +111,7 @@ void CFDMaxwell::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CV
     FDMaxwell_Re.set_bc_value(MPP_face_tag["GROUND_FVFD"], 0.0,var->E_phi_Re.face );
     FDMaxwell_Im.set_bc_value(MPP_face_tag["GROUND_FVFD"], 0.0,var->E_phi_Im.face );
 
+	// Compute source term, omega * mu0 * J.
     UltraMPPComputeCurrentDenAndSourceTerm( config, var ) ;
 
     FDMaxwell_Re.before_source_term_construction();
@@ -132,27 +141,32 @@ void CFDMaxwell::UltraMPPComputeCurrentDenAndSourceTerm( boost::shared_ptr<CConf
     Cell *cell = FDMaxwell_Re.get_cell( cth ) ;
 
     if ( cell->type == MPP_cell_tag[ "coil" ] ) {
+    	// J = I/Area
 		var->CurrentDen[ cth ] = var->Coil_Current/var->Coil_area ;
 	}else{
 		var->CurrentDen[ cth ] = 0 ;		
-	}//if charged species.
+	}
 
+	// source term
 	var->Re_eq_source[ cth ] = 0.0 ; 	
 	var->Im_eq_source[ cth ] = var->omega * vacuum_permeability * var->CurrentDen[ cth ] ; 
 
   }//cell loop.
+  
+  	// This section is for adjusting coil current, please see the algorithm
  	if( var->power_inductive < var->Controlled_Coil_power){	
     	current_temp = var->Coil_Current * var->Controlled_Coil_power / var->power_inductive ;
-    	current_diff = var->Coil_Current - current_temp ;
-    	var->Coil_Current = var->Coil_Current - 25/var->Controlled_Coil_power * current_diff;
+    	current_diff =  current_temp - var->Coil_Current ;
+    	var->Coil_Current = var->Coil_Current + 25/var->Controlled_Coil_power * current_diff;
 		 	
- //   	var->Coil_Current = var->Coil_Current * var->Coil_change_factor;
+ //   	var->Coil_Current = var->Coil_Current * var->Coil_change_factor; // Not use now.
     }else if(var->power_inductive > var->Controlled_Coil_power){
     	current_temp = var->Coil_Current * var->Controlled_Coil_power / var->power_inductive ;
-    	current_diff = var->Coil_Current - current_temp ;
-    	var->Coil_Current = var->Coil_Current - 25/var->Controlled_Coil_power * current_diff;
+    	current_diff =  current_temp - var->Coil_Current ;
+    	var->Coil_Current = var->Coil_Current + 25/var->Controlled_Coil_power * current_diff;
 	}
 	
+	// Limiting the coil current in case it gets too high.
 	if (var->Coil_Current > var->Max_current) var->Coil_Current = var->Max_current ; 
 
   plasma.syn_parallel_cell_data( var->VarTag["CurrentDen"] );   
