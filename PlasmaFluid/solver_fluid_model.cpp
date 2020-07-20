@@ -990,7 +990,7 @@ void CFluidModel::UltraMPPCalculateArgonCrossSectionDonko( boost::shared_ptr<CVa
   		qi = 2e-19 * pow(en,-0.5)/(1.0+en) +3e-19*en/pow(1.0+en/3.0,2);
   		qb = (qm-qi)/2.0;
 			sigmaIonNeu[ i ] = qi+qb ;
-			//sigmaIonNeu[ i ] = 1.41186E-17 ;
+			sigmaIonNeu[ i ] = 1.41186E-17 ;
 		}else {
 
 			sigmaIonNeu[ i ] = 0.0 ;
