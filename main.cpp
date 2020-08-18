@@ -190,12 +190,11 @@ int main( int argc, char * argv[] )
 		post = boost::shared_ptr<CPost> ( new CPost ) ;
 
  	/* first solve potential and electric field as initial. */
-		poisson_solver->SOLVE( Config, Var ) ;
+		poisson_solver->SOLVE_TEST( Config, Var ) ;
 	//cout<<"A"<<endl; PetscEnd() ;
  	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
- 		poisson_solver->SOLVE( Config, Var ) ;
- 		//cout<<"A2"<<endl;
+ 		poisson_solver->SOLVE_TEST( Config, Var ) ;
 
 	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
 
@@ -353,7 +352,7 @@ int main( int argc, char * argv[] )
 
  				/* Update solution: Copy solution (n+1) step -> (n) step */ 
  				Var->UpdateSolution( mesh ) ; 
-	 				#if (Debug == true )
+	 				#if ( Debug == true )
 	 					PetscPrintf( PETSC_COMM_WORLD, "UpdateSolution done...\n" ) ;
 	 				#endif
 				
@@ -377,7 +376,7 @@ int main( int argc, char * argv[] )
 	 				#endif				
 
 				/* Solve for potential and electric field. */
- 				poisson_solver->SOLVE( Config, Var ) ;
+ 				poisson_solver->SOLVE_TEST( Config, Var ) ;
 	 				#if (Debug == true ) 
 	 					PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;
 	 				#endif

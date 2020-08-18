@@ -52,6 +52,8 @@ class CEnergyDensity
 	 * \param[in] var    - Variable.
 	 */
 	void Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+	void Bulid_A_B_default_2d ( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
+
 	void Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 	void Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;
 					//BBC = Brezmes & Breitkopf, 2015 ; COMSOL, 2013

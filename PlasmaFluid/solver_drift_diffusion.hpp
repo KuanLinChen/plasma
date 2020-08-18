@@ -75,6 +75,10 @@ class CDriftDiffusion
 	 * \param[in] var    - Variable.
 	 */
 	void Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;	
+
+	void Bulid_A_B_default_2d( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+
+
 	void Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &, boost::shared_ptr<CConfig> &, boost::shared_ptr<CVariable> & ) ;	
 	void Bulid_A_B_1st_BBC( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 					//BBC = Brezmes & Breitkopf, 2015 ; COMSOL, 2013
@@ -93,6 +97,7 @@ class CDriftDiffusion
 	 * \param[in] var    - Variable.
 	 */
 	void CalculateAvgDDFlux_default( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+	void CalculateAvgDDFlux_default_2d( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	void CalculateAvgDDFlux_BBC( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 						//BBC = Brezmes & Breitkopf, 2015 ; COMSOL, 2013
 	void CalculateAvgDDFlux_Hagelaar( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
@@ -111,6 +116,7 @@ class CDriftDiffusion
 	 * \param[in] var    - Variable.
 	 */
 	void CalculateSurfaceCharge( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+	void CalculateSurfaceCharge_2d( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 	void CalculateGradientTe( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 
 		double Bernoulli_Coeff( double sgn_X, double sgn_q, double mu, double D, double dx, double E_x)

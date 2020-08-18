@@ -429,10 +429,22 @@ void CVariable::CellProperties( boost::shared_ptr<CDomain> &m )
 
 		Cell_i  = plasma.get_cell( i ) ;
 
-		if 			( Cell_i->type == MPP_cell_tag[ "PLASMA"     ] ) Eps0[ i ] = 1.0*vacuum_permittivity/Ref_Eps ;
-		else if ( Cell_i->type == MPP_cell_tag[ "POWER"      ] ) Eps0[ i ] = 1.0E+10 /Ref_Eps ;
-		else if ( Cell_i->type == MPP_cell_tag[ "GROUND"     ] ) Eps0[ i ] = 1.0E+10 /Ref_Eps ;
-		else if ( Cell_i->type == MPP_cell_tag[ "DIELECTRIC" ] ) Eps0[ i ] = 4.0*vacuum_permittivity/Ref_Eps ;
+		if( Cell_i->type == MPP_cell_tag["PLASMA"] ) {
+
+			Eps0[ i ] = 1.0*vacuum_permittivity/Ref_Eps ;
+
+		}	else if ( Cell_i->type == MPP_cell_tag["POWER"] ) {
+
+			Eps0[ i ] = 1.0E+10 /Ref_Eps ;
+
+		} else if ( Cell_i->type == MPP_cell_tag["GROUND"] ) {
+
+			Eps0[ i ] = 1.0E+10 /Ref_Eps ;
+
+		}	else if ( Cell_i->type == MPP_cell_tag["DIELECTRIC"] ) {
+
+			Eps0[ i ] = 4.0*vacuum_permittivity/Ref_Eps ;
+		}
 		Eps[ i ] = Eps0[ i ] ;
 
 	}

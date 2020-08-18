@@ -53,6 +53,7 @@ class CPoisson
 		 * \brief Compute the surface charge for plasma-dielectric interface.
 		 */	
 		void UltraMPPComputeSurfaceCharge           ( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
+		void UltraMPPComputeSurfaceCharge_2d        ( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var ) ;
 
 		/*!
 		 * \brief Compute the effective permittivity (electron only).
