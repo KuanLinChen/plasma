@@ -38,10 +38,11 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	
 	/* face value assigning */
 	double voltage= SineVoltage( "POWER", config, var ) ;
-
+	//PetscEnd();
 	plasma.set_bc_value( MPP_face_tag["POWER" ], voltage, var->Potential.face ) ;
 	plasma.set_bc_value( MPP_face_tag["GROUND"],     0.0, var->Potential.face ) ;
 	plasma.set_bc_value( MPP_face_tag["NEUMANN"],    0.0, var->Potential.face ) ;
+	
 	if( plasma.Mesh.ndim == 3 ){
 		UltraMPPComputeSurfaceCharge( config, var ) ;
 	} else {
@@ -155,7 +156,6 @@ void CPoisson::UltraMPPComputeEffectivePermittEleOnly( boost::shared_ptr<CConfig
     Cell *cell = plasma.get_cell( i ) ;
     tmp = 0.0 ;
 
-//    if ( cell_type[ cell->type ] == PLASMA ) {
     if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 			for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
@@ -195,9 +195,9 @@ void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config,
 							if ( config->Species[ jSpecies ].Type == ELECTRON or config->Species[ jSpecies ].Type == ION ) {
 
 								var->Potential.face[ cell->face[k]->data_id ] += var->Dt*var->Qe*config->Species[jSpecies].Charge
-								*fabs( var->U1[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[0] * (-1.0) +
-								       var->U2[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[1] * (-1.0) +
-								       var->U3[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[2] * (-1.0)	) ;
+								*fabs( var->U1[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[0]   +
+								       var->U2[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[1]   +
+								       var->U3[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[2]   ) ;
 							}
 
 						}//end jspecies

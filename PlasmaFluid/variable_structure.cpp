@@ -423,33 +423,33 @@ void CVariable::UltraMPPInitialCellParameter()
 void CVariable::CellProperties( boost::shared_ptr<CDomain> &m )
 {
 
-	Cell *Cell_i ;
+	// Cell *Cell_i ;
 
-	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+	// for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
-		Cell_i  = plasma.get_cell( i ) ;
+	// 	Cell_i  = plasma.get_cell( i ) ;
 
-		if( Cell_i->type == MPP_cell_tag["PLASMA"] ) {
+	// 	if( Cell_i->type == MPP_cell_tag["PLASMA"] ) {
 
-			Eps0[ i ] = 1.0*vacuum_permittivity/Ref_Eps ;
+	// 		Eps0[ i ] = 1.0*vacuum_permittivity/Ref_Eps ;
 
-		}	else if ( Cell_i->type == MPP_cell_tag["POWER"] ) {
+	// 	}	else if ( Cell_i->type == MPP_cell_tag["POWER"] ) {
 
-			Eps0[ i ] = 1.0E+10 /Ref_Eps ;
+	// 		Eps0[ i ] = 1.0E+10 /Ref_Eps ;
 
-		} else if ( Cell_i->type == MPP_cell_tag["GROUND"] ) {
+	// 	} else if ( Cell_i->type == MPP_cell_tag["GROUND"] ) {
 
-			Eps0[ i ] = 1.0E+10 /Ref_Eps ;
+	// 		Eps0[ i ] = 1.0E+10 /Ref_Eps ;
 
-		}	else if ( Cell_i->type == MPP_cell_tag["DIELECTRIC"] ) {
+	// 	}	else if ( Cell_i->type == MPP_cell_tag["DIELECTRIC"] ) {
 
-			Eps0[ i ] = 4.0*vacuum_permittivity/Ref_Eps ;
-		}
-		Eps[ i ] = Eps0[ i ] ;
+	// 		Eps0[ i ] = 4.0*vacuum_permittivity/Ref_Eps ;
+	// 	}
+	// 	Eps[ i ] = Eps0[ i ] ;
 
-	}
-	Eps0 = Eps0 ;
-	Eps  = Eps  ;
+	// }
+	// Eps0 = Eps0 ;
+	// Eps  = Eps  ;
 }
 void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config )
 {

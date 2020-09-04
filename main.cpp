@@ -17,7 +17,7 @@
 
 #define time_monitor true 
 #include "time.h"
-
+#define poisson_test false
 
 using namespace std ;
 int mpi_size, /*!< \brief The number of processes. */
@@ -118,7 +118,8 @@ int main( int argc, char * argv[] )
 	boost::shared_ptr<CVariable> Var ;
 	Var = boost::shared_ptr<CVariable> ( new CVariable ) ;
 	Var->Init( mesh , Config ) ;
-	//Var->Calculate_LSQ_Coeff_Scalar( mesh ) ;
+
+
 	/*--- Poisson solver ---*/
 	boost::shared_ptr<CPoisson> poisson_solver ;
 	poisson_solver = boost::shared_ptr<CPoisson> ( new CPoisson ) ;
@@ -135,7 +136,6 @@ int main( int argc, char * argv[] )
 	int DriftDiffusionNum=0, FullEqnNum=0 ;
 	int SpeciesType=0 ;
 
-
 	/* First: Count the number of D-D equation and full equation. */
 	for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {
 		SpeciesType = Config->Species[ jSpecies ].Type ;
@@ -145,7 +145,6 @@ int main( int argc, char * argv[] )
 			FullEqnNum++ ;
 		}
 	} if(mpi_rank==0) cout<<"Number of D-D eqn: "<< DriftDiffusionNum <<", Number of full eqn: "<<FullEqnNum<<endl<<endl;
-
 
 
 	/* Second: Create the D.-D. equation modules */
@@ -190,12 +189,22 @@ int main( int argc, char * argv[] )
 		post = boost::shared_ptr<CPost> ( new CPost ) ;
 
  	/* first solve potential and electric field as initial. */
-		poisson_solver->SOLVE_TEST( Config, Var ) ;
-	//cout<<"A"<<endl; PetscEnd() ;
+		if ( poisson_test == true ) {
+			poisson_solver->SOLVE_TEST( Config, Var ) ;
+		} else {
+			poisson_solver->SOLVE( Config, Var ) ;
+		}
  	 	Var->UpdateSolution( mesh ) ; 
  		Var->ChemistryUpdate( mesh, Config ) ; 
- 		poisson_solver->SOLVE_TEST( Config, Var ) ;
 
+		#if ( Debug == true ) 
+		PetscPrintf( PETSC_COMM_WORLD, "Init. potential & electric field\n" ) ; 
+		#endif
+		// if ( poisson_test == true ) {
+		// 	poisson_solver->SOLVE_TEST( Config, Var ) ;
+		// } else {
+		// 	poisson_solver->SOLVE( Config, Var ) ;
+		// }
 	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
 
 		ofstream FileOutput, PCB_FileOutput , ParticleMON_FileOutput;
@@ -352,8 +361,9 @@ int main( int argc, char * argv[] )
 
  				/* Update solution: Copy solution (n+1) step -> (n) step */ 
  				Var->UpdateSolution( mesh ) ; 
+ 				
 	 				#if ( Debug == true )
-	 					PetscPrintf( PETSC_COMM_WORLD, "UpdateSolution done...\n" ) ;
+	 					PetscPrintf( PETSC_COMM_WORLD, "[%d] UpdateSolution done...\n", MainStep ) ;
 	 				#endif
 				
  				/* Update the rate constants & transport coefficients. */
@@ -376,14 +386,23 @@ int main( int argc, char * argv[] )
 	 				#endif				
 
 				/* Solve for potential and electric field. */
- 				poisson_solver->SOLVE_TEST( Config, Var ) ;
+				if ( poisson_test == true ) {
+					poisson_solver->SOLVE_TEST( Config, Var ) ;
+				} else {
+					poisson_solver->SOLVE( Config, Var ) ;
+				}
 	 				#if (Debug == true ) 
 	 					PetscPrintf( PETSC_COMM_WORLD, "poisson_solver done...\n" ) ;
 	 				#endif
 	 				
 				/* Solve number density using D-D approximation for next time step (n+1). */
-				for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) {
+				for ( int iEqn = 0 ; iEqn < DriftDiffusionNum ; iEqn++ ) 
+				{
 					continuity_solver[ iEqn ]->Solve( mesh, Config, Var ) ;
+
+					#if (Debug == true ) 
+	 					PetscPrintf( PETSC_COMM_WORLD, "Continuity (DD) [%d] done.\n",iEqn ) ;
+	 				#endif
 				}
 
 				/*--- Solve number density and flux for next time step (k+1). ---*/
@@ -393,6 +412,11 @@ int main( int argc, char * argv[] )
 					}
 
 					fluid_model_solver[ iEqn ]->Solve_Momentum( mesh, Config, Var ) ;
+
+	 				#if (Debug == true ) 
+	 					PetscPrintf( PETSC_COMM_WORLD, "Full ion equations[%d] done.\n",iEqn ) ;
+	 				#endif
+
 				}
 				
 				/* Solve for maxwell. */
@@ -427,6 +451,9 @@ int main( int argc, char * argv[] )
 				/* Solve energy density for next time step (n+1). */
 				if ( Config->PFM_Assumption == "LMEA" and DriftDiffusionNum > 0 ) {
 					electron_energy_solver->Solver( mesh, Config, Var ) ;
+					#if (Debug == true ) 
+	 					PetscPrintf( PETSC_COMM_WORLD, "Energy density (DD) done.\n" ) ;
+	 				#endif
 				}
 
 				
