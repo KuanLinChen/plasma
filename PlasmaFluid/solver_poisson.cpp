@@ -10,6 +10,15 @@ void CPoisson::Init( boost::shared_ptr<CConfig> &config )
 		cout<<"Creat POISSON"<<endl;
 	}
 	its=0 ;
+	//fstream  file ; 
+	left .open("left.dat" ) ; 
+	right.open("right.dat") ; 
+	cout<<"openfile"<<endl;
+	//left<<"AA" ;
+	//right<<"BB" ;
+	//PetscEnd();
+	data_count = 0;
+	stable_coefficient = 1.0 ;
 }
 void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var  )
 {
@@ -26,7 +35,7 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	/*--- Calculate the net charge density for poisson's source term ---*/
 	UltraMPPComputeNetCharge( config, var ) ;
 	/*--- set the cell paramtert ---*/
-	plasma.set_cell_property_parameter( var->eps_eff ) ;
+	plasma.set_cell_property_parameter( var->eps_eff_A ) ;
 
 	/*--- Matrix A ---*/
 	plasma.before_matrix_construction() ;
@@ -107,7 +116,7 @@ void CPoisson::UltraMPPComputeNetCharge( boost::shared_ptr<CConfig> &config, boo
 			}//species loop.
 
     }//if plasma region.
-    var->ChargeDen[ i ] = -var->ChargeDen[ i ]/ var->eps_eff[i]  ;
+    var->ChargeDen[ i ] = -var->ChargeDen[ i ] / var->eps_eff[i]  ;
   }//cell loop.
   plasma.syn_parallel_cell_data( var->VarTag["ChargeDen"] );
 }
@@ -166,10 +175,12 @@ void CPoisson::UltraMPPComputeEffectivePermittEleOnly( boost::shared_ptr<CConfig
 			}//species loop.
 
     }//if plasma region.
-		var->eps_eff[i] = var->eps[i] + var->Qe*var->Dt*tmp  ;
+		var->eps_eff[i]   = var->eps[i] + var->Qe*var->Dt*tmp ;
+		var->eps_eff_A[i] = var->eps[i] + var->Qe*var->Dt*tmp*stable_coefficient  ;
 
 	}//cell loop.
 	plasma.syn_parallel_cell_data( var->VarTag["effective_permittivity"] );
+	plasma.syn_parallel_cell_data( var->VarTag["effective_permittivity_A"] );
 }
 void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
@@ -188,19 +199,22 @@ void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config,
 				sign_nA = pow( -1.0 , cell->face_index[k] ) ;
 				
 				Cell *cell2 = plasma.get_cell( cell->cell[ k ]->data_id ) ; 
+
 				if ( cell2->type == MPP_cell_tag[ "DIELECTRIC" ] ) {
 
 						for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 
 							if ( config->Species[ jSpecies ].Type == ELECTRON or config->Species[ jSpecies ].Type == ION ) {
 
-								var->Potential.face[ cell->face[k]->data_id ] += var->Dt*var->Qe*config->Species[jSpecies].Charge
-								*fabs( var->U1[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[0]   +
-								       var->U2[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[1]   +
-								       var->U3[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[2]   ) ;
+								var->surface_charge[ cell->face[k]->data_id ] += var->Dt*var->Qe*config->Species[jSpecies].Charge
+								*fabs( var->U1[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[0] +
+								   		 var->U2[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[1] +
+								   		 var->U3[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[2] ) ;
 							}
-
 						}//end jspecies
+
+						var->Potential.face[ cell->face[k]->data_id ] = var->surface_charge[ cell->face[k]->data_id ] ;
+						
 				}//discontiuity face
 			}//cell2 loop
 		}//enf plasma cell
@@ -208,13 +222,14 @@ void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config,
 }
 void CPoisson::UltraMPPComputeSurfaceCharge_2d( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
-	double tmp=0.0 ;
+	//double surface_charge=0.0 ;
 	double sign_nA = 0.0 ;
-  for ( int i=0 ; i<plasma.Mesh.cell_number ; i++ ) {
+	data_count = data_count + 1 ;
+  for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) {
 
     Cell *cell = plasma.get_cell( i ) ;
 
-    tmp = 0.0 ;
+    //surface_charge = 0.0 ;
 
     if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 			for ( int k = 0 ; k < cell->cell_number ; k++ ){
@@ -227,12 +242,21 @@ void CPoisson::UltraMPPComputeSurfaceCharge_2d( boost::shared_ptr<CConfig> &conf
 
 							if ( config->Species[ jSpecies ].Type == ELECTRON or config->Species[ jSpecies ].Type == ION ) {
 
-								var->Potential.face[ cell->face[k]->data_id ] += var->Dt*var->Qe*config->Species[jSpecies].Charge
-								*fabs( var->U1[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[0] * (1.0) +
-								       var->U2[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[1] * (1.0) ) ;
+								 var->surface_charge[ cell->face[k]->data_id ] += var->Dt*var->Qe*config->Species[jSpecies].Charge
+								*fabs( var->U1[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[0] +
+								   		 var->U2[ jSpecies ][ i ]*sign_nA*cell->face[k]->nA[1] ) ;
 							}
 
 						}//end jspecies
+						//var->Potential.face[ cell->face[k]->data_id ] = var->Potential.face[ cell->face[k]->data_id ]*(-1.0) ;
+
+						var->Potential.face[ cell->face[k]->data_id ] = var->surface_charge[ cell->face[k]->data_id ] ;
+
+						//if(sign_nA*cell->face[k]->nA[0] > 0.0 ){
+						//	right << data_count<<"\t"<<var->Ex[ i ]<<"\t"<<var->surface_charge[ cell->face[k]->data_id ]<<endl;
+						//}else{
+						//	left  << data_count<<"\t" << var->Ex[ i ]<<"\t"<<var->surface_charge[ cell->face[k]->data_id ]<<endl;
+						//}
 				}//discontiuity face
 			}//cell2 loop
 		}//enf plasma cell

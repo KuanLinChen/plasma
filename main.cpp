@@ -9,11 +9,8 @@
 #include "post_structure.hpp"
 #include "solver_energy_density.hpp"
 #include "solver_fluid_model.hpp"
-// #include "solver_navier_stokes.hpp"
-// #include "variable_structure_NS.hpp"
-// #include "PETSc_solver.h"
 #define Debug false
-//#define FDMaxwell false
+
 
 #define time_monitor true 
 #include "time.h"
@@ -319,9 +316,9 @@ int main( int argc, char * argv[] )
 				} 
 				
 				//Monitor the change rate of all variable
-				if( MON_CYC and MON_INS ){	
+				//if( MON_CYC and MON_INS ){	
+				if( false ){ //close by KL	
 
-						
 					for ( int jSpecies = 0 ; jSpecies < Config->TotalSpeciesNum ; jSpecies++ ) {	
 
 						Var->two_norm_diff = 0 ;
@@ -420,7 +417,7 @@ int main( int argc, char * argv[] )
 				}
 				
 				/* Solve for maxwell. */
- 				#if (FDMaxwell == true )
+ 				#if ( FDMaxwell == true )
  					if (Var->Controlled_Coil_power < Var->Coil_power) 
 					Var->Controlled_Coil_power = Var->Controlled_Coil_power + Var->power_grows_rate / Config->StepPerCycle ;
  					

@@ -161,12 +161,13 @@ class CVariable
 	double *ChargeDen,      /*!< \brief net charge density */ //-rho/eps//
 		   *RealChargeDen,      /*!< \brief net charge density */ //rho [C/m^3] //
 				 *eps,            /*!< \brief Material permittivity */ 
-				 *eps_eff ;       /*!< \brief Effective permittivity for semi-implicit poissiony */ 
+				 *eps_eff, *eps_eff_A ;       /*!< \brief Effective permittivity for semi-implicit poissiony */ 
 	double *Ex, *PreEx,     /*!< \brief current & previous Electric fields in X-dir. */ 
 	       *Ey, *PreEy,     /*!< \brief current & previous Electric fields in Y-dir. */ 
 	       *Ez, *PreEz,     /*!< \brief current & previous Electric fields in Z-dir. */ 
 				 *Etd,            /*!< \brief reduce Electric fields in unit: Td */ 
-				 *Emag ;          /*!< \brief Electric fields magnitude */ 
+				 *Emag,	          /*!< \brief Electric fields magnitude */ 
+				 *surface_charge ;
 	double *Kappa ;				  /*!< \brief the variable for modified sound speed. See My IEEE paper. */
 	double *plot_var, *avg_plot_var ;
 	double *Tx, *Ty, *Tz ;

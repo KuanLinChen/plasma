@@ -13,8 +13,8 @@ void CPost::OutputFlow( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig
 	plasma.set_output( var->Potential.tag_current ) ;
  if ( Cycle==0 ) {
 	plasma.set_output( var->VarTag["permittivity"] ) ;
+	plasma.set_output( var->VarTag["effective_permittivity"] ) ;
  }
-	//plasma.set_output( var->VarTag["effective_permittivity"] ) ;
 	plasma.set_output( var->VarTag["ChargeDen"             ] ) ;
 	plasma.set_output( var->VarTag["ChargeDen    [m^-3]"             ] ) ;
 	plasma.set_output( var->VarTag["plot_var"] ) ;
@@ -100,7 +100,7 @@ void CPost::OutputAverageFlow( boost::shared_ptr<CConfig> &config, boost::shared
 	plasma.set_output( "1AvgFlow-"+to_string(Cycle) ) ;
 
 	plasma.set_output( var->VarTag["AvgPotential"] ) ;
-	plasma.set_output( var->VarTag["plot_var"] ) ;
+	//plasma.set_output( var->VarTag["plot_var"] ) ;
 
 	plasma.set_output( var->VarTag["AvgEx"] ) ;
 	plasma.set_output( var->VarTag["AvgEy"] ) ;

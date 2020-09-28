@@ -359,6 +359,7 @@ void CVariable::UltraMPPVarInit()
 		}
 		VarTag["permittivity"          ] = plasma.set_parallel_cell_data(&eps      , "permittivity"           ) ;
 		VarTag["effective_permittivity"] = plasma.set_parallel_cell_data(&eps_eff  , "effective_permittivity" ) ;
+		VarTag["effective_permittivity"] = plasma.set_parallel_cell_data(&eps_eff_A  , "effective_permittivity_A" ) ;
 		VarTag["ChargeDen"             ] = plasma.set_parallel_cell_data(&ChargeDen, "ChargeDen"              ) ;
 		VarTag["ChargeDen    [m^-3]"   ] = plasma.set_parallel_cell_data(&RealChargeDen, "ChargeDen    [m^-3]"              ) ;
 		
@@ -379,7 +380,10 @@ void CVariable::UltraMPPVarInit()
 		VarTag["Kappa"] = plasma.set_parallel_cell_data( &Kappa, "kappa" ) ;
 
 		VarTag["plot_var"] = plasma.set_parallel_cell_data( &plot_var, "plot_var" ) ;
-	
+
+		VarTag["surface_charge"] = plasma.set_face_data( &surface_charge, "surface_charge" ) ;
+
+
 		//---------Variable definition of ICP simulation ---------------------------
 		#if ( FDMaxwell == true ) 
 		FDMaxwell_coupled_eqs.set_parallel_variable(&E_phi_Re,"E_phi_Re") ;

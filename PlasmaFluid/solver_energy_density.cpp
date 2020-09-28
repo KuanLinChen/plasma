@@ -1805,9 +1805,9 @@ void CEnergyDensity::CalculateTemperature( boost::shared_ptr<CDomain> &m, boost:
 
 				val = 0.05 ;
 
-			} else if( val > 50.0 ) {
+			} else if( val > 20.0 ) {
 
-				val = 50.0 ;
+				val = 20.0 ;
 				
 			}
 			var->T[iSpecies][ i ] = val ;

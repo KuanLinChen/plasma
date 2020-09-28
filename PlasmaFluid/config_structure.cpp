@@ -114,17 +114,6 @@ void CConfig::ReadSpeciesFile( string FileName )
 			}
 			/*--- For debug ---*/
 			if ( mpi_rank == 0 ){
-				// cout<<"Name              : "<<Species[ 0 ].Name<<endl;
-				// cout<<"Index             : "<<Species[ 0 ].Index<<endl;
-				// cout<<"Charge            : "<<Species[ 0 ].Charge<<endl;
-				// cout<<"Gamma             : "<<Species[ 0 ].Gamma<<endl;
-				// cout<<"Mass_Kg           : "<<Species[ 0 ].Mass_Kg<<endl;
-				// cout<<"MobilityType      : "<<Species[ 0 ].MobilityType<<endl;
-				// cout<<"MobilityFile      : "<<Species[ 0 ].MobilityFile<<endl;
-				// cout<<"DiffusivityType   : "<<Species[ 0 ].DiffusivityType<<endl;
-				// cout<<"DiffusivityFile   : "<<Species[ 0 ].DiffusivityFile<<endl;
-				// cout<<"InitialDensity    : "<<Species[ 0 ].InitialDensity<<endl;
-				// cout<<"InitialTemperature: "<<Species[ 0 ].InitialTemperature<<endl<<endl;
 				if ( Species[ 0 ].MobilityType == 0 and Species[ 0 ].MobilityValue < 0.0 ) {
 					cout<<"The electron Mobility is choose be constant, please assign the value [ e.g. \"MobilityValue\": 30.0 ]"<<endl;
 					exit(1) ;
