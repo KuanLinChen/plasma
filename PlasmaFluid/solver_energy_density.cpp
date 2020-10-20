@@ -15,7 +15,7 @@ void CEnergyDensity::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCon
 	
 	WallType   = config->Equation[ config->Species[ index ].Type ].WallBoundaryType ;
 	
-	fixTe = false ;
+	fixTe = true ;
 	//TG = true ;
 	TG = false ;
 	Insert = false ;

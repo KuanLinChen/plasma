@@ -159,7 +159,7 @@ class CVariable
 
 	variable_set Potential ;/*!< \brief potential */
 	double *ChargeDen,      /*!< \brief net charge density */ //-rho/eps//
-		   *RealChargeDen,      /*!< \brief net charge density */ //rho [C/m^3] //
+		   	 *RealChargeDen,      /*!< \brief net charge density */ //rho [C/m^3] //
 				 *eps,            /*!< \brief Material permittivity */ 
 				 *eps_eff, *eps_eff_A ;       /*!< \brief Effective permittivity for semi-implicit poissiony */ 
 	double *Ex, *PreEx,     /*!< \brief current & previous Electric fields in X-dir. */ 
@@ -174,9 +174,10 @@ class CVariable
 
 	void UltraMPPAvgVarInit() ;
 	double *AvgPotential,   /*!< \brief cycle-averaged potential */
-			*AvgEx,          /*!< \brief cycle-averaged electric fields in X-dir. */ 
-			*AvgEy,          /*!< \brief cycle-averaged electric fields in Y-dir. */ 
-			*AvgEz ;         /*!< \brief cycle-averaged electric fields in Z-dir. */ 
+				 *AvgEx,          /*!< \brief cycle-averaged electric fields in X-dir. */ 
+				 *AvgEy,          /*!< \brief cycle-averaged electric fields in Y-dir. */ 
+				 *AvgEz,
+				 *AvgE_Td ;         /*!< \brief cycle-averaged electric fields in Z-dir. */ 
 
 	void UltraMPPInitialCellParameter() ;
 

@@ -28,6 +28,7 @@ void CConfig::ReadSpeciesFile( string FileName )
 	// Me = 9.1095E-31 ;//[ kg ]
 	// Kb = 1.38065E-23 ;//[ m2 kg s-2 K-1]
 	// K2eV = Qe/Kb ;
+
 	double K2eV = 1.602e-19/1.38065E-23 ;
 	json config ;
 	ifstream jsonFile ;
@@ -336,12 +337,20 @@ void CConfig::ReadSpeciesFile( string FileName )
 				Species[ i+ii ].MobilityFile  =  "N/A" ;
 				Species[ i+ii ].MobilityValue =  0.0 ;
 				
-				if ( SubBackGround[ i ].find ("DiffusivityType") 	!= SubBackGround[ i ].end() ) Species[ i+ii ].DiffusivityType 	 =  SubBackGround[ i ][ "DiffusivityType" ] ;
-				if ( SubBackGround[ i ].find ("DiffusivityValue") 	!= SubBackGround[ i ].end() ) Species[ i+ii ].DiffusivityValue   =  SubBackGround[ i ][ "DiffusivityValue" ] ;
-				if ( SubBackGround[ i ].find ("DiffusivityFile") 	!= SubBackGround[ i ].end() ) Species[ i+ii ].DiffusivityFile 	 =  SubBackGround[ i ][ "DiffusivityFile" ] ;
+				if ( SubBackGround[ i ].find ("DiffusivityType" ) != SubBackGround[ i ].end() ) 
+					Species[ i+ii ].DiffusivityType  = SubBackGround[ i ][ "DiffusivityType" ] ;
 
-				if ( SubBackGround[ i ].find ("InitialPressure") 	 != SubBackGround[ i ].end() ) Species[ i+ii ].InitialPressure 	 	 =  SubBackGround[ i ][ "InitialPressure" ] ;
-				if ( SubBackGround[ i ].find ("InitialTemperature")  != SubBackGround[ i ].end() ) Species[ i+ii ].InitialTemperature	 =  SubBackGround[ i ][ "InitialTemperature" ] ;
+				if ( SubBackGround[ i ].find ("DiffusivityValue") != SubBackGround[ i ].end() ) 
+					Species[ i+ii ].DiffusivityValue = SubBackGround[ i ][ "DiffusivityValue" ] ;
+
+				if ( SubBackGround[ i ].find ("DiffusivityFile" ) != SubBackGround[ i ].end() ) 
+					Species[ i+ii ].DiffusivityFile  = SubBackGround[ i ][ "DiffusivityFile" ] ;
+
+				if ( SubBackGround[ i ].find ("InitialPressure") 		 != SubBackGround[ i ].end() ) 
+					Species[ i+ii ].InitialPressure 	 	= SubBackGround[ i ][ "InitialPressure" ] ;
+
+				if ( SubBackGround[ i ].find ("InitialTemperature")  != SubBackGround[ i ].end() ) 
+					Species[ i+ii ].InitialTemperature	= SubBackGround[ i ][ "InitialTemperature" ] ;
 
 				if ( SubBackGround[ i ].find ("InitialTemperature_K")!= SubBackGround[ i ].end() ){
 					double tmp_Temperature_K 	 	 			 =  SubBackGround[ i ][ "InitialTemperature_K" ] ;
@@ -353,7 +362,14 @@ void CConfig::ReadSpeciesFile( string FileName )
 					Species[ i+ii ].InitialDensity = BackGroundNumberDensity ;
 					if( tmp_Temperature_K > BGTemperature_K ) BGTemperature_K = tmp_Temperature_K ;
 				} 
-					
+
+				if ( SubBackGround[ i ].find ("InitialFileName") != SubBackGround[ i ].end() )
+					Species[ i+ii ].initial_data_file_name 	 			= SubBackGround[ i ][ "InitialFileName" ] ;
+
+				if ( SubBackGround[ i ].find ("InitialVariableName") != SubBackGround[ i ].end() )
+					Species[ i+ii ].initial_data_variable_name 	 	= SubBackGround[ i ][ "InitialVariableName" ] ;
+				
+
 					if ( SubBackGround[ i ].find ("Charge")  != SubBackGround[ i ].end() ) Species[ i+ii ].Charge = SubBackGround[ i ][ "Charge" ] ;
 					if ( SubBackGround[ i ].find ("Gamma")   != SubBackGround[ i ].end() ) Species[ i+ii ].Gamma  = SubBackGround[ i ][ "Gamma"  ] ;
 					if ( SubBackGround[ i ].find ("Mass_Kg") != SubBackGround[ i ].end() ) Species[ i+ii ].Mass_Kg= SubBackGround[ i ][ "Mass_Kg"] ;

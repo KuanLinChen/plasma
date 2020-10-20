@@ -25,8 +25,15 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated" )
 find_package (PETSc REQUIRED)
 
 # Boost
+#add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
 find_package (Boost 1.5 COMPONENTS system filesystem REQUIRED)
 
+if(Boost_FOUND)
+    message("Found boost")
+    message("libraries:  " ${Boost_LIBRARIES})
+    message("filesystem: " ${Boost_FILESYSTEM_LIBRARY})
+    message("system:     " ${Boost_SYSTEM_LIBRARY})
+endif()
 
 #hdf5
 set(temps $ENV{HDF5_LIB_PATH} )
@@ -42,10 +49,12 @@ endif()
 
 
 
-include_directories( $ENV{ultraMPP_DIR}/include ${Boost_INCLUDE_DIR} ${PETSC_INCLUDES} $ENV{CGNS_INC_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
+#include_directories( $ENV{ultraMPP_DIR}/include ${Boost_INCLUDE_DIR} ${PETSC_INCLUDES} $ENV{CGNS_INC_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
+#link_directories( $ENV{ultraMPP_DIR}/lib $ENV{CGNS_LIB_PATH} $ENV{HDF5_LIB_PATH} ${Boost_LIBRARY_DIRS} )
 
+include_directories( $ENV{ultraMPP_DIR}/include ${Boost_INCLUDE_DIRS} ${PETSC_INCLUDES} $ENV{CGNS_INC_PATH})
+link_directories( $ENV{ultraMPP_DIR}/lib $ENV{HDF5_LIB_PATH} ${Boost_INCLUDE_DIRS} )
 
-link_directories( $ENV{ultraMPP_DIR}/lib $ENV{CGNS_LIB_PATH} $ENV{HDF5_LIB_PATH} )
 	
 add_subdirectory ( PlasmaFluid )
 
@@ -53,7 +62,7 @@ add_executable ( p3 main.cpp  )
 
 
 target_link_libraries( p3 LINK_PUBLIC ${PETSC_LIBRARIES} cgns hdf5 libultraMPP.a libmetis.a ${MPI_LIBRARIES} 
-${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${PETSC_LIBRARIES} PlasmaFluid )
+${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LIBRARIES} ${PETSC_LIBRARIES} PlasmaFluid )
 
 
 

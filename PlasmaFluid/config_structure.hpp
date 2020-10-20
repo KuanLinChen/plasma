@@ -21,29 +21,30 @@ class CSpecies
 	CSpecies(){} ;
 
 	string Name ; /*!< \brief Species name for output and Scalar name */
+	string initial_data_file_name, initial_data_variable_name ;
 
 	int Index,/*!< \brief Species index */
-		Type,/*!< \brief Species type: 0: for electron, 1: for ion, 2: for neutral, 3: for background gas */
-		MobilityType, /*!< \brief mobility type: 0: for constant, 1: for collision table */
-		DiffusivityType ; /*!< \brief diffusivity type: 0: for constant, 1: for collision table */
+			Type,/*!< \brief Species type: 0: for electron, 1: for ion, 2: for neutral, 3: for background gas */
+			MobilityType, /*!< \brief mobility type: 0: for constant, 1: for collision table */
+			DiffusivityType ; /*!< \brief diffusivity type: 0: for constant, 1: for collision table */
 
 	double Charge,/*!< \brief Species charge, electron: -X.0, positive ion: x.0, negative ion: -x.0, neutral: 0.0  */
-		   sgn,/*!< \brief Species charge sign, electron: -1.0, positive ion: 1.0, negative ion: 1.0, neutral: 0.0  */ 
-		   Mass_Kg,/*!< \brief Species mass unit kg */
-		   InitialDensity,/*!< \brief Iniitial number density unit m^-3 */ 
-		   InitialTemperature,/*!< \brief Iniitial temperature unit eV */
-		   InitialPressure ;/*!< \brief Initial pressure unit torr */
+		  	 sgn,/*!< \brief Species charge sign, electron: -1.0, positive ion: 1.0, negative ion: 1.0, neutral: 0.0  */ 
+		  	 Mass_Kg,/*!< \brief Species mass unit kg */
+		  	 InitialDensity,/*!< \brief Iniitial number density unit m^-3 */ 
+		  	 InitialTemperature,/*!< \brief Iniitial temperature unit eV */
+		  	 InitialPressure ;/*!< \brief Initial pressure unit torr */
 
 	double MobilityValue,/*!< \brief Constant mobility value unit XXXXX */
-		   DiffusivityValue ;/*!< \brief Constant mobility value unit XXXXX */
+		  	 DiffusivityValue ;/*!< \brief Constant mobility value unit XXXXX */
 
 	string MobilityFile, DiffusivityFile, CollisionFreqFile ;
 
 	bool ConstantMobilityUpdate,/*!< \brief For speedup, initially will be false */
-		 ConstantDiffusivityUpdate ;/*!< \brief For speedup, initially will be false */
+		 	 ConstantDiffusivityUpdate ;/*!< \brief For speedup, initially will be false */
 
-	double  LJ_Potential, /*!< \brief Lennard-Jones potential */
-			LJ_Parameter ;/*!< \brief Lennard-Jones Parameter unit Angstroms */
+	double LJ_Potential, /*!< \brief Lennard-Jones potential */
+				 LJ_Parameter ;/*!< \brief Lennard-Jones Parameter unit Angstroms */
 	double 	Gamma ;/*!< \brief Cp/Cv, for monatomic is 5/3, for diatomic is 1.4 */
 	bool 	Activate ;
 };

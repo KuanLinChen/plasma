@@ -107,6 +107,7 @@ void CPost::OutputAverageFlow( boost::shared_ptr<CConfig> &config, boost::shared
 	if ( nDim == 3 )
 	plasma.set_output( var->VarTag["AvgEz"] ) ;
 
+	plasma.set_output( var->VarTag["AvgE_Td"] ) ;
 
 	plasma.set_output( var->eAvgEnergyLoss.data_id ) ;
 	

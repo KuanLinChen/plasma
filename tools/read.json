@@ -1,0 +1,13 @@
+{
+	"mesh":
+	{
+		"geometry":	"Axisymmetric_Y",
+		"scale":	1.0,
+		"meshfile":	"Case_3_v11.msh"
+	},
+
+	"output_setting":
+	{
+		"type_name":	"TECPLOT"
+	}
+}

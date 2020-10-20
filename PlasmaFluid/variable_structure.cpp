@@ -414,6 +414,7 @@ void CVariable::UltraMPPAvgVarInit()
 	VarTag["AvgEx"  ] = plasma.set_parallel_cell_data(   &AvgEx, "Ex [V/m]" ) ;
 	VarTag["AvgEy"  ] = plasma.set_parallel_cell_data(   &AvgEy, "Ey [V/m]" ) ;
 	VarTag["AvgEz"  ] = plasma.set_parallel_cell_data(   &AvgEz, "Ez [V/m]" ) ;
+	VarTag["AvgE_Td"] = plasma.set_parallel_cell_data( &AvgE_Td, "reduce E (Td)" ) ;
 	VarTag["avg_plot_var"] = plasma.set_parallel_cell_data( &avg_plot_var, "avg_plot_var" ) ;
 }
 void CVariable::UltraMPPInitialCellParameter()
@@ -482,22 +483,53 @@ void CVariable::InitialConditions( boost::shared_ptr<CDomain> &m, boost::shared_
 				U1[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity*0.E-15/Ref_Flux ;
 				U2[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity*0.E-15/Ref_Flux ;
 				U3[ jSpecies ][ i ] = config->Species[jSpecies].InitialDensity*0.E-15/Ref_Flux ;//config->Species[jSpecies].InitialDensity ;
-				
-				TotalNumberDensity[ i ] += U0[ jSpecies ][ i ]*Ref_N ;
-
 			}
-
 
 			if ( config->PFM_Assumption == "LFA" and config->PFM_SubModel == "Streamer" ) {
 				r = Cell_i->r[0] ;
 				z = Cell_i->r[1] ;
 				U0[ 1 ][ i ] += N0*exp( -(r*r+pow(z-z0, 2.0)) / pow(sigma, 2.0) ) ;
 			}
+
 		}//End plasma cells
 	}//End cell loop
+	//double *tmp ;
+	//int tag_tmp   =	plasma.set_parallel_cell_data( &tmp, "N_Ar" ) ;
+
+	/*read the initial conditions from file */
+	for ( int i = 0; i < config->TotalSpeciesNum ; i++ ) {
+		if( !config->Species[i].initial_data_file_name.empty() )
+		{
+			plasma.set_initial_variable( U0[ i ].data_id, config->Species[i].initial_data_variable_name  ) ;
+			//plasma.set_initial_variable( tag_tmp ) ;
+			plasma.get_initial_value( config->Species[i].initial_data_file_name ) ;
+			//cout<<config->Species[i].initial_data_file_name<<endl;
+			//cout<<U0[ i ].data_name<<endl;
+			// plasma.set_output( "tmp" ) ;
+			// plasma.set_output( tag_tmp ) ;
+			// plasma.write_output( "test-restart" ) ;
+			//cout<<"not support yet"<<endl; 
+			//PetscEnd() ;
+		}
+	}
 
 
+
+
+	for ( int i = 0 ; i < plasma.Mesh.cell_number ; i++ ) {
+		Cell_i  = plasma.get_cell( i ) ;
+		TotalNumberDensity[ i ] = 0.0 ;
+		if ( plasma.get_cell_typename( Cell_i->data_id ) == "PLASMA" ){
+			for ( int jSpecies = 0; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
+				TotalNumberDensity[ i ] += U0[ jSpecies ][ i ]*Ref_N ;
+			}
+		}//End plasma cells
+	}//End cell loop
 	TotalNumberDensity = TotalNumberDensity ;	
+
+
+
+
 
 
 	/*---  Temperature ---*/
@@ -1273,6 +1305,7 @@ void CVariable::ResetAvgZero( boost::shared_ptr<CDomain> &m, boost::shared_ptr<C
 		       AvgEx[ i ] = 0.0 ;
 		       AvgEy[ i ] = 0.0 ;
 		       AvgEz[ i ] = 0.0 ;
+		     AvgE_Td[ i ] = 0.0 ;
 		avg_plot_var[i] = 0.0 ;
 	}
 
@@ -1297,9 +1330,10 @@ void CVariable::AddAverage( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 {
 	for( int i = 0 ; i < plasma.Mesh.cell_number ; i++ )  {
 		AvgPotential[ i ] += Potential.current[ i ] / config->StepPerCycle ;
-		AvgEx[ i ]        +=                Ex[ i ] / config->StepPerCycle ;
-		AvgEy[ i ]        +=                Ey[ i ] / config->StepPerCycle ;
-		AvgEz[ i ]        +=                Ez[ i ] / config->StepPerCycle ;
+		AvgEx[ i ]        +=  Ex[ i ] / config->StepPerCycle ;
+		AvgEy[ i ]        +=  Ey[ i ] / config->StepPerCycle ;
+		AvgEz[ i ]        +=  Ez[ i ] / config->StepPerCycle ;
+		AvgE_Td[ i ]      += Etd[ i ] / config->StepPerCycle ;
 		eAvgEnergyLoss[ i ] += eEnergyLoss[ i ]/config->StepPerCycle ;
 		avg_plot_var[ i ] += avg_plot_var[ i ]/config->StepPerCycle ;
 	}
