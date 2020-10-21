@@ -30,6 +30,8 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 {
 	int nDim = plasma.Mesh.ndim ;
 
+	//PetscPrintf( PETSC_COMM_WORLD, "CEnergyDensity::Solver \n" ) ;
+
 	switch( WallType ){
 
 		case 0: //default
@@ -54,6 +56,7 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 			
 		case 4://Hagelaar
 			Bulid_A_B_1st_Hagelaar( m, config, variable ) ;
+
 			break;
 			
 		case 5://GradientT
@@ -75,12 +78,18 @@ void CEnergyDensity::Solver( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 
 	}//Wall boundary type.
 
+	//PetscPrintf( PETSC_COMM_WORLD, "Bulid_A_B done...\n" ) ;
+
 	energy_density.get_solution( variable->U4[iSpecies].data ) ;
+
+	//PetscPrintf( PETSC_COMM_WORLD, "get_solution done...\n" ) ;
 
 	variable->U4[iSpecies] = variable->U4[iSpecies] ;
 
 	its = energy_density.get_iteration_number() ;
-	
+
+	//PetscPrintf( PETSC_COMM_WORLD, "get_iteration_number done...\n" ) ;
+
 	/*--- calculate electron temperature ---*/
 		CalculateTemperature( m, variable ) ;
 		if( iSpecies == ELECTRON ) CalculatePowerAbs( m, variable  );
@@ -316,9 +325,9 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	 		var->JouleHeating[iSpecies][i] = JdotE*var->Qe ;
 			
 			//For ICP power absorption
-			#if ( FDMaxwell == true ) 
-			energy_density.add_entry_in_source_term( i, var->Power_Absorption_plasma[ i ]/var->Qe * Cell_i->volume*var->Dt ) ;
-			#endif
+			//#if ( FDMaxwell == true ) 
+			//energy_density.add_entry_in_source_term( i, var->Power_Absorption_plasma[ i ]/var->Qe * Cell_i->volume*var->Dt ) ;
+			//#endif
 			
 	 	/*--- Loop over SOLID cells ---*/
 	 	} else {
@@ -331,7 +340,7 @@ void CEnergyDensity::Bulid_A_B_1st_default( boost::shared_ptr<CDomain> &m, boost
 	energy_density.finish_matrix_construction() ;
 	energy_density.finish_source_term_construction() ;
 
-	MPI_Barrier(MPI_COMM_WORLD) ;
+	//MPI_Barrier(MPI_COMM_WORLD) ;
 }
 void CEnergyDensity::Bulid_A_B_default_2d( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
@@ -556,7 +565,7 @@ void CEnergyDensity::Bulid_A_B_default_2d( boost::shared_ptr<CDomain> &m, boost:
 	energy_density.finish_matrix_construction() ;
 	energy_density.finish_source_term_construction() ;
 
-	MPI_Barrier(MPI_COMM_WORLD) ;
+	//MPI_Barrier(MPI_COMM_WORLD) ;
 }
 void CEnergyDensity::Bulid_A_B_1st_GEC( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {

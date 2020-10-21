@@ -186,14 +186,12 @@ int main( int argc, char * argv[] )
 		post = boost::shared_ptr<CPost> ( new CPost ) ;
 
  	/* first solve potential and electric field as initial. */
-		if ( poisson_test == true ) {
-			poisson_solver->SOLVE_TEST( Config, Var ) ;
-		} else {
-			poisson_solver->SOLVE( Config, Var ) ;
-		}
- 	 	Var->UpdateSolution( mesh ) ; 
- 		Var->ChemistryUpdate( mesh, Config ) ; 
+	 	poisson_solver->SOLVE( Config, Var ) ;
+	 	Var->UpdateSolution( mesh ) ; 
+ 	 	Var->ChemistryUpdate( mesh, Config ) ; 
+	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
 
+	 	
 		#if ( Debug == true ) 
 		PetscPrintf( PETSC_COMM_WORLD, "Init. potential & electric field\n" ) ; 
 		#endif
@@ -202,7 +200,6 @@ int main( int argc, char * argv[] )
 		// } else {
 		// 	poisson_solver->SOLVE( Config, Var ) ;
 		// }
-	 	post->OutputFlow( mesh, Config, Var, 0, 0 ) ;
 
 		ofstream FileOutput, PCB_FileOutput , ParticleMON_FileOutput;
 		
@@ -444,7 +441,10 @@ int main( int argc, char * argv[] )
 	 			#endif
 
 				Var->CalculateElectrodeCurrent( mesh, Config ) ;
-
+				#if (Debug == true ) 
+	 				PetscPrintf( PETSC_COMM_WORLD, "CalculateElectrodeCurrent done...\n" ) ;
+	 			post->OutputFlow( mesh, Config, Var, 0, 0 ) ;	
+	 			#endif 
 				/* Solve energy density for next time step (n+1). */
 				if ( Config->PFM_Assumption == "LMEA" and DriftDiffusionNum > 0 ) {
 					electron_energy_solver->Solver( mesh, Config, Var ) ;

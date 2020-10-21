@@ -1,0 +1,27 @@
+# The rows of chemistry rate
+Electron_table_size = 20000
+
+# The lowest Te rows (eV)
+Table_Te_min = 0.1
+
+# The Highest Te of rows (eV)
+Table_Te_max = 20.0
+
+# The lowest gas rows (K)
+Table_gas_min = 300
+
+# The Highest gas of rows (K)
+Table_gas_max = 1000
+
+# Gas temperature
+T_Gas = 400.0
+
+CHEMISTRY 	= ../Quasi1D_Argon/1channel.list
+SPECIES 		= ../Quasi1D_Argon/2species_name.list
+
+# The table for ion
+Ion_table_size = 1000
+
+# The table for neutral
+Neutral_table_size = 100
+

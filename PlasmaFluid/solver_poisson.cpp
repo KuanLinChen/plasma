@@ -35,7 +35,7 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	/*--- Calculate the net charge density for poisson's source term ---*/
 	UltraMPPComputeNetCharge( config, var ) ;
 	/*--- set the cell paramtert ---*/
-	plasma.set_cell_property_parameter( var->eps_eff_A ) ;
+	plasma.set_cell_property_parameter( var->eps_eff ) ;
 
 	/*--- Matrix A ---*/
 	plasma.before_matrix_construction() ;
@@ -47,6 +47,7 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	
 	/* face value assigning */
 	double voltage= SineVoltage( "POWER", config, var ) ;
+	//cout<<voltage<<endl;
 	//PetscEnd();
 	plasma.set_bc_value( MPP_face_tag["POWER" ], voltage, var->Potential.face ) ;
 	plasma.set_bc_value( MPP_face_tag["GROUND"],     0.0, var->Potential.face ) ;
@@ -75,6 +76,7 @@ void CPoisson::SOLVE( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVar
 	for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) {
 		var->Ex[ i ] = - var->Potential.gradient[0][i] ;
 		var->Ey[ i ] = - var->Potential.gradient[1][i] ;
+		//cout<<var->Potential.gradient[0][i] <<endl;
 	}
 	plasma.syn_parallel_cell_data( var->VarTag["Ex"] );
 	plasma.syn_parallel_cell_data( var->VarTag["Ey"] );
@@ -143,7 +145,6 @@ void CPoisson::UltraMPPComputeEffectivePermitt( boost::shared_ptr<CConfig> &conf
 			for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 				if ( config->Species[ jSpecies ].Type == ELECTRON or config->Species[ jSpecies ].Type == ION ) {
 						tmp += fabs( config->Species[ jSpecies ].Charge ) * (var->Mobi[jSpecies][ i ]) * (var->U0[ jSpecies ][ i ] ) ;
-				
 				}//if charged species.
 			}//species loop.
 
@@ -160,27 +161,23 @@ void CPoisson::UltraMPPComputeEffectivePermittEleOnly( boost::shared_ptr<CConfig
 	*/
 	double tmp=0.0 ;
 
-  for ( int i=0 ; i < plasma.Mesh.cell_number ; i++ ) {
+  for ( int i=0 ; i< plasma.Mesh.cell_number ; i++ ) {
 
     Cell *cell = plasma.get_cell( i ) ;
     tmp = 0.0 ;
-
     if ( cell->type == MPP_cell_tag[ "PLASMA" ] ) {
 
 			for ( int jSpecies = 0 ; jSpecies < config->TotalSpeciesNum ; jSpecies++ ) {
 				if ( config->Species[ jSpecies ].Type == ELECTRON ) {
 						tmp += fabs( config->Species[ jSpecies ].Charge ) * (var->Mobi[jSpecies][ i ]) * (var->U0[ jSpecies ][ i ] ) ;
-				
 				}//if charged species.
 			}//species loop.
 
     }//if plasma region.
-		var->eps_eff[i]   = var->eps[i] + var->Qe*var->Dt*tmp ;
-		var->eps_eff_A[i] = var->eps[i] + var->Qe*var->Dt*tmp*stable_coefficient  ;
+		var->eps_eff[i] = var->eps[i] + var->Qe*var->Dt*tmp  ;
 
-	}//cell loop.
-	plasma.syn_parallel_cell_data( var->VarTag["effective_permittivity"] );
-	plasma.syn_parallel_cell_data( var->VarTag["effective_permittivity_A"] );
+  }//cell loop.
+  plasma.syn_parallel_cell_data( var->VarTag["effective_permittivity"] );
 }
 void CPoisson::UltraMPPComputeSurfaceCharge( boost::shared_ptr<CConfig> &config, boost::shared_ptr<CVariable> &var )
 {
@@ -251,12 +248,7 @@ void CPoisson::UltraMPPComputeSurfaceCharge_2d( boost::shared_ptr<CConfig> &conf
 						//var->Potential.face[ cell->face[k]->data_id ] = var->Potential.face[ cell->face[k]->data_id ]*(-1.0) ;
 
 						var->Potential.face[ cell->face[k]->data_id ] = var->surface_charge[ cell->face[k]->data_id ] ;
-
-						//if(sign_nA*cell->face[k]->nA[0] > 0.0 ){
-						//	right << data_count<<"\t"<<var->Ex[ i ]<<"\t"<<var->surface_charge[ cell->face[k]->data_id ]<<endl;
-						//}else{
-						//	left  << data_count<<"\t" << var->Ex[ i ]<<"\t"<<var->surface_charge[ cell->face[k]->data_id ]<<endl;
-						//}
+						//cout<<"AAAAAAAAAAa"<<endl;
 				}//discontiuity face
 			}//cell2 loop
 		}//enf plasma cell

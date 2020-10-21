@@ -1,0 +1,8 @@
+
+#Elastic collisions
+1 Electron + 1 Ar  ->  1 Ar   + 1 Electron  type: t  ratefile: ../Quasi1D_Argon/Rate_Table/elastic.txt          AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 0.0    rateconstant: 0.0     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_00.dat  interpolation: y
+
+
+#Ground state ionization
+1 Electron + 1 Ar  ->  1 Ar+  + 2 Electron  type: t  ratefile: ../Quasi1D_Argon/Rate_Table/ionization_Ar.txt   AAA: 1.0  BBB: 1.0  CCC: 1.0 threshold: 15.578  rateconstant: 0.0     is_table_refer: y table_contain: 50000 table_lowestT: 0.03 table_highestT: 40.0  phys_min_T:0.03  phys_max_T: 40.0 data_output: n outname: output_reac_02.dat  interpolation: y
+

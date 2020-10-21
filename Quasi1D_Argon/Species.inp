@@ -1,0 +1,70 @@
+{
+	"ElectronGroup":
+	{
+		"SubGroup":
+		[
+			{
+				"Name"							: "Electron",
+				"Activate"					: 1,
+
+				"MobilityType"			: 0,
+				"MobilityValue"			: 30.0,
+				"MobilityFile"			: "Mobility-electron.dat",
+
+				"DiffusivityType"		: 0,
+				"DiffusivityValue"	: 120.0,
+				"DiffusivityFile"		: "Diffusivity-electron.dat",
+
+				"Charge"  					: -1.0,
+				"Mass_Kg" 					: 9.109500e-31,
+				"CollisionFreqFile"	: "5Collision.inp",
+				"InitialDensity"		: 1.0E+13,
+				"InitialTemperature": 1.0
+
+			}
+		]
+	},
+	"IonGroup":
+	{
+		"SubGroup":
+		[
+			{
+				"Name"								: "Ar<sup>+</sup>",
+				"Activate"						: 1,
+
+				"MobilityType"				: 0,
+				"MobilityValue"				: 0.14,
+
+				"DiffusivityType"			: 0,
+				"DiffusivityValue"		: 4.0E-3,
+
+				"Charge"							: 1.0,
+				"Mass_AMU" 						: 39.948,
+				"Gamma"								: 1.666666667, 
+				"InitialDensity"			: 1.0E+13,
+				"InitialTemperature_K": 293.0
+
+			}
+		]
+	},
+	"NeutralGroup":
+	{
+		"SubGroup":
+		[
+		]
+	},
+	"BackGroundGroup":
+	{
+		"SubGroup":
+		[
+			{
+				"Name"								: "Ar",		
+				"Activate"						: 0,
+				"Charge"							: 0.0,
+				"Mass_AMU" 						: 39.948, 
+				"InitialPressure"			: 1.0,
+				"InitialTemperature_K": 293.0
+			}
+		]
+	}
+}

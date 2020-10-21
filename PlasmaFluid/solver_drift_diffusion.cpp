@@ -81,7 +81,10 @@ void CDriftDiffusion::Solve( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CC
 				cout<<"wall type"<<WallType<<endl;exit(1);
 				break;
 		}
+		//cout<<"get_solution-> mpi_rank="<<mpi_rank<<endl;
 		drift_diffusion.get_solution( variable->U0[iSpecies].data ) ;
+		//cout<<"get_solution-> mpi_rank="<<mpi_rank<<"...done"<<endl;
+
 		its = drift_diffusion.get_iteration_number() ;
 		variable->U0[iSpecies] = variable->U0[iSpecies] ;
 

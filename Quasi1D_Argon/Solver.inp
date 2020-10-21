@@ -1,0 +1,109 @@
+{
+	"ModelAssumptions"	:
+	{	
+		"Description"      : "local mean energy approximtaion (LMEA) or local field approximtaion (LFA).",
+		"PFM_Assumption"   : "LMEA",
+		
+		"Description"      : "Etd vs MeanEnergy table file name. This may be required when using LFA.",
+		"eMeanEnergyFile"  : "4MeanEnergy.inp",
+
+		"Description"      : "Calculate energy loss in energy density equation by lookup table",
+		"eEnergyLossFile"  : "eEnergyLoss.inp",
+		
+		"Description"      : "Time step per each cycle",
+		"StepPerCycle"     : 200,
+		
+		"Description"      : "For dc case, if lower than 0-> ignore (Calculate form max. frequency) ",
+		"TimeStepSize"     : -1.0,
+		
+		"Description"      : "The secondary electron emission coefficient",
+		"SecEleEmissCoeff" : 0.0,
+
+		"Description"      : "The secondary electron energy [Te].",
+		"SecEleEnergy"     : 0.0,
+
+		"Description"      : "Reflection coefficient of an electron from a wall.",
+		"ReflectionCoeff"  : 0.0,
+		
+		"Description"      : "Maximum run cycles",
+		"ExitCycle"        : 1001
+	},
+	"ElectricalControl":
+	{
+		"SubGroup":
+		[
+			{
+				"Name"        : "POWER",
+				"Frequency"   : 13.56E+6,
+				"Voltage_p2p" : 80.0,
+				"BiasVoltage" : 0.0 
+			},
+			{
+				"Name"			: "GROUND",
+				"Frequency"		: 0.0,
+				"Voltage_p2p"	: 0.0,
+				"BiasVoltage"	: 0.0 
+			}
+		]
+	},
+
+	"PoissonEqnControl":
+	{
+		"Description"	: "0: orignal, 1: semi-implicit, 2: semi-implicit with ion prediction",
+		"Equation"		: 1
+	},
+
+	"ElectronEqnControl":
+	{
+		"Description"			: "-1: disable, 0: dirft-diffusion",
+		"Equation"				: 0,
+
+		"Description"			: "Boundary Conditions: 0 (default), 1 (neumann), 2 (zero density), 3: zero-dimension. (Only for DD)",
+		"WallBoundaryType": 2
+	},
+
+	"IonEqnControl":
+	{
+		"Description"			: "-1: disable, 0: dirft-diffusion, 1: full eqn. w/ Ti=constant, 2: full equ. ",
+		"Equation"				: 0,
+
+		"Description"     : "Boundary Conditions: 0 (default), 1 (neumann), 2 (zero density), 3: zero-dimension. (Only for DD)",
+		"WallBoundaryType": 1
+	},	
+
+	"NeutralEqnControl":
+	{
+		"Description"			: "-1: disable, 0: dirft-diffusion",
+		"Equation"				: 0,
+
+		"Description"			: "Boundary Conditions: 0 (default), 1 (neumann), 2 (zero density), 3: zero-dimension. (Only for DD)",
+		"WallBoundaryType": 0
+	},	
+	"BackgroundEqnControl":
+	{
+		"Description"			: "-1: disable, 0: dirft-diffusion, 1:full",
+		"Equation"				: -1,
+
+		"Description"			: "Boundary Conditions: 0 (default), 1 (neumann), 2 (zero density), 3: zero-dimension. (Only for DD)",
+		"Correction"			: 0
+	},	
+
+	"OutputControl":
+	{
+		"Description"	  	: "Number of output for instantaneous data in a cycle",
+		"WRT_Insta_Freq"	: 4,
+
+		"Description"	  	: "Output cycle average data in every # cycle",
+		"WRT_Cycle_Freq"	: 100,
+
+		"Description"	  	: "Calculate cycle averaged data, 0: disable, 1: enable",
+		"AVERAGE_SW" 			: 1,
+
+		"Description"	  	: "Number of monitor output for instantaneous information in a cycle",
+		"MON_Insta_Freq"	: 4,
+
+		"Description"	  	: "Monitor output in every # cycle",
+		"MON_Cycle_Freq"	: 10
+
+	}
+}
