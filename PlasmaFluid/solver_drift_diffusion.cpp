@@ -17,7 +17,7 @@ void CDriftDiffusion::Init( boost::shared_ptr<CDomain> &m, boost::shared_ptr<CCo
 	} 
 
 	
-	fixTe = true ;
+	fixTe = false ;
 	TG = false ;
 	Insert = false ;
 	Reflec = config->ReflectionCoefficient ;

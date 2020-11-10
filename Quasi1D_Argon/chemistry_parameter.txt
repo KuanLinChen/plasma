@@ -2,10 +2,10 @@
 Electron_table_size = 20000
 
 # The lowest Te rows (eV)
-Table_Te_min = 0.1
+Table_Te_min = 0.6.6667E-02
 
 # The Highest Te of rows (eV)
-Table_Te_max = 20.0
+Table_Te_max = 1.9867E+01
 
 # The lowest gas rows (K)
 Table_gas_min = 300

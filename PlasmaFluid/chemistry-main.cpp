@@ -490,6 +490,7 @@ void   chemistry::read_reaction_table(string react_file)
 
 					if ((*iter_i).compare("threshold")==0)  temp->threshold=atof((*(iter_i+1)).c_str());
 					if ((*iter_i).compare("->")==0) s_s_flag=1;
+					
 					if (s_s_flag == 0) {
 						for (i=0;i<species.name.size();++i) {
 							if ( (*iter_i).compare(species.name[i]) == 0) {
